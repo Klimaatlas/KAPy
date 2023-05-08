@@ -5,7 +5,14 @@ The goal of KAPy is to create an open-source and flexible framework that can be 
 
 ## Getting Started
 
+KAPy is based on a small set of fundamental technologies that form the core of the processing. These are as follows
+* xarray - for storing and working with datasets. dask is use closely in conjunction with xarray
+* xclim - for generating climate indicies
+* snakemake (?) - for workflow control
+* ESGF package (?) - for searching ESGF repositories
+
 ## Workflow
+
 KAPy is structured around a central package of tools, collated together as a Python package. Each of these tools can then be joined together to build up a pipeline for a specific situation. A local configuration file also takes care of the specifics configuration in each case.
 
 ## Why KAPy?
