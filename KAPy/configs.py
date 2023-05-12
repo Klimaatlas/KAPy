@@ -3,19 +3,21 @@
 import configparser
 import os,glob,sys
 
-def loadConfig():
+def loadConfig(path,type):
     """
     Load a configuration file from the default location
     
     Returns a configparser representation of the configuration file
     """    
-    #Get list of ini files
-    iniFile = glob.glob('*.ini')
-
-    #Check that exactly one config file is present
-    nIniFiles=len(iniFile)
-    if(nIniFiles!=1):
-        sys.exit('Exactly one config file must be defined in the root directory. Currently ' + str(nIniFiles) +' files are provided.')
+    match type:
+        case 'config':
+            iniFile = os.path.join(path,'config.ini')
+        case 'ESGF':
+            iniFile = os.path.join(path,'ESGF.ini')
+            
+    if(not(os.path.exists(iniFile))):
+        sys.exit('Cannot file configuration file: ' + iniFile)
+        
 
     #Load the file
     thisCfg=configparser.ConfigParser()

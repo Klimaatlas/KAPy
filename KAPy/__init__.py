@@ -1,3 +1,4 @@
 #Top level init.py for KAPy package
 
-from .configs import loadConfig
+from . import configs 
+from . import download
