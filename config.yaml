@@ -1,0 +1,7 @@
+#SnakeMake yaml configuration file
+#This file only sets the master configuration, and some parameters of the
+#build, to be used to by Snakemake. The more detailed configuration
+#settings are fixed in the respective configuration directories
+
+#Valid options: Ghana 
+config: Ghana
