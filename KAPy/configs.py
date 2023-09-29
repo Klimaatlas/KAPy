@@ -16,7 +16,7 @@ def loadConfig(path,type):
             iniFile = os.path.join(path,'ESGF.ini')
             
     if(not(os.path.exists(iniFile))):
-        sys.exit('Cannot file configuration file: ' + iniFile)
+        sys.exit('Cannot find configuration file: ' + iniFile)
         
 
     #Load the file

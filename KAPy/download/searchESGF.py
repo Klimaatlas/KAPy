@@ -9,21 +9,22 @@
 
 from pyesgf.search import SearchConnection
 import os
+import tqdm
 
 #Setup search connection
 conn = SearchConnection('https://esg-dn1.nsc.liu.se/esg-search/',
                         distrib=True)
-ctx = conn.new_context(domain='AFR-22,AFR-44,AFR-44i',
+ctx = conn.new_context(domain='AFR-22,AFR-44',
                        variable='tas',
                        time_frequency='mon',
                        facets='experiment')
 print('Found', ctx.hit_count ,'hits...')
 
 #Write each URL out to a separate file
-for ds in ctx.search():
+for ds in tqdm.tqdm(ctx.search()):
     files = ds.file_context().search()
     for f in files:
         fname=os.path.basename(f.download_url)
-        with open('scratch/downloads/URLs/'+fname,'w') as URLfile:
+        with open('scratch/2a.OPeNDAP_URLs/'+fname+'.url','w') as URLfile:
             URLfile.write(f.opendap_url)
         

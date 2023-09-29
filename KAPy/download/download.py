@@ -5,9 +5,9 @@ from pydap.client import open_url
 from pydap.cas.esgf import setup_session
 import os
 
-def ESGF(urlFile,sysCfg,esgfCfg):
+def ESGF(urlFile,ncFile,sysCfg,esgfCfg):
     #Read the contents of urlFile to get the opendap URL to work with
-    with open(urlFile,'r') as f:
+    with open(urlFile[0],'r') as f:
         thisURL=f.read()
 
     #Setup authentication scheme
@@ -26,24 +26,28 @@ def ESGF(urlFile,sysCfg,esgfCfg):
     #Open dataset    
     ds = xr.open_dataset(store)
     
+    #Correct longitudes in [0,360] coordinates to [-180,180]
+    if ds.lon.max() > 180:
+        ds['lon'] = xr.where(ds['lon'] > 180, ds['lon'] -360 , ds['lon'])
+    
     #If dataset has rlon and rlat coordinates, then we need to do the subsetting
     #based on the (hopefully supplied) lon and lat coordinates
-    if(('rlat' in ds.dims) & ('rlon' in ds.dims)) :
-        maskX = (ds['lon'] >= sysCfg.getint('Domain','xmin')) &  \
-                (ds['lon'] <= sysCfg.getint('Domain','xmax'))
-        maskY = (ds['lat'] >= sysCfg.getint('Domain','ymin')) &  \
-                (ds['lat'] <= sysCfg.getint('Domain','ymax'))
+    if ((('rlat' in ds.dims) & ('rlon' in ds.dims)) |
+       (('y' in ds.dims) & ('x' in ds.dims))):
+        maskX = (ds['lon'] >= sysCfg['domain']['xmin'])&  \
+                (ds['lon'] <= sysCfg['domain']['xmax'])
+        maskY = (ds['lat'] >= sysCfg['domain']['ymin']) &  \
+                (ds['lat'] <= sysCfg['domain']['ymax'])
         dsSel = ds.where(maskX & maskY, drop=True)
     else:
         #Do subsetting based on lon, lat alone
-        dsSel = ds.sel(lat=slice(sysCfg.getint('Domain','ymin'), 
-                              sysCfg.getint('Domain','ymax')), 
-                    lon=slice(sysCfg.getint('Domain','xmin'), 
-                              sysCfg.getint('Domain','xmax')))
+        dsSel = ds.sel(lat=slice(sysCfg['domain']['ymin'], 
+                              sysCfg['domain']['ymax']), 
+                    lon=slice(sysCfg['domain']['xmin'], 
+                              sysCfg['domain']['xmax']))
 
     #Write to file
-    fname=os.path.basename(urlFile)
-    dsSel.to_netcdf(os.path.join('scratch','downloads','data',fname))
+    dsSel.to_netcdf(ncFile[0])
 
 
 
