@@ -1,0 +1,52 @@
+#Default configuration file
+#
+#Keys defined here are used as the default value across all KAPy if they not overridden by
+#values defined in the individual configurations. All parameters used in KAPy are defined
+#here, so this file can also be used as an exhaustive list of configuration options
+#Keys are sorted in alphabetical order at the first level at least
+
+dirs:
+    outputDir: 'outputs'
+domain:
+    xmin: -4
+    xmax: 2
+    dx: 0.1
+    ymin: 4
+    ymax: 12
+    dy: 0.1
+ensembles:
+    percentiles: [10,50,90]
+periods:
+    period1:
+        id: 1
+        name: 'Historical (1981-2005)'
+        start: 1981
+        end: 2005
+    period2:
+        id: 2
+        name: 'Start of century (2011-2040)'
+        start: 2011
+        end: 2040
+    period3:
+        id: 3
+        name: 'Mid-century (2041-2070)'
+        start: 2041
+        end: 2070
+    period4:
+        id: 4
+        name: 'End-of-century (2071-2100)'
+        start: 2071
+        end: 2100
+regridding:
+    method: 'bilinear'  #Regridding method used by xesmf.Regridder()
+scenarios:
+    scenario1:
+        id: 'rcp26'
+        name: 'Low emissions scenario (RCP2.6)'
+    scenario2:
+        id: 'rcp45'
+        name: 'Medium emissions scenario (RCP4.5)'
+    scenario3:
+        id: 'rcp85'
+        name: 'High emissions scenario (RCP8.5)'
+    
