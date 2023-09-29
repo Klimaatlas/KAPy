@@ -1,17 +1,8 @@
-#SnakeMake yaml configuration file
-#This file only sets the master configuration, and some parameters of the
-#build, to be used to by Snakemake. The more detailed configuration
-#settings are fixed in the respective configuration directories
-
-#Valid options: Ghana 
-#SnakeMake yaml configuration file
+#Ghana configuration file
+#Keys are sorted in alphabetical order at the first level at least
 
 dirs:
-    input: '/dmidata/projects/klimaatlas/pipeline/data/DAY_EUR11_DENMARK/'
-    output: 'outputs/'
-    logs: 'logs'
-    scratchDir: './scratch/'
-    indicators: 'indicators'
+    scratchDir: 'scratch'
 domain:
     xmin: -4
     xmax: 2
@@ -42,4 +33,14 @@ periods:
         name: 'End-of-century (2071-2100)'
         start: 2071
         end: 2100
+scenarios:
+    scenario1:
+        id: 'rcp26'
+        name: 'Low emissions scenario (RCP2.6)'
+    scenario2:
+        id: 'rcp45'
+        name: 'Medium emissions scenario (RCP4.5)'
+    scenario3:
+        id: 'rcp85'
+        name: 'High emissions scenario (RCP8.5)'
     

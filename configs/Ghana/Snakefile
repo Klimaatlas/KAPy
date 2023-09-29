@@ -1,4 +1,4 @@
-#Snakemake configuration file
+#Klimaatlas Ghana Snakemake configuration file
 
 import KAPy
 import os
@@ -10,7 +10,6 @@ configfile: "config.yaml"
 #config=KAPy.helpers.loadConfig()  #Debugging
 
 esgf=KAPy.configs.loadConfig('configs/Ghana','ESGF')
-scenarioList=['rcp26','rcp45','rcp85']
 
 rule URLs:
     shell:
@@ -75,8 +74,12 @@ rule ensstats:
         expand(os.path.join('scratch','6.ensstat','i101_ensstat_{scenario}.nc'),
                scenario=scenarioList)
 
+  [os.path.join(config['dirs']['output'],'DAY_EUR11_DENMARK','fwi','fwi_' + stem) 
+           for stem in helpers.getValidStems(['tasmax','pr','hurs','sfcWind'],
+                                            config)]
+
         
-for sc in scenarioList:
+for sc in [thisSc['id'] for thisSc in config['scenarios'].values()]:
     rule:
         name: f'ensstat_{sc}'
         output:
