@@ -14,10 +14,17 @@ KAPy is based on a small set of fundamental technologies that form the core of t
 
 ## Workflow
 
-KAPy is structured around a central package of tools, collated together as a Python package. Each of these tools can then be joined together to build up a pipeline for a specific situation. A local configuration file also takes care of the specifics configuration in each case.
+KAPy is structured around a central package of tools, collated together as a Python package. Each of these tools can then be joined together to build up a pipeline for a specific situation. 
+
+There are two basic configuration files required
+* Snakefile - configures the snakemake workflow system
+* config.yaml - provides input options for the individual configurations
+
+These files are best stored in ./configs/<sub-directory>/ (under version control) and then softlinked into the root directory.
+
 
 ## Why KAPy?
 
 KAPy takes its name from joining the KA from Klimaatlas with the Py from Python, in the style of many Python libraries. 
 
-More importantly, the name is also a homonym for the phrase *ka pai*, taken from the language of the Maori people, the *tangata whenua* (indigenous people) of Aotearoa New Zealand. The phrase means simply "good", and can also be used as praise, as in "well done".
+More importantly, the name is also a homonym for the phrase *ka pai*, from *Te Reo Maori*, the language of the Maori people, the *tangata whenua* (indigenous people) of Aotearoa New Zealand. The phrase means simply "good", but can also be used as praise, as in "well done", and as "thank you" too.
