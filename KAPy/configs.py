@@ -19,10 +19,22 @@ def loadConfig(configfile='config.yaml',useDefaults=True,defaultFile='configs/de
         #Load defaults
         with open(defaultFile, 'r') as f:
             dft=yaml.safe_load(f)
-        #Update
-        cfg.update(dft)
-    
-    return(cfg)
+        #Recursive update function - thanks to ChatGPT
+        def recursive_update_dict(d, update_dict):
+            for key, value in d.items():
+                if isinstance(value, dict) and key in update_dict:
+                    # If the value is another dictionary and the key exists in the update_dict,
+                    # recursively update it with the corresponding update_dict entry.
+                    recursive_update_dict(value, update_dict[key])
+                elif key in update_dict:
+                    # If the key exists in the update_dict, 
+                    # update the value in the original dictionary.
+                    d[key] = update_dict[key]                   
+            return(d)
+        rtn=recursive_update_dict(dft,cfg)
+        return(rtn)
+    else:
+        return(cfg)
 
 '''
 def loadConfig(path,type):

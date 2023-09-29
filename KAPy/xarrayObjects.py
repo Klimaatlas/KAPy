@@ -8,7 +8,9 @@ import pickle
 import numpy as np
 import tqdm
 
-def makeDatasets(srcPath,xrPath,cfg):
+cfg=KAPy.configs.loadConfig()  
+
+def makeDatasets(cfg):
     '''
     Make xarray datasets
     
@@ -16,8 +18,11 @@ def makeDatasets(srcPath,xrPath,cfg):
     their time dimension. The merging is done by creating an xarray dataset, that 
     is then written to disk in a "pickled" format, from where it can be reloaded
     later.
+    
+    File paths are deduced from the configuration file
     '''
-    #Setup alist of files
+    #Setup directories and filelist
+    srcPath=KAPy.helpers.getFullPath(cfg,'modelInputs')
     flist=pd.DataFrame(os.listdir(srcPath),columns=['fname'])
 
     #Split into variable types and apply naming accordingly
@@ -30,6 +35,11 @@ def makeDatasets(srcPath,xrPath,cfg):
     flist=pd.concat([flist,flistMeta],axis=1)
     flist['path']=srcPath+os.sep+flist.fname
 
+    #Setup for output
+    xrPath=KAPy.helpers.getFullPath(cfg,'xarrays')
+    if not os.path.exists(xrPath):
+        os.makedirs(xrPath)
+    
     #Now we groupby everything except the last column name (the leftovers)
     #We loop over each group, building an xarray dataset and writing 
     #the object to disk

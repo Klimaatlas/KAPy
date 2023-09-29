@@ -32,6 +32,7 @@ rule download:
 
 # Object configuration ------------------------
 # Compile the data available into xarray datasets for further processing
+# TODO: Establish dependencies here
 rule xarrays:
     run:
         KAPy.xarrayObjects.makeDatasets(config)

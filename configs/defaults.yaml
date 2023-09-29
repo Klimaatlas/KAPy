@@ -7,6 +7,9 @@
 
 dirs:
     outputDir: 'outputs'
+    URLs: '1.URLs'
+    modelInputs: '2.Model_inputs'
+    xarrays: '3.xarrays'
 domain:
     xmin: -4
     xmax: 2
