@@ -1,12 +1,12 @@
 TODO:
-* Consider splitting snakemake into "dataprep", "indicators" and "ensembles" and "decorating" components
-* Create system to declare indicators. One approach could be a spreadsheet or YAML An indicator function that returns a rule might be an option
-
-* Handle evlauation runs
-* Handle historical/ rcp merging ???
 * Bug report (?) about seg fault in regrdding?
-* Tidy code. Add documentation
+* Handle indicators requiring multiple variables
+* Handle evaluation runs via e.g. explicit declaration of xarray groupings
+* Add documentation
 * Streamline makefile linkages
+
+# 2023.10.03
+Good progress in the last couple of days generalising the script to be configurable through YAML files throughout. Regridding seems to be causing some odd problems to be investigated next.
 
 # 2023.09.29
 Made some progress in restarting work on KAPy. Established a configuration setup with system-wide defaults and the ability to override for individual instances. Setup a DK instance to work with raw files.

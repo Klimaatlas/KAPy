@@ -14,6 +14,7 @@ dirs:
     gridded: '5.commmon_grid'
     ensstats: '6.ensstats'
 domain:
+download:
 ensembles:
     percentiles: [10,50,90]
 indicators:  #None defined by default.

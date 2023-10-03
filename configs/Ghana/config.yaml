@@ -9,6 +9,8 @@ domain:
     ymin: 4
     ymax: 12
     dy: 0.1
+download:
+    ESGF: './configs/Ghana/ESGF.yaml'
 indicators:
     101:
         id: 101

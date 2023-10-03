@@ -10,9 +10,8 @@ config=KAPy.configs.loadConfig()
 
 # Downloading ------------------------
 rule URLs:
-    shell:
-        "python3 ./KAPy/download/searchESGF.py"
-
+    run:
+        KAPy.download.searchESGF(config)
 
 rule downloads:
     input: 
@@ -23,8 +22,9 @@ rule downloads:
 rule download:
     output:
         os.path.join(KAPy.helpers.getFullPath(config,'modelInputs'),'{fname}.nc')
-    input:
-        os.path.join(KAPy.helpers.getFullPath(config,'URLs'),'{fname}.nc.url')
+    input: 
+        #Only download if a new URL has been added - ignore updates
+        ancient(os.path.join(KAPy.helpers.getFullPath(config,'URLs'),'{fname}.nc.url'))
     run:
         KAPy.download.ESGF(config,input,output)
 
@@ -112,56 +112,3 @@ for sc in scenarioList:
                                        f'i{ind}_*_{sc}_*.nc'))
             run:
                 KAPy.xarrayObjects.generateEnsstats(config,input,output)
-"""
-rule ensstat:
-    output:
-        os.path.join(KAPy.helpers.getFullPath(config,'ensstats'),
-                     'i{indID}_ensstat_{scenario}.nc')
-    input:
-        os.path.join(KAPy.helpers.getFullPath(config,'indicators'),
-                     'i{indID}_*_{scenario}_*.nc')
-        #glob.glob(os.path.join(KAPy.helpers.getFullPath(config,'indicators'),
-        #                   'i{indID}_*_{scenario}_*.nc'))
-#        glob_wildcards(os.path.join(KAPy.helpers.getFullPath(config,'indicators'),
- #                          'i{indID}_*_{scenario}_*.nc'))
-    run:
-        print(input)
-        print(output)
-        #KAPy.xarrayObjects.generateEnsstats(config,input,output)
-
-
-# Ensemble stats--------------------        
-rule regridded:
-    input:
-        expand(os.path.join('scratch','5.regrid','{stem}'),
-               stem=os.listdir(os.path.join('scratch','4.indicators')))
-
-rule regrid:
-    output:
-        os.path.join('scratch','5.regrid','{stem}.nc')
-    input:
-        os.path.join('scratch','4.indicators','{stem}.nc')
-    run:
-        KAPy.xarrayObjects.regrid(input,output,config)
-        
-rule ensstats:
-    input:
-        expand(os.path.join('scratch','6.ensstat','i101_ensstat_{scenario}.nc'),
-               scenario=scenarioList)
-
-  [os.path.join(config['dirs']['output'],'DAY_EUR11_DENMARK','fwi','fwi_' + stem) 
-           for stem in helpers.getValidStems(['tasmax','pr','hurs','sfcWind'],
-                                            config)]
-
-        
-for sc in [thisSc['id'] for thisSc in config['scenarios'].values()]:
-    rule:
-        name: f'ensstat_{sc}'
-        output:
-            os.path.join('scratch','6.ensstat',f'i101_ensstat_{sc}.nc')
-        input:
-            glob.glob(os.path.join('scratch','5.regrid',f'i101_*_{sc}_*.nc'))
-        run:
-            KAPy.xarrayObjects.generateEnsstats(input,output,config)
-        
-"""

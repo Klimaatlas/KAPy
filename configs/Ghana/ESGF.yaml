@@ -1,0 +1,13 @@
+#ESGF configuration file for Ghana
+indexNode: 'https://esg-dn1.nsc.liu.se/esg-search/'
+credentials: './configs/credentials.yaml'
+defaults:
+    domains: ['AFR-22','AFR-44']
+    experiments: ['historical','rcp26','rcp45','rcp85']
+variables:
+    monthly.tas:
+        variable: 'tas'
+        time_frequency: 'mon'
+    monthly.pr:
+        variable: 'pr'
+        time_frequency: 'mon'
