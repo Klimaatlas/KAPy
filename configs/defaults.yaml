@@ -10,15 +10,13 @@ dirs:
     URLs: '1.URLs'
     modelInputs: '2.Model_inputs'
     xarrays: '3.xarrays'
+    indicators: '4.indicators'
+    gridded: '5.commmon_grid'
+    ensstats: '6.ensstats'
 domain:
-    xmin: -4
-    xmax: 2
-    dx: 0.1
-    ymin: 4
-    ymax: 12
-    dy: 0.1
 ensembles:
     percentiles: [10,50,90]
+indicators:  #None defined by default.
 periods:
     period1:
         id: 1
@@ -42,14 +40,42 @@ periods:
         end: 2100
 regridding:
     method: 'bilinear'  #Regridding method used by xesmf.Regridder()
-scenarios:
+seasons:
+    Annual:
+        id: 0
+        name: 'Annual'
+        months: [1,2,3,4,5,6,7,8,9,10,11,12]
+    Winter:
+        id: 1
+        name: 'Winter (DJF)'
+        months: [12,1,2]
+    Spring:
+        id: 2
+        name: 'Spring (MAM)'
+        months: [3,4,5]
+    Summer:
+        id: 3
+        name: 'Summer (JJA)'
+        months: [6,7,8]
+    Autumn:
+        id: 4
+        name: 'Autumn (SON)'
+        months: [9,10,11]
+scenarios:  #Future emissions scenarios to present. Not to be confused with "experiments" in ESGF
     scenario1:
-        id: 'rcp26'
-        name: 'Low emissions scenario (RCP2.6)'
+        id: 26
+        name: 'rcp26'
+        description: 'Low emissions scenario (RCP2.6)'
+        experiments: ['historical','rcp26']
     scenario2:
-        id: 'rcp45'
-        name: 'Medium emissions scenario (RCP4.5)'
+        id: 45
+        name: 'rcp45'
+        description: 'Medium emissions scenario (RCP4.5)'
+        experiments: ['historical','rcp45']
     scenario3:
-        id: 'rcp85'
-        name: 'High emissions scenario (RCP8.5)'
+        id: 85
+        name: 'rcp85'
+        description: 'High emissions scenario (RCP8.5)'
+        experiments: ['historical','rcp85']
+
     

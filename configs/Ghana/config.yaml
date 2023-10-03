@@ -1,5 +1,7 @@
 #Ghana configuration file
 
+dirs:
+    outputDir: 'KAGh'
 domain:
     xmin: -4
     xmax: 2
@@ -7,3 +9,16 @@ domain:
     ymin: 4
     ymax: 12
     dy: 0.1
+indicators:
+    101:
+        id: 101
+        name: 'Annual mean temperature (C)'
+        variables: 'tas'
+        season: 'Annual'   #Use key name for seasons. Use 'All' for all defined seasons.
+        statistic: 'mean'
+    102:
+        id: 102
+        name: 'Summer mean temperature (C)'
+        variables: 'tas'
+        season: 'Summer'   #Use key name for seasons. Use 'All' for all defined seasons.
+        statistic: 'mean'

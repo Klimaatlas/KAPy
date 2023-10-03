@@ -7,22 +7,22 @@ import xesmf as xe
 import pickle
 import numpy as np
 import tqdm
+import sys
 
-cfg=KAPy.configs.loadConfig()  
+#config=KAPy.configs.loadConfig()  
 
-def makeDatasets(cfg):
+def makeDatasets(config):
     '''
     Make xarray datasets
     
-    Merges together files that are otherwise from the same experiment along
-    their time dimension. The merging is done by creating an xarray dataset, that 
-    is then written to disk in a "pickled" format, from where it can be reloaded
-    later.
+    Merges together files into a coherent timeseries along their time dimension.
+    The merging is done by creating an xarray dataset, that is then written to disk
+    in a "pickled" format, from where it can be reloaded later.
     
     File paths are deduced from the configuration file
     '''
     #Setup directories and filelist
-    srcPath=KAPy.helpers.getFullPath(cfg,'modelInputs')
+    srcPath=KAPy.helpers.getFullPath(config,'modelInputs')
     flist=pd.DataFrame(os.listdir(srcPath),columns=['fname'])
 
     #Split into variable types and apply naming accordingly
@@ -36,24 +36,33 @@ def makeDatasets(cfg):
     flist['path']=srcPath+os.sep+flist.fname
 
     #Setup for output
-    xrPath=KAPy.helpers.getFullPath(cfg,'xarrays')
+    xrPath=KAPy.helpers.getFullPath(config,'xarrays')
     if not os.path.exists(xrPath):
         os.makedirs(xrPath)
-    
-    #Now we groupby everything except the last column name (the leftovers)
-    #We loop over each group, building an xarray dataset and writing 
-    #the object to disk
-    for name,df in tqdm.tqdm(flist.groupby(colNames[:-1])):
-        #Setup output filename
-        dsName='_'.join(name)+'.pkl'
-        #Make dataset object, sorted on the last set of values first
-        df=df.sort_values(colNames[:-1])
-        ds =xr.open_mfdataset(df.path,
+   
+    #Now we build the xarray datasets. First we groupby everything except 
+    #the leftovers and the CMIP5ExperimentName
+    grpNames=[x for x in colNames if x not in [ 'CMIP5ExperimentName','Other']]
+    for name,df in tqdm.tqdm(flist.groupby(grpNames)):
+        #Lets get the list of experiments that we have in this group
+        exptsPresent=list(df.CMIP5ExperimentName.unique())
+        #Extract out historical
+        histFlist=df[df['CMIP5ExperimentName']=="historical"]
+        #Loop over scenarios
+        for sc in [x for x in exptsPresent if x!='historical']:
+            #Extract this scenario from the filelist
+            scFlist=df[df['CMIP5ExperimentName']==sc]
+            #Make dataset object, sorted on time
+            outFlist=pd.concat([histFlist,scFlist])
+            ds =xr.open_mfdataset(outFlist.path,
                              combine='nested',
                             concat_dim='time')
-        #Write the xarray dataset object to disk, as a pickle
-        with open(os.path.join(xrPath,dsName),'wb') as f:
-            pickle.dump(ds,f,protocol=-1)
+            ds=ds.sortby('time')
+            #Setup output filename - need to put the expt back in the right place
+            dsName='_'.join(name[:3]+(sc,)+name[3:])+'.pkl'
+            #Write the xarray dataset object to disk, as a pickle
+            with open(os.path.join(xrPath,dsName),'wb') as f:
+                pickle.dump(ds,f,protocol=-1)
 
 """
 #retrieveVariables function
@@ -93,21 +102,21 @@ l=selList.groupby(colNames[1:])
 
 """
 
-def generateEnsstats(infiles,outfile,config):
+def generateEnsstats(config,infiles,outfile):
     #Setup the ensemble
     #Enforce a join='override' to handle differences between grids close to
     #numerical precision
     thisEns = xcEns.create_ensemble(infiles,multifile=True,join='override')  
     #Calculate the statistics
     ens_mean_std = xcEns.ensemble_mean_std_max_min(thisEns)
-    ens_percs = xcEns.ensemble_percentiles(thisEns, values=config['percentiles'])
+    ens_percs = xcEns.ensemble_percentiles(thisEns, values=config['ensembles']['percentiles'])
     ensOut=xr.merge([ens_mean_std,ens_percs])
     #Write results
     ensOut.to_netcdf(outfile[0])
     
     
     
-def regrid(inFile,outFile,config):
+def regrid(config,inFile,outFile,):
     #Setup grid onto which regridding takes place
     outGrd = xr.Dataset(
     {
@@ -126,11 +135,14 @@ def regrid(inFile,outFile,config):
     
     #Do the regridding
     regridder = xe.Regridder(dsIn, outGrd, 
-                             config['domain']['method'],
+                             config['regridding']['method'],
                              unmapped_to_nan=True)
     dsout=regridder(dsIn)
     
     #Write out
+    dname=os.path.dirname(outFile[0])
+    if not os.path.exists(dname):
+        os.makedirs(dname)
     dsout.to_netcdf(outFile[0])
 
 

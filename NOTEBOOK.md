@@ -1,9 +1,15 @@
 TODO:
+* Consider splitting snakemake into "dataprep", "indicators" and "ensembles" and "decorating" components
+* Create system to declare indicators. One approach could be a spreadsheet or YAML An indicator function that returns a rule might be an option
+
 * Handle evlauation runs
-* Handle historical/ rcp merging
+* Handle historical/ rcp merging ???
 * Bug report (?) about seg fault in regrdding?
 * Tidy code. Add documentation
 * Streamline makefile linkages
+
+# 2023.09.29
+Made some progress in restarting work on KAPy. Established a configuration setup with system-wide defaults and the ability to override for individual instances. Setup a DK instance to work with raw files.
 
 # 2023.06.15
 Doing the ensemble statistics was tricky - struck a problem with numerical precision in the coordinate axes being different making it nearly impossible to get the data to merge. Solved by regridding everything (AFR-22 and AFR-44) to a common 0.1 degree grid. Making the notesbooks in R went much better and now have the first results for KAGH! Whoo-hoo!
