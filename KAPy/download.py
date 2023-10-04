@@ -85,17 +85,17 @@ def downloadESGF(config,urlFile,ncFile):
     #based on the (hopefully supplied) lon and lat coordinates
     if ((('rlat' in ds.dims) & ('rlon' in ds.dims)) |
        (('y' in ds.dims) & ('x' in ds.dims))):
-        maskX = (ds['lon'] >= sysCfg['domain']['xmin'])&  \
-                (ds['lon'] <= sysCfg['domain']['xmax'])
-        maskY = (ds['lat'] >= sysCfg['domain']['ymin']) &  \
-                (ds['lat'] <= sysCfg['domain']['ymax'])
+        maskX = (ds['lon'] >= config['domain']['xmin'])&  \
+                (ds['lon'] <= config['domain']['xmax'])
+        maskY = (ds['lat'] >= config['domain']['ymin']) &  \
+                (ds['lat'] <= config['domain']['ymax'])
         dsSel = ds.where(maskX & maskY, drop=True)
     else:
         #Do subsetting based on lon, lat alone
-        dsSel = ds.sel(lat=slice(sysCfg['domain']['ymin'], 
-                              sysCfg['domain']['ymax']), 
-                    lon=slice(sysCfg['domain']['xmin'], 
-                              sysCfg['domain']['xmax']))
+        dsSel = ds.sel(lat=slice(config['domain']['ymin'], 
+                              config['domain']['ymax']), 
+                    lon=slice(config['domain']['xmin'], 
+                              config['domain']['xmax']))
 
     #Write to file
     dsSel.to_netcdf(ncFile[0])
