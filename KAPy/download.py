@@ -1,11 +1,14 @@
-""" Handle downloading of data from ESGF via Xarray """
+""" Handle downloading of data from ESGF via Xarray 
+
+At the moment, the assumption is that ESGF is the only download source. This may
+change in the future if we add e.g. support for Copernicus CDS
+
+"""
 
 #TODO:
-# * Make into a function, accepting configuration object
 # * Add a progress indicator
 # * Get all alternative URLs for duplicate copies. These can be used if the first option fails
 # * Handle issue with facets warning
-# * Handle path specification
 
 import KAPy
 import xarray as xr

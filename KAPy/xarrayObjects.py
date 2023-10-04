@@ -2,6 +2,7 @@ import KAPy
 import pandas as pd
 import os
 import xarray as xr
+import xclim
 import xclim.ensembles as xcEns
 import xesmf as xe
 import pickle
