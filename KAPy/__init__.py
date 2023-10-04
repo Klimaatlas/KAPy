@@ -1,7 +1,7 @@
 #Top level init.py for KAPy package
 
-from . import configs 
-from . import download
-from . import xarrayObjects
-from . import helpers
-from . import indicators
+from .configs import *
+from .download import *
+from .xarrayObjects import *
+from .helpers import *
+from .indicators import *

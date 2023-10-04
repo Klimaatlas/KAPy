@@ -18,7 +18,7 @@ from pyesgf.search import SearchConnection
 #config=KAPy.configs.loadConfig()  
 def searchESGF(config):
     #Load ESGF configuration
-    ESGFcfg=KAPy.configs.loadConfig(config['download']['ESGF'],
+    ESGFcfg=KAPy.loadConfig(config['download']['ESGF'],
                                    useDefaults=False)
     
     #Setup search connection
@@ -38,7 +38,7 @@ def searchESGF(config):
             files = ds.file_context().search()
             for f in files:
                 fname=os.path.basename(f.download_url)
-                with open(os.path.join(KAPy.helpers.getFullPath(config,'URLs'),
+                with open(os.path.join(KAPy.getFullPath(config,'URLs'),
                                        fname+'.url'),
                           'w') as URLfile:
                     URLfile.write(f.opendap_url)
@@ -51,9 +51,9 @@ def downloadESGF(config,urlFile,ncFile):
         thisURL=f.read()
     
     #Read configurations
-    ESGFcfg=KAPy.configs.loadConfig(config['download']['ESGF'],
+    ESGFcfg=KAPy.loadConfig(config['download']['ESGF'],
                                useDefaults=False)
-    creds=KAPy.configs.loadConfig(ESGFcfg['credentials'],
+    creds=KAPy.loadConfig(ESGFcfg['credentials'],
                                useDefaults=False)
 
 

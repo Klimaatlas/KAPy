@@ -9,7 +9,7 @@ import numpy as np
 import tqdm
 import sys
 
-#config=KAPy.configs.loadConfig()  
+#config=KAPy.loadConfig()  
 
 def makeDatasets(config):
     '''
@@ -22,7 +22,7 @@ def makeDatasets(config):
     File paths are deduced from the configuration file
     '''
     #Setup directories and filelist
-    srcPath=KAPy.helpers.getFullPath(config,'modelInputs')
+    srcPath=KAPy.getFullPath(config,'modelInputs')
     flist=pd.DataFrame(os.listdir(srcPath),columns=['fname'])
 
     #Split into variable types and apply naming accordingly
@@ -36,7 +36,7 @@ def makeDatasets(config):
     flist['path']=srcPath+os.sep+flist.fname
 
     #Setup for output
-    xrPath=KAPy.helpers.getFullPath(config,'xarrays')
+    xrPath=KAPy.getFullPath(config,'xarrays')
     if not os.path.exists(xrPath):
         os.makedirs(xrPath)
    

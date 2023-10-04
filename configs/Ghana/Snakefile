@@ -6,34 +6,34 @@ import re
 import glob
 
 #Load configuration 
-config=KAPy.configs.loadConfig()  
+config=KAPy.loadConfig()  
 
 # Downloading ------------------------
 rule URLs:
     run:
-        KAPy.download.searchESGF(config)
+        KAPy.searchESGF(config)
 
 rule downloads:
     input: 
-        expand(os.path.join(KAPy.helpers.getFullPath(config,'modelInputs'),'{fname}'),
+        expand(os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}'),
                fname=[re.sub('.url','',x) 
-                      for x in os.listdir(KAPy.helpers.getFullPath(config,'URLs'))])
+                      for x in os.listdir(KAPy.getFullPath(config,'URLs'))])
         
 rule download:
     output:
-        os.path.join(KAPy.helpers.getFullPath(config,'modelInputs'),'{fname}.nc')
+        os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}.nc')
     input: 
         #Only download if a new URL has been added - ignore updates
-        ancient(os.path.join(KAPy.helpers.getFullPath(config,'URLs'),'{fname}.nc.url'))
+        ancient(os.path.join(KAPy.getFullPath(config,'URLs'),'{fname}.nc.url'))
     run:
-        KAPy.download.ESGF(config,input,output)
+        KAPy.ESGF(config,input,output)
 
 # Collate---------------------------------
 # Compile the data available into xarray datasets for further processing
 # TODO: Establish dependencies here
 rule xarrays:
     run:
-        KAPy.xarrayObjects.makeDatasets(config)
+        KAPy.makeDatasets(config)
         
 # Derived indicators -------------------------
 #A useful concept is also the idea of "derived variables", that we might need to calculate as
@@ -53,41 +53,41 @@ for thisInd in config['indicators'].values():
     rule:  #Indicator singular rule
         name: f'i{thisInd["id"]}_file'
         output:
-            os.path.join(KAPy.helpers.getFullPath(config,'indicators'),
+            os.path.join(KAPy.getFullPath(config,'indicators'),
                          f'i{thisInd["id"]}_'+'{stem}.nc')
         input:
-            os.path.join(KAPy.helpers.getFullPath(config,'xarrays'),
+            os.path.join(KAPy.getFullPath(config,'xarrays'),
                                    f'{thisInd["variables"]}_'+'{stem}.pkl')
         run:
-            KAPy.indicators.calculateStatistics(indicator=thisInd,
+            KAPy.calculateStatistics(indicator=thisInd,
                                                 config=config,
                                                 outPath=output,
                                                 datPkl=input)
     rule:  #Indicator plural rule
         name: f'i{thisInd["id"]}'
         input:
-            expand(os.path.join(KAPy.helpers.getFullPath(config,'indicators'),
+            expand(os.path.join(KAPy.getFullPath(config,'indicators'),
                             'i{id}_{stem}.nc'),
                id=thisInd['id'],
                stem=[re.sub('^.+?_|.pkl','',x) \
-                     for x in os.listdir(KAPy.helpers.getFullPath(config,'xarrays'))])
+                     for x in os.listdir(KAPy.getFullPath(config,'xarrays'))])
 
 # Enssemble Statistics ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
 # This is not always the case, and so we add a regridding step prior to ensemble calculation
 rule regrid:
     input:
-        expand(os.path.join(KAPy.helpers.getFullPath(config,'gridded'),'{stem}.nc'),
-               stem=glob_wildcards(os.path.join(KAPy.helpers.getFullPath(config,'indicators'),
+        expand(os.path.join(KAPy.getFullPath(config,'gridded'),'{stem}.nc'),
+               stem=glob_wildcards(os.path.join(KAPy.getFullPath(config,'indicators'),
                                                 '{stem}.nc')).stem)
 
 rule regrid_file:
     output:
-        os.path.join(KAPy.helpers.getFullPath(config,'gridded'),'{stem}.nc')
+        os.path.join(KAPy.getFullPath(config,'gridded'),'{stem}.nc')
     input:
-        os.path.join(KAPy.helpers.getFullPath(config,'indicators'),'{stem}.nc')
+        os.path.join(KAPy.getFullPath(config,'indicators'),'{stem}.nc')
     run:
-        KAPy.xarrayObjects.regrid(config,input,output)
+        KAPy.regrid(config,input,output)
 
 
 
@@ -95,7 +95,7 @@ scenarioList=[sc['name'] for sc in config['scenarios'].values()]
 indList=[ind['id'] for ind in config['indicators'].values()]
 rule ensstats:
     input:
-        expand(os.path.join(KAPy.helpers.getFullPath(config,'ensstats'),
+        expand(os.path.join(KAPy.getFullPath(config,'ensstats'),
                             'i{ind}_ensstat_{scenario}.nc'),
                ind=indList,
                scenario=scenarioList)
@@ -105,10 +105,10 @@ for sc in scenarioList:
         rule:
             name: f'ensstat_i{ind}_{sc}'
             output:
-                os.path.join(KAPy.helpers.getFullPath(config,'ensstats'),
+                os.path.join(KAPy.getFullPath(config,'ensstats'),
                          f'i{ind}_ensstat_{sc}.nc')
             input:
-                glob.glob(os.path.join(KAPy.helpers.getFullPath(config,'indicators'),
+                glob.glob(os.path.join(KAPy.getFullPath(config,'indicators'),
                                        f'i{ind}_*_{sc}_*.nc'))
             run:
-                KAPy.xarrayObjects.generateEnsstats(config,input,output)
+                KAPy.generateEnsstats(config,input,output)
