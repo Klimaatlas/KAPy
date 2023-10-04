@@ -26,7 +26,7 @@ rule download:
         #Only download if a new URL has been added - ignore updates
         ancient(os.path.join(KAPy.getFullPath(config,'URLs'),'{fname}.nc.url'))
     run:
-        KAPy.ESGF(config,input,output)
+        KAPy.downloadESGF(config,input,output)
 
 # Collate---------------------------------
 # Compile the data available into xarray datasets for further processing
