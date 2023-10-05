@@ -17,45 +17,55 @@ import os
 import re
 import glob
 
+#Configuratioon -----------------------
 #Load configuration 
 config=KAPy.loadConfig()  
 
+#Setup directories
+for d in config['dirs'].keys():
+    thisDir=KAPy.getFullPath(config,d)
+    if not os.path.exists(thisDir):
+        os.mkdir(thisDir)
+
 # Downloading ------------------------
-rule search:
-    run:
-        KAPy.searchESGF(config)
+# This part of the script is activated by the "download" key in
+# the config file. If no download parameters decleared, then don't activate the rules
+# Instead, the script will work with files from disk
+if config['download']:
+    rule search:
+        run:
+            KAPy.searchESGF(config)
 
-rule download:
-    input: 
-        expand(os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}'),
-               fname=[re.sub('.url','',x) 
-                      for x in os.listdir(KAPy.getFullPath(config,'URLs'))])
-        
-rule download_file:
-    output:
-        os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}.nc')
-    input: 
-        #Only download if a new URL has been added - ignore updates
-        ancient(os.path.join(KAPy.getFullPath(config,'URLs'),'{fname}.nc.url'))
-    run:
-        KAPy.downloadESGF(config,input,output)
-        
-rule download_status:
-    output:
-        os.path.join(KAPy.getFullPath(config,'notebooks'),'Download_status.nb.html')
-    input: #Any changes in the two directories will trigger a rebuild
-        KAPy.getFullPath(config,'URLs'),
-        KAPy.getFullPath(config,'modelInputs')
-    script:
-        "./notebooks/Download_status.Rmd"
+    rule download:
+        input: 
+            expand(os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}'),
+                   fname=[re.sub('.url','',x) 
+                          for x in os.listdir(KAPy.getFullPath(config,'URLs'))])
 
-    # Collate---------------------------------
+    rule download_file:
+        output:
+            os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}.nc')
+        input: 
+            #Only download if a new URL has been added - ignore updates
+            ancient(os.path.join(KAPy.getFullPath(config,'URLs'),'{fname}.nc.url'))
+        run:
+            KAPy.downloadESGF(config,input,output)
+
+    rule download_status:
+        output:
+            os.path.join(KAPy.getFullPath(config,'notebooks'),'Download_status.nb.html')
+        input: #Any changes in the two directories will trigger a rebuild
+            KAPy.getFullPath(config,'URLs'),
+            KAPy.getFullPath(config,'modelInputs')
+        script:
+            "./notebooks/Download_status.Rmd"
+
+# Collate---------------------------------
 # Compile the data available into xarray datasets for further processing
 # TODO: Establish dependencies here
 rule xarrays:
     run:
         KAPy.makeDatasets(config)
-        
 
         
 # Bias correction -------------------

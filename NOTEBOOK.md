@@ -1,9 +1,13 @@
 TODO:
+* Add explicit declaration of xarray groupings
+* Creation of xarray object should incorporate spatial domain
 * Bug report (?) about seg fault in regrdding?
 * Handle indicators requiring multiple variables
-* Handle evaluation runs via e.g. explicit declaration of xarray groupings
 * Add documentation
 * Streamline makefile linkages
+
+# 2023.10.05
+Added multiple time-averaging schemes. Testing on ocean data. Looking good
 
 # 2023.10.03
 Good progress in the last couple of days generalising the script to be configurable through YAML files throughout. Regridding seems to be causing some odd problems to be investigated next.
