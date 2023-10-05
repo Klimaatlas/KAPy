@@ -13,12 +13,13 @@ dirs:
     indicators: '4.indicators'
     gridded: '5.commmon_grid'
     ensstats: '6.ensstats'
+    notebooks: 'notebooks'
 domain:
 download:
 ensembles:
     percentiles: [10,50,90]
 indicators:  #None defined by default.
-periods:
+periods:  #Not defining periods here will instead return annual averages
     period1:
         id: 1
         name: 'Historical (1981-2005)'
@@ -62,20 +63,20 @@ seasons:
         id: 4
         name: 'Autumn (SON)'
         months: [9,10,11]
-scenarios:  #Future emissions scenarios to present. Not to be confused with "experiments" in ESGF
+scenarios:  #A combination of CMIP experiments that are basis for analysis
     scenario1:
         id: 26
-        name: 'rcp26'
+        shortname: 'rcp26'
         description: 'Low emissions scenario (RCP2.6)'
         experiments: ['historical','rcp26']
     scenario2:
         id: 45
-        name: 'rcp45'
+        shortname: 'rcp45'
         description: 'Medium emissions scenario (RCP4.5)'
         experiments: ['historical','rcp45']
     scenario3:
         id: 85
-        name: 'rcp85'
+        shortname: 'rcp85'
         description: 'High emissions scenario (RCP8.5)'
         experiments: ['historical','rcp85']
 

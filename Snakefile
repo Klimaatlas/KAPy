@@ -9,17 +9,17 @@ import glob
 config=KAPy.loadConfig()  
 
 # Downloading ------------------------
-rule URLs:
+rule search:
     run:
         KAPy.searchESGF(config)
 
-rule downloads:
+rule download:
     input: 
         expand(os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}'),
                fname=[re.sub('.url','',x) 
                       for x in os.listdir(KAPy.getFullPath(config,'URLs'))])
         
-rule download:
+rule download_file:
     output:
         os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}.nc')
     input: 
@@ -27,22 +27,33 @@ rule download:
         ancient(os.path.join(KAPy.getFullPath(config,'URLs'),'{fname}.nc.url'))
     run:
         KAPy.downloadESGF(config,input,output)
+        
+rule download_status:
+    output:
+        os.path.join(KAPy.getFullPath(config,'notebooks'),'Download_status.nb.html')
+    script:
+        "./notebooks/Download_status.Rmd"
 
-# Collate---------------------------------
+    # Collate---------------------------------
 # Compile the data available into xarray datasets for further processing
 # TODO: Establish dependencies here
 rule xarrays:
     run:
         KAPy.makeDatasets(config)
         
+
+        
+# Bias correction -------------------
+# TODO
+
 # Derived indicators -------------------------
 #A useful concept is also the idea of "derived variables", that we might need to calculate as
 #intermediate steps in the processing chain, before we calculate indicators from them.
 #Good examples include FWI and PoteEvap
 #Remember that they will also need xarray pickles too
+#Can discuss whether we do this before or after bias correction
+#TODO
 
-# Bias correction -------------------
-# TODO
 
 # Indicators ---------------------------------
 # Create a loop over the indicators that defines the singular and plural rules
@@ -72,7 +83,7 @@ for thisInd in config['indicators'].values():
                stem=[re.sub('^.+?_|.pkl','',x) \
                      for x in os.listdir(KAPy.getFullPath(config,'xarrays'))])
 
-# Enssemble Statistics ---------------------------------
+# Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
 # This is not always the case, and so we add a regridding step prior to ensemble calculation
 rule regrid:
@@ -90,8 +101,9 @@ rule regrid_file:
         KAPy.regrid(config,input,output)
 
 
-
-scenarioList=[sc['name'] for sc in config['scenarios'].values()]
+# Enssemble Statistics ---------------------------------
+# Now we can combine them
+scenarioList=[sc['shortname'] for sc in config['scenarios'].values()]
 indList=[ind['id'] for ind in config['indicators'].values()]
 rule ensstats:
     input:

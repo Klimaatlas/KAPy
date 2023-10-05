@@ -5,3 +5,4 @@ __pycache__
 .Rproj.user
 Snakefile
 config.yaml
+*.Rproj
