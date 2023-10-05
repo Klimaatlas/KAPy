@@ -1,0 +1,21 @@
+#Denmark FWI configuration file
+
+dirs:
+    modelInputs: '/dmidata/projects/klimaatlas/iri/no_missing_dates'
+    outputDir: 'DKHav'
+domain:
+    xmin: 7
+    xmax: 16
+    dx: 0.1
+    ymin: 53
+    ymax: 59
+    dy: 0.1
+indicators:
+    101:
+        id: 101
+        name: 'Annual mean SST (C)'
+        variables: 'tas'
+        season: 'Annual'   #Use key name for seasons, as defined in the "seasons" key
+        statistic: 'mean'
+time_averaging:
+    method: "year"
