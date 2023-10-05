@@ -1,4 +1,16 @@
-#Klimaatlas Ghana Snakemake configuration file
+# KAPy Workflow
+#
+# This snakemake workflow handles the downloading and processing of data for use
+# in Klimaatlas-like products. 
+#
+# The pipeline can be run using
+#    > snakemake --cores 1 <target>
+#
+# A list of available target rules can be obatined using
+#   > snakemake -S
+#
+# Workflow configuration options are set in config.yaml
+#
 
 import KAPy
 import os
@@ -31,6 +43,9 @@ rule download_file:
 rule download_status:
     output:
         os.path.join(KAPy.getFullPath(config,'notebooks'),'Download_status.nb.html')
+    input: #Any changes in the two directories will trigger a rebuild
+        KAPy.getFullPath(config,'URLs'),
+        KAPy.getFullPath(config,'modelInputs')
     script:
         "./notebooks/Download_status.Rmd"
 

@@ -69,13 +69,23 @@ status %>%
   showSum()
 ```
  
-# By variable and time resolution.
+# By variable and time resolution
  
 ```{r}
 status %>% 
   group_by(VariableName,Frequency) %>% 
   showSum()  
 ```
+
+# By scenario
+
+```{r}
+status %>% 
+  group_by(VariableName,CMIP5ExperimentName) %>% 
+  showSum()
+
+```
+
  
 # By server
  
