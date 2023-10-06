@@ -95,7 +95,7 @@ for thisInd in config['indicators'].values():
             os.path.join(KAPy.getFullPath(config,'xarrays'),
                                    f'{thisInd["variables"]}_'+'{stem}.pkl')
         run:
-            KAPy.calculateStatistics(indicator=thisInd,
+            KAPy.calculateIndicators(indicator=thisInd,
                                                 config=config,
                                                 outPath=output,
                                                 datPkl=input)

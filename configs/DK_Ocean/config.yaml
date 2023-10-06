@@ -11,11 +11,17 @@ domain:
     ymax: 59
     dy: 0.1
 indicators:
-    101:
-        id: 101
+    101y:
+        id: '101y'
         name: 'Annual mean SST (C)'
         variables: 'tas'
         season: 'Annual'   #Use key name for seasons, as defined in the "seasons" key
         statistic: 'mean'
-time_averaging:
-    method: "year"
+        time_averaging: "year" #Choose between periods, year, month
+    101p:
+        id: '101p'
+        name: 'Annual mean SST (C)'
+        variables: 'tas'
+        season: 'Annual'   #Use key name for seasons, as defined in the "seasons" key
+        statistic: 'mean'
+        time_averaging: "periods" #Choose between periods, year, month
