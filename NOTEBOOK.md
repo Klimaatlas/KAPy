@@ -1,10 +1,12 @@
 TODO:
-* Add explicit declaration of xarray groupings
 * Creation of xarray object should incorporate spatial domain
 * Bug report (?) about seg fault in regrdding?
 * Handle indicators requiring multiple variables
 * Add documentation
 * Streamline makefile linkages
+
+# 2023.10.06
+Moved time_averaging into an indicator variable, allowing multiple types in the same project. Rejigged creation of datasets to be controlled by snakemake.
 
 # 2023.10.05
 Added multiple time-averaging schemes. Testing on ocean data. Looking good

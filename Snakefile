@@ -38,13 +38,13 @@ if config['download']:
 
     rule download:
         input: 
-            expand(os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}'),
+            expand(os.path.join(KAPy.getFullPath(config,'inputs'),'{fname}'),
                    fname=[re.sub('.url','',x) 
                           for x in os.listdir(KAPy.getFullPath(config,'URLs'))])
 
     rule download_file:
         output:
-            os.path.join(KAPy.getFullPath(config,'modelInputs'),'{fname}.nc')
+            os.path.join(KAPy.getFullPath(config,'inputs'),'{fname}.nc')
         input: 
             #Only download if a new URL has been added - ignore updates
             ancient(os.path.join(KAPy.getFullPath(config,'URLs'),'{fname}.nc.url'))
@@ -56,17 +56,33 @@ if config['download']:
             os.path.join(KAPy.getFullPath(config,'notebooks'),'Download_status.nb.html')
         input: #Any changes in the two directories will trigger a rebuild
             KAPy.getFullPath(config,'URLs'),
-            KAPy.getFullPath(config,'modelInputs')
+            KAPy.getFullPath(config,'inputs')
         script:
             "./notebooks/Download_status.Rmd"
 
-# Collate---------------------------------
-# Compile the data available into xarray datasets for further processing
-# TODO: Establish dependencies here
-rule xarrays:
-    run:
-        KAPy.makeDatasets(config)
+# Collate datassets---------------------------------
+# Compile the data available into xarray dataset objects for further processing
+# Get the full list of model inputs first
+allInputs=glob.glob(os.path.join(KAPy.getFullPath(config,'inputs'),"*.nc"))
 
+#Plural rule
+rule datasets:
+    input:
+        [os.path.join(KAPy.getFullPath(config,'datasets'),f) \
+                     for f in KAPy.inferDatasets(config,allInputs)]
+
+#Singular rule
+#Requires a bit of a hack with a lamba function to be able to get the output stem specified
+rule dataset_single:
+    output:
+        os.path.join(KAPy.getFullPath(config,'datasets'),"{stem}.nc.pkl")
+    input:
+        lambda wildcards: KAPy.deduceDatasetInputs(config,
+                                                   wildcards.stem+".nc.pkl",
+                                                   allInputs)
+    run:
+        KAPy.buildDataset(config,input,output)
+    
         
 # Bias correction -------------------
 # TODO
@@ -92,7 +108,7 @@ for thisInd in config['indicators'].values():
             os.path.join(KAPy.getFullPath(config,'indicators'),
                          f'i{thisInd["id"]}_'+'{stem}.nc')
         input:
-            os.path.join(KAPy.getFullPath(config,'xarrays'),
+            os.path.join(KAPy.getFullPath(config,'datasets'),
                                    f'{thisInd["variables"]}_'+'{stem}.pkl')
         run:
             KAPy.calculateIndicators(indicator=thisInd,
@@ -106,7 +122,7 @@ for thisInd in config['indicators'].values():
                             'i{id}_{stem}.nc'),
                id=thisInd['id'],
                stem=[re.sub('^.+?_|.pkl','',x) \
-                     for x in os.listdir(KAPy.getFullPath(config,'xarrays'))])
+                     for x in os.listdir(KAPy.getFullPath(config,'datasets'))])
 
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
@@ -149,3 +165,4 @@ for sc in scenarioList:
                                        f'i{ind}_*_{sc}_*.nc'))
             run:
                 KAPy.generateEnsstats(config,input,output)
+
