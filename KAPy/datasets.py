@@ -75,10 +75,15 @@ def buildDataset(config,inFiles,outFile):
                 concat_dim='time')
     ds=ds.sortby('time')
     
+    #Reapply domain criteria here
+    dsSel = ds.sel(lat=slice(config['domain']['ymin'], 
+                      config['domain']['ymax']), 
+                   lon=slice(config['domain']['xmin'], 
+                      config['domain']['xmax']))
+
     #Write the dataset object to disk, as a pickle
     with open(outFile[0],'wb') as f:
         pickle.dump(ds,f,protocol=-1)
-    
 
 
 def makeDatasets(config):
