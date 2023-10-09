@@ -16,7 +16,7 @@ import os
 import tqdm
 from pydap.client import open_url
 from pydap.cas.esgf import setup_session
-from pyesgf.search import SearchConnection
+
 
 #config=KAPy.configs.loadConfig()  
 def searchESGF(config):
@@ -25,8 +25,11 @@ def searchESGF(config):
                                    useDefaults=False)
     
     #Setup search connection
-    conn = SearchConnection(ESGFcfg['indexNode'],
-                            distrib=True)
+    #Pyesgf seems to turn on logging by default, which is really irritating.
+    #Only import when needed
+    import pyesgf.search
+    conn = pyesgf.search.SearchConnection(ESGFcfg['indexNode'],
+                                          distrib=True)
 
     #Loop over variable definitions
     for varname, var in ESGFcfg['variables'].items():

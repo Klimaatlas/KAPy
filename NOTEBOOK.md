@@ -5,8 +5,11 @@ TODO:
 * Add documentation
 * Streamline makefile linkages
 
+# 2023.10.09
+Solved problem with excessive error messages - they were originating in pyesgf.search. Limited use of this module to right there were it is needed
+
 # 2023.10.06
-Moved time_averaging into an indicator variable, allowing multiple types in the same project. Rejigged creation of datasets to be controlled by snakemake.
+Moved time_averaging into an indicator variable, allowing multiple types in the same project. Rejigged creation of datasets to be controlled by snakemake. This part appears to be working well now. Hit a bottleneck though around defining indicator rules via a loop. There seems to be something with passing by reference in python vs passing by copy. We may need a complete rethink of how we define the rules. Asked question on stackoverflow.
 
 # 2023.10.05
 Added multiple time-averaging schemes. Testing on ocean data. Looking good
