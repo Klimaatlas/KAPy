@@ -6,6 +6,10 @@ TODO:
 * Add documentation
 * Streamline makefile linkages
 
+# 2023.10.10
+Solved problem with programmatic definition of multiple rules - the key was to have them sitting inside a function, thereby forcing the evaluation. See this SO for the solution:
+https://stackoverflow.com/questions/77244937/how-can-i-use-a-for-loop-to-programmatically-generate-snakemake-rules
+
 # 2023.10.09
 Solved problem with excessive error messages - they were originating in pyesgf.search. Limited use of this module to right there were it is needed
 

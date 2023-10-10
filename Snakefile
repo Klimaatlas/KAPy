@@ -60,7 +60,7 @@ if config['download']:
         script:
             "./notebooks/Download_status.Rmd"
 
-# Collate datassets---------------------------------
+# Collate datasets---------------------------------
 # Compile the data available into xarray dataset objects for further processing
 # Get the full list of model inputs first
 allInputs=glob.glob(os.path.join(KAPy.getFullPath(config,'inputs'),"*.nc"))
@@ -72,7 +72,8 @@ rule datasets:
                      for f in KAPy.inferDatasets(config,allInputs)]
 
 #Singular rule
-#Requires a bit of a hack with a lamba function to be able to get the output stem specified
+#Requires a bit of a hack with a lamba function to be able to both use a input function
+#and feed additional arguments to the function
 rule dataset_single:
     output:
         os.path.join(KAPy.getFullPath(config,'datasets'),"{stem}.nc.pkl")
@@ -100,30 +101,35 @@ rule dataset_single:
 # Create a loop over the indicators that defines the singular and plural rules
 # In particular,start with the assumption of univariate indicators - we can always extend it later. The trick will be to loop over the indicators indvidiually, rather than trying to 
 #do it all in one hit.
+allDatasets=glob.glob(os.path.join(KAPy.getFullPath(config,'datasets'),"*.nc.pkl"))
 
-for thisInd in config['indicators'].values():
+def ind_single_rule(thisInd):
     rule:  #Indicator singular rule
         name: f'i{thisInd["id"]}_file'
         output:
             os.path.join(KAPy.getFullPath(config,'indicators'),
-                         f'i{thisInd["id"]}_'+'{stem}.nc')
+                         f'i{thisInd["id"]}_'+'{stem}')
         input:
             os.path.join(KAPy.getFullPath(config,'datasets'),
                                    f'{thisInd["variables"]}_'+'{stem}.pkl')
         run:
-            KAPy.calculateIndicators(indicator=thisInd,
-                                                config=config,
-                                                outPath=output,
-                                                datPkl=input)
+            KAPy.calculateIndicators(thisInd=thisInd,
+                                     config=config,
+                                     outPath=output,
+                                     datPkl=input)
+def ind_plural_rule(thisInd):
     rule:  #Indicator plural rule
         name: f'i{thisInd["id"]}'
         input:
             expand(os.path.join(KAPy.getFullPath(config,'indicators'),
                             'i{id}_{stem}.nc'),
                id=thisInd['id'],
-               stem=[re.sub('^.+?_|.pkl','',x) \
-                     for x in os.listdir(KAPy.getFullPath(config,'datasets'))])
-
+               stem=[re.sub('^.+?_|.nc.pkl','',os.path.basename(x)) for x in allDatasets])
+            
+for thisInd in config['indicators'].values():
+    ind_single_rule(thisInd)
+    ind_plural_rule(thisInd)
+            
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
 # This is not always the case, and so we add a regridding step prior to ensemble calculation
@@ -144,25 +150,27 @@ rule regrid_file:
 
 # Enssemble Statistics ---------------------------------
 # Now we can combine them
-scenarioList=[sc['shortname'] for sc in config['scenarios'].values()]
+datasetList=[ds['shortname'] for ds in config['datasets'].values()]
 indList=[ind['id'] for ind in config['indicators'].values()]
 rule ensstats:
     input:
         expand(os.path.join(KAPy.getFullPath(config,'ensstats'),
-                            'i{ind}_ensstat_{scenario}.nc'),
+                            'i{ind}_ensstat_{dataset}.nc'),
                ind=indList,
-               scenario=scenarioList)
+               dataset=datasetList)
 
-for sc in scenarioList:
-    for ind in indList:
+def enstat_rule(ind,ds):
         rule:
-            name: f'ensstat_i{ind}_{sc}'
+            name: f'ensstat_i{ind}_{ds}'
             output:
                 os.path.join(KAPy.getFullPath(config,'ensstats'),
-                         f'i{ind}_ensstat_{sc}.nc')
+                         f'i{ind}_ensstat_{ds}.nc')
             input:
                 glob.glob(os.path.join(KAPy.getFullPath(config,'indicators'),
-                                       f'i{ind}_*_{sc}_*.nc'))
+                                       f'i{ind}_*_{ds}_*.nc'))
             run:
                 KAPy.generateEnsstats(config,input,output)
 
+for thisDS in datasetList:
+    for thisInd in indList:
+        enstat_rule(thisInd,thisDS)
