@@ -1,8 +1,19 @@
 #Denmark FWI configuration file
 
 dirs:
-    modelInputs: '/dmidata/projects/klimaatlas/iri/no_missing_dates'
+    inputs: '/dmidata/projects/klimaatlas/iri/no_missing_dates'
     outputDir: 'DKHav'
+datasets:  #A combination of CMIP experiments that are basis for analysis
+    rcp45:
+        id: 45
+        shortname: 'rcp45'
+        description: 'Medium emissions scenario (RCP4.5)'
+        experiments: ['his','rcp45']
+    rcp85:
+        id: 85
+        shortname: 'rcp85'
+        description: 'High emissions scenario (RCP8.5)'
+        experiments: ['his','rcp85']
 domain:
     xmin: 7
     xmax: 16
@@ -11,13 +22,6 @@ domain:
     ymax: 59
     dy: 0.1
 indicators:
-    101y:
-        id: '101y'
-        name: 'Annual mean SST (C)'
-        variables: 'tas'
-        season: 'Annual'   #Use key name for seasons, as defined in the "seasons" key
-        statistic: 'mean'
-        time_averaging: "year" #Choose between periods, year, month
     101p:
         id: '101p'
         name: 'Annual mean SST (C)'
@@ -25,3 +29,27 @@ indicators:
         season: 'Annual'   #Use key name for seasons, as defined in the "seasons" key
         statistic: 'mean'
         time_averaging: "periods" #Choose between periods, year, month
+    101y:
+        id: '101y'
+        name: 'Annual mean SST (C)'
+        variables: 'tas'
+        season: 'Annual'   #Use key name for seasons, as defined in the "seasons" key
+        statistic: 'mean'
+        time_averaging: "year" #Choose between periods, year, month
+periods:  #Define periods here
+    period1:
+        id: 1
+        name: 'Historical (1981-2010)'
+        start: 1981
+        end: 2010
+    period3:
+        id: 3
+        name: 'Mid-century (2041-2070)'
+        start: 2041
+        end: 2070
+    period4:
+        id: 4
+        name: 'End-of-century (2071-2100)'
+        start: 2071
+        end: 2100
+

@@ -1,5 +1,6 @@
 TODO:
 * Creation of xarray object should incorporate spatial domain
+* Throw an error if an experiment is not found in the dataset specification
 * Bug report (?) about seg fault in regrdding?
 * Handle indicators requiring multiple variables
 * Add documentation
