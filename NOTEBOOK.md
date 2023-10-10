@@ -1,14 +1,16 @@
 TODO:
-* Creation of xarray object should incorporate spatial domain
+* Revisit regridding - note bug report (?) about seg fault in regrdding? Switch to CDO?
+* Add spatial averaging extractor
+* Creation of xarray object should incorporate spatial domain - but how to specify
 * Throw an error if an experiment is not found in the dataset specification
-* Bug report (?) about seg fault in regrdding?
 * Handle indicators requiring multiple variables
 * Add documentation
-* Streamline makefile linkages
+* Streamline makefile linkages. Add "indicators" target
 
 # 2023.10.10
 Solved problem with programmatic definition of multiple rules - the key was to have them sitting inside a function, thereby forcing the evaluation. See this SO for the solution:
 https://stackoverflow.com/questions/77244937/how-can-i-use-a-for-loop-to-programmatically-generate-snakemake-rules
+Addition of an indicator notebook. At the moment, it's very tailored to DKHav, but once we get regridding and area averaging working, it will be much easier to make it generic
 
 # 2023.10.09
 Solved problem with excessive error messages - they were originating in pyesgf.search. Limited use of this module to right there were it is needed

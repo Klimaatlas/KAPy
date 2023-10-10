@@ -174,3 +174,14 @@ def enstat_rule(ind,ds):
 for thisDS in datasetList:
     for thisInd in indList:
         enstat_rule(thisInd,thisDS)
+
+# Outputs ---------------------------------
+# Notebooks, amongst other things
+rule notebooks:
+    output:
+        os.path.join(KAPy.getFullPath(config,'notebooks'),'Indicator_notebook.nb.html')
+    input: #Any changes in this directory will trigger a rebuild
+        directory(KAPy.getFullPath(config,'ensstats'))
+    script:
+        "./notebooks/Indicator_plots.Rmd"
+        
