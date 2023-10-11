@@ -12,6 +12,14 @@ KAPy is based on a small set of fundamental technologies that form the core of t
 * esgf-pyclient - for searching ESGF repositories. https://esgf-pyclient.readthedocs.io/
 * pydap for interfaceing with ESGF via the OpenDAP protocol
 
+### Setting up an environment
+
+TODO
+
+### Configuring KAPy
+
+TODO
+
 ## Workflow
 
 KAPy is structured around a central package of tools, collated together as a Python package. Each of these tools can then be joined together to build up a pipeline for a specific situation. 
@@ -21,7 +29,19 @@ There are two basic configuration files required
 * config.yaml - provides input options for the individual configurations
 
 These files are best stored in ./configs/<sub-directory>/ (under version control) and then softlinked into the root directory.
+    
+## Usage
 
+A list of targets available to build in the snakefile can be obtained with
+```
+    snakemake -l
+```
+
+An individual target can be built like so
+```
+    snakemake downloads --cores 1 -k
+``` 
+where the `--cores 1` argument will build the taget with a single processor, and `-k` indicates that snakemake should "keep-going" if it encounters problems. A full list of command like arguments to snakemake can be found in the documentation, https://snakemake.readthedocs.io/en/stable/executing/cli.html
 
 ## Why KAPy?
 
