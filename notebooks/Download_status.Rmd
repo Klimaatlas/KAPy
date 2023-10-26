@@ -4,6 +4,8 @@ date: " `r Sys.time() `"
 output: 
   html_notebook:
     code_folding: hide
+    toc: true
+    toc_float: true
 editor_options: 
   chunk_output_type: inline
 ---
@@ -95,5 +97,22 @@ status %>%
 
 ```
  
+# By RCM 
+ 
+```{r}
+status %>% 
+  group_by(RCMModelName) %>% 
+  showSum()
+
+```
+ 
+# By GCM 
+ 
+```{r}
+status %>% 
+  group_by(GCMModelName) %>% 
+  showSum()
+
+```
  
 
