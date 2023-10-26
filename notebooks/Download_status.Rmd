@@ -32,7 +32,7 @@ URLs <-
   mutate(ncfile=gsub(".url","",basename(path)),
          URL=map_chr(path,readLines,warn=FALSE))
 downloaded <-
-  tibble(path=dir(here(cfg$dirs$outputDir,cfg$dirs$modelInputs),pattern=".nc$",full.names = TRUE)) %>% 
+  tibble(path=dir(here(cfg$dirs$outputDir,cfg$dirs$inputs),pattern=".nc$",full.names = TRUE)) %>% 
   mutate(fname=basename(path))
 
 #Merge and process filelists
@@ -77,6 +77,15 @@ status %>%
   showSum()  
 ```
 
+
+# By server
+ 
+```{r}
+status %>% 
+  group_by(server) %>% 
+  showSum()
+```
+
 # By scenario
 
 ```{r}
@@ -84,15 +93,6 @@ status %>%
   group_by(VariableName,CMIP5ExperimentName) %>% 
   showSum()
 
-```
-
- 
-# By server
- 
-```{r}
-status %>% 
-  group_by(server) %>% 
-  showSum()
 ```
  
  
