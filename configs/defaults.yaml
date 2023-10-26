@@ -7,6 +7,7 @@
 
 dirs:
     outputDir: 'outputs'
+    search: '0.search'
     URLs: '1.URLs'
     inputs: '2.inputs'
     datasets: '3.datasets'

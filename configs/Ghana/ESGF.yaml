@@ -11,3 +11,9 @@ variables:
     monthly.pr:
         variable: 'pr'
         time_frequency: 'mon'
+    daily.tasmax:
+        variable: 'tasmax'
+        time_frequency: 'day'
+    daily.tasmin:
+        variable: 'tasmin'
+        time_frequency: 'day'

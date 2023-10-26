@@ -6,6 +6,10 @@ TODO:
 * Handle indicators requiring multiple variables
 * Add documentation
 * Streamline makefile linkages. Add "indicators" target
+* Add zarr / NC4 outputs by default
+
+# 2023.10.11
+Split searching and generating URLs into separate processes, allowing for parallelisation and fine-grained control. Refactor getFullPaths to buildPath, allowing for more arguments to be added
 
 # 2023.10.10
 Solved problem with programmatic definition of multiple rules - the key was to have them sitting inside a function, thereby forcing the evaluation. See this SO for the solution:

@@ -9,7 +9,7 @@ import glob
 import re
 
 #config=KAPy.loadConfig()  
-#allInputs=glob.glob(os.path.join(KAPy.getFullPath(config,'inputs'),"*.nc"))
+#allInputs=glob.glob(KAPy.buildPath(config,'inputs',"*.nc"))
 
 def inferDatasets(config,allInputs):
     '''

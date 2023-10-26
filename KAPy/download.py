@@ -16,9 +16,10 @@ import os
 import tqdm
 from pydap.client import open_url
 from pydap.cas.esgf import setup_session
+import pickle
 
 
-#config=KAPy.configs.loadConfig()  
+#config=KAPy.loadConfig()  
 def searchESGF(config):
     #Load ESGF configuration
     ESGFcfg=KAPy.loadConfig(config['download']['ESGF'],
@@ -38,17 +39,28 @@ def searchESGF(config):
                                time_frequency=var['time_frequency'],
                                facets='*')
         print('Found', ctx.hit_count ,'hits for', varname,'...')
+        
+        #Write the dataset object to disk, as a pickle
+        with open(KAPy.buildPath(config,'search',varname+'.pkl'),'wb') as f:
+            pickle.dump(ctx,f,protocol=-1)
 
+def getESGFurls(config,thisPkl):
+       #Read pickle
+        with open(thisPkl[0],'rb') as f:
+            ctx=pickle.load(f)
+
+        #Pyesgf seems to turn on logging by default, which is really irritating.
+        #Only import when needed
+        import pyesgf.search
+            
         #Write each URL out to a separate file
         for ds in tqdm.tqdm(ctx.search()):
             files = ds.file_context().search()
             for f in files:
                 fname=os.path.basename(f.download_url)
-                with open(os.path.join(KAPy.getFullPath(config,'URLs'),
-                                       fname+'.url'),
+                with open(KAPy.buildPath(config,'URLs',fname+'.url'),
                           'w') as URLfile:
                     URLfile.write(f.opendap_url)
-                    
                     
 
 def downloadESGF(config,urlFile,ncFile):
