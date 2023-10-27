@@ -69,9 +69,7 @@ KAPy is in active development and welcomes all contributions, both large and sma
 
 ## How to cite KAPy
 
-If you wish to cite xclim in a research publication, we kindly ask that you refer to our article published in The Journal of Open Source Software (JOSS): https://doi.org/10.21105/joss.05415
-
-To cite a specific version of xclim, the bibliographical reference information can be found through Zenodo
+If you wish to cite KAPy in your work, please cite this repository (https://github.com/Klimaatlas/KAPy/) and the push hash. A publication describing KAPy will be prepared in the future.
 
 ## License
 
