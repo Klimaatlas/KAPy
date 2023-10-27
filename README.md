@@ -43,12 +43,6 @@ An individual target can be built like so
 ``` 
 where the `--cores 1` argument will build the target with a single processor, and `-k` indicates that snakemake should "keep-going" if it encounters problems. Individual files can also be specified as targets. A full list of command like arguments to snakemake can be found in the documentation, https://snakemake.readthedocs.io/en/stable/executing/cli.html
 
-## Documentation
-
-Documentation for KAPy is contained in the `docs` folder. 
-* [Background.md](./docs/Background.md)! - Background knowledge useful for getting started with KAPy.
-* [Configuration.md](./docs/Configuration.md) - Details the configuration system and options available in KAPy.
-
 ## Workflow
 
 KAPy is structured around a central package of tools, collated together as a Python package. Each of these tools can then be joined together to build up a pipeline for a specific situation. 
@@ -59,6 +53,37 @@ There are two basic configuration files required
 * config.yaml - provides input options for the individual configurations
 
 These files are best stored in ./configs/<sub-directory>/ (under version control) and then softlinked into the root directory.
+
+## Documentation
+
+Documentation for KAPy is contained in the `docs` folder. 
+* [Background.md](./docs/Background.md) - Background knowledge useful for getting started with KAPy.
+* [Configuration.md](./docs/Configuration.md) - Details the configuration system and options available in KAPy.
+
+## Contributing
+
+KAPy is in active development and welcomes all contributions, both large and small.  is being used in production by climate services specialists around the world.
+    
+* If you have a suggestion for a new feature or want to report a bug, please file an issue via the issue tracker.
+* If you would like to contribute code or documentation, check out the [Contributing Guidelines](./docs/CONTRIBUTING.md) before you begin!
+
+## How to cite KAPy
+
+If you wish to cite xclim in a research publication, we kindly ask that you refer to our article published in The Journal of Open Source Software (JOSS): https://doi.org/10.21105/joss.05415
+
+To cite a specific version of xclim, the bibliographical reference information can be found through Zenodo
+
+## License
+
+KAPy is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License. A copy of this license is provided in the `docs` folder ([LICENSE](./docs/LICENSE)).
+    
+## Code of Conduct
+
+A code of conduct for the KAPy community is found in [`docs/CODE_OF_CONDUCT.md`](./docs/CODE_OF_CONDUCT.md). In short: be kind.
+    
+## Credits
+    
+The development of KAPy is financed via a grant from the Danish Central Government to  the Danish Meterological Institute.    
     
 ## Why KAPy?
 
