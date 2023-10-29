@@ -43,21 +43,13 @@ An individual target can be built like so
 ``` 
 where the `--cores 1` argument will build the target with a single processor, and `-k` indicates that snakemake should "keep-going" if it encounters problems. Individual files can also be specified as targets. A full list of command like arguments to snakemake can be found in the documentation, https://snakemake.readthedocs.io/en/stable/executing/cli.html
 
-## Workflow
-
-KAPy is structured around a central package of tools, collated together as a Python package. Each of these tools can then be joined together to build up a pipeline for a specific situation. 
-
-There are two basic configuration files required
-
-* Snakefile - configures the snakemake workflow system
-* config.yaml - provides input options for the individual configurations
-
-These files are best stored in ./configs/<sub-directory>/ (under version control) and then softlinked into the root directory.
+Note that the list of tagets is configuration dependent and can vary from case to case. A detailed description of the targets available in the KAPy project can be found in the [KAPY_concepts.md](./docs/KAPy_concepts.md) documentation.
 
 ## Documentation
 
 Documentation for KAPy is contained in the `./docs` folder. 
 * [Background.md](./docs/Background.md) - Background knowledge useful for getting started with KAPy.
+* [KAPY_concepts.md](./docs/KAPy_concepts.md) - Explains key concepts and definitions used in KAPy.
 * [Configuration.md](./docs/Configuration.md) - Details the configuration system and options available in KAPy.
 
 ## Contributing

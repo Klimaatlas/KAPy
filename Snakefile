@@ -109,7 +109,7 @@ rule dataset_single:
 # Bias correction -------------------
 # TODO
 
-# Derived indicators -------------------------
+# Derived variables -------------------------
 #A useful concept is also the idea of "derived variables", that we might need to calculate as
 #intermediate steps in the processing chain, before we calculate indicators from them.
 #Good examples include FWI and PoteEvap
