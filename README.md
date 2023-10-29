@@ -56,7 +56,7 @@ These files are best stored in ./configs/<sub-directory>/ (under version control
 
 ## Documentation
 
-Documentation for KAPy is contained in the `docs` folder. 
+Documentation for KAPy is contained in the `./docs` folder. 
 * [Background.md](./docs/Background.md) - Background knowledge useful for getting started with KAPy.
 * [Configuration.md](./docs/Configuration.md) - Details the configuration system and options available in KAPy.
 
@@ -65,7 +65,7 @@ Documentation for KAPy is contained in the `docs` folder.
 KAPy is in active development and welcomes all contributions, both large and small.  is being used in production by climate services specialists around the world.
     
 * If you have a suggestion for a new feature or want to report a bug, please file an issue via the issue tracker.
-* If you would like to contribute code or documentation, check out the [Contributing Guidelines](./docs/CONTRIBUTING.md) before you begin!
+* If you would like to contribute code or documentation, check out the [Contributing Guidelines](./docs/Contributing.md) before you begin!
 
 ## How to cite KAPy
 
@@ -77,11 +77,11 @@ KAPy is free software: you can redistribute it and/or modify it under the terms 
     
 ## Code of Conduct
 
-A code of conduct for the KAPy community is found in [`docs/CODE_OF_CONDUCT.md`](./docs/CODE_OF_CONDUCT.md). In short: be kind.
+A code of conduct for the KAPy community is found in the [Code of Conduct](./docs/Code_of_conduct.md). In short: be kind.
     
 ## Credits
     
-The development of KAPy is financed via a grant from the Danish Central Government to  the Danish Meterological Institute.    
+The development of KAPy is financed via a grant from the Danish Central Government to the Danish Meterological Institute.    
     
 ## Why KAPy?
 
