@@ -30,7 +30,7 @@ The KAPy workflow involves a set of discrete steps to process climate data, cove
 
 * Collate datasets
   * Individual files in our local database are grouped into Xarray "dataset" objects that form the basis of all subsequent indicator calculations
- * `datasets` builds all datasets.
+  * `datasets` builds all datasets.
 
 * Derived variables
   * Production of some derived variables (e.g. FWI) will be  supported in KAPy via the xclim toolbox. However, this feature is not currently implemented. 
@@ -54,6 +54,5 @@ The KAPy workflow involves a set of discrete steps to process climate data, cove
 
 * Outputs
   * Produce output files
-  * `notebooks` produces an overview noteProduce output files
   * `notebooks` produces an overview notebook of all indicators
 
