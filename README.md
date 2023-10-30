@@ -1,6 +1,6 @@
 # KAPy - *Klimaatlases* in Python
 
-KAPy is to create an open-source and flexible framework that can be used to generate climate indicators anywhere in the world, working from both CMIP and CORDEX datasets. KAPy is a ground-up python-based rethink of the pipeline originally developed to power the Danish Meterological Institute's *Klimaatlas* climate service.
+KAPy is an open-source and flexible framework that can be used to generate climate indicators anywhere in the world, working from both CMIP and CORDEX datasets. KAPy is a ground-up python-based rethink of the pipeline originally developed to power the Danish Meterological Institute's *Klimaatlas* climate service.
 
 ## Getting started
 
@@ -10,10 +10,12 @@ Here we describe the basic steps to install and configure KAPy. Start by cloning
 git clone git@github.com:Klimaatlas/KAPy.git
 ```
 
+This command may fail the first time that you try it. In particular, you need to make sure that 1) you have read access writes to the KAPy repository and 2) that your Github is setup to authenticate using public key / private key authentication - see the GitHub documentation for details of how to do this.
+
 Next, we need to setup the Python environment, containing the packages used by KAPy. The list of packages can be found in the file `./configs/eny.yaml`. Depending on your favoured python package manager, the exact way that you use this list to create an environment may vary - this example is using Conda:
 
 ```
-conda create --file /configs/eny.yaml
+conda env create -f ./configs/env.yaml
 ```
 
 The resulting environment (called `KAPy`) can then be activated and used:
