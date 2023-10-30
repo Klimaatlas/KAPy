@@ -1,7 +1,5 @@
 #Ghana configuration file
 
-dirs:
-    outputDir: 'KAGh'
 domain:
     xmin: -4
     xmax: 2
