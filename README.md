@@ -24,13 +24,21 @@ The resulting environment (called `KAPy`) can then be activated and used:
 conda activate KAPy
 ```
 
-Finally, a configuration file, `config.yaml`, needs to be availably in the project base directory. Configuration files are stored in the folder `./configs` under version control and are best soft-linked into place - this allows for a rapid reconfiguration of the engine. e.g.
+A configuration file, `config.yaml`, needs to be availably in the project base directory. Configuration files are stored in the folder `./configs` under version control and are best soft-linked into place - this allows for a rapid reconfiguration of the engine. e.g.
 
 ```
 ln -sf configs/Ghana/config.yaml 
 ```
 
 Note that `config.yaml` files in the project directory are ignored by git, to avoid potential conflicts between users with different configurations.
+
+Finally, snakemake can be used to generate the necessary output directories:
+
+```
+snakemake setup --cores 1
+```
+
+And so you're ready to go.
 
 ## Usage
 
