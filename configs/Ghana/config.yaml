@@ -26,3 +26,17 @@ indicators:
         season: 'Summer'   #Use key name for seasons. Use 'All' for all defined seasons.
         statistic: 'mean'
         time_averaging: "periods" #Choose between periods, year, month
+    103:
+        id: 103
+        name: 'Annual mean temperature (C)'
+        variables: 'tas'
+        season: 'Annual'   #Use key name for seasons. Use 'All' for all defined seasons.
+        statistic: 'mean'
+        time_averaging: "year" #Choose between periods, year, month
+    104:
+        id: 104
+        name: 'Annual mean precipitation (mm / day)'
+        variables: 'pr'
+        season: 'Annual'   #Use key name for seasons. Use 'All' for all defined seasons.
+        statistic: 'mean'
+        time_averaging: "year" #Choose between periods, year, month
