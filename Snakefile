@@ -191,6 +191,23 @@ def enstat_rule(ind,ds):
 for thisDS in datasetList:
     for thisInd in indList:
         enstat_rule(thisInd,thisDS)
+        
+
+#Areal statistics------------------
+rule arealstats:
+    input:
+        expand(KAPy.buildPath(config,'arealstats','i{ind}_{dataset}.csv'),
+               ind=indList,
+               dataset=datasetList)
+
+rule arealstats_singular:
+    output:
+        KAPy.buildPath(config,'arealstats','i{ind}_{ds}.csv')
+    input:
+        KAPy.buildPath(config,'ensstats','i{ind}_ensstat_{ds}.nc')
+    run:
+        KAPy.generateArealstats(config,input,output)
+    
 
 # Outputs ---------------------------------
 # Notebooks, amongst other things

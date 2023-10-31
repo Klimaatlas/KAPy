@@ -8,7 +8,7 @@ import sys
 #config=KAPy.loadConfig()
 #indicatorKey='101y'
 #datPkl=['./KAGh/3.datasets/tas_AFR-22_MOHC-HadGEM2-ES_rcp26_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_mon.nc.pkl']
-datPkl=['./DKHav/3.datasets/tas_nsbs_EUR-11_ICHEC-EC-EARTH_rcp45_r12i1p1_SMHI-RCA4_v4_day.nc.pkl']
+#datPkl=['./DKHav/3.datasets/tas_nsbs_EUR-11_ICHEC-EC-EARTH_rcp45_r12i1p1_SMHI-RCA4_v4_day.nc.pkl']
 
 def calculateIndicators(thisInd,config,outPath,datPkl):
     
@@ -61,7 +61,7 @@ def calculateIndicators(thisInd,config,outPath,datPkl):
         sys.exit("Unknown time_averaging method, '" + config['time_averaging']['method'] + "'")
 
     #Polish final product and write
-    dout=dout.rename({thisInd['variables']:f"i{thisInd['id']}"})  #Fix this up somehow
+    dout=dout.rename({thisInd['variables']:"indicator"})  #Fix this up somehow
     dout.to_netcdf(outPath[0])
 
 

@@ -14,13 +14,14 @@ dirs:
     indicators: '4.indicators'
     gridded: '5.commmon_grid'
     ensstats: '6.ensstats'
+    arealstats: '7.areal_statistics'
     notebooks: 'notebooks'
 datasets:  #A combination of CMIP experiments that are basis for analysis
-#    rcp26:
-#        id: 26
-#        shortname: 'rcp26'
-#        description: 'Low emissions scenario (RCP2.6)'
-#        experiments: ['historical','rcp26']
+    rcp26:
+        id: 26
+        shortname: 'rcp26'
+        description: 'Low emissions scenario (RCP2.6)'
+        experiments: ['historical','rcp26']
     rcp45:
         id: 45
         shortname: 'rcp45'
