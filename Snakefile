@@ -215,7 +215,8 @@ rule notebooks:
     output:
         KAPy.buildPath(config,'notebooks','Indicator_notebook.nb.html')
     input: #Any changes in this directory will trigger a rebuild
-        KAPy.buildPath(config,'ensstats')
+        KAPy.buildPath(config,'ensstats'),
+        KAPy.buildPath(config,'arealstats'),
     script:
         "./notebooks/Indicator_plots.Rmd"
         

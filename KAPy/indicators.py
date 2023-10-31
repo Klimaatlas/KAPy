@@ -20,8 +20,8 @@ def calculateIndicators(thisInd,config,outPath,datPkl):
     theseMonths=config['seasons'][thisInd['season']]['months']
     datSeason=thisDat.sel(time=np.isin(thisDat.time.dt.month,theseMonths))
         
-    #Time averaing over periods
-    if thisInd['time_averaging'].lower()=='periods':
+    #Time binning over periods
+    if thisInd['time_binning'].lower()=='periods':
         slices=[]
         periodIds=[]
         for thisPeriod in config['periods'].values():
@@ -41,12 +41,12 @@ def calculateIndicators(thisInd,config,outPath,datPkl):
         dout=xr.concat(slices,dim='period')
         dout=dout.assign_coords(period=periodIds)
 
-    #Time averaging by defined units
-    elif thisInd['time_averaging'].lower() in ['year','month']:
+    #Time binning by defined units
+    elif thisInd['time_binning'].lower() in ['year','month']:
         #Then group by time
-        if thisInd['time_averaging'].lower()=="year":
+        if thisInd['time_binning'].lower()=="year":
             datGroupped=datSeason.resample(time="1Y",label="right")
-        elif thisInd['time_averaging'].lower()=="month":
+        elif thisInd['time_binning'].lower()=="month":
             datGroupped=datSeason.resample(time="1M",label="right")
         else:
             sys.exit("Shouldn't be here")
@@ -58,7 +58,7 @@ def calculateIndicators(thisInd,config,outPath,datPkl):
             sys.exit('Unknown indicator statistic, "' + thisInd['statistic'] +'"')
 
     else:
-        sys.exit("Unknown time_averaging method, '" + config['time_averaging']['method'] + "'")
+        sys.exit("Unknown time_binning method, '" + thisInd['time_binning']+ "'")
 
     #Polish final product and write
     dout=dout.rename({thisInd['variables']:"indicator"})  #Fix this up somehow
