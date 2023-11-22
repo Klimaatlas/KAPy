@@ -125,6 +125,8 @@ rule dataset_single:
 # In particular,start with the assumption of univariate indicators - we can always extend it later. The trick will be to loop over the indicators indvidiually, rather than trying to 
 #do it all in one hit.
 allDatasets=glob.glob(KAPy.buildPath(config,'datasets',"*.nc.pkl"))
+datasetList=[ds['shortname'] for ds in config['datasets'].values()]
+indList=[ind['id'] for ind in config['indicators'].values()]
 
 def ind_single_rule(thisInd):
     rule:  #Indicator singular rule
@@ -149,7 +151,14 @@ def ind_plural_rule(thisInd):
 for thisInd in config['indicators'].values():
     ind_single_rule(thisInd)
     ind_plural_rule(thisInd)
-    
+
+#Run all indicators    
+rule indicators:
+    input:
+        expand(KAPy.buildPath(config,'indicators','i{id}_{stem}.nc'),
+                   id=indList,
+                   stem=[re.sub('^.+?_|.nc.pkl','',os.path.basename(x)) for x in allDatasets])
+ 
            
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
@@ -170,8 +179,6 @@ rule regrid_file:
 
 # Enssemble Statistics ---------------------------------
 # Now we can combine them
-datasetList=[ds['shortname'] for ds in config['datasets'].values()]
-indList=[ind['id'] for ind in config['indicators'].values()]
 rule ensstats:
     input:
         expand(KAPy.buildPath(config,'ensstats','i{ind}_ensstat_{dataset}.nc'),
