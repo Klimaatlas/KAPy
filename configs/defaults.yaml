@@ -5,6 +5,8 @@
 #here, so this file can also be used as an exhaustive list of configuration options
 #Keys are sorted in alphabetical order at the first level at least
 
+arealstats:
+    calcForMembers: False
 dirs:
     outputDir: 'outputs'
     search: '0.search'
