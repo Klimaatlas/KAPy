@@ -201,20 +201,38 @@ for thisDS in datasetList:
         
 
 #Areal statistics------------------
+#Areal statistics can be calculated for both the enssemble statistics and the
+#individual ensemble members - these options can be turned on and off as required
+#via the configuration options. However, this situation also creates an ambiguity 
+#that needs to be resolved explicitly - see ruleorder directive
+arealstatsStems=KAPy.listFiles(config,"ensstats")
+if config['arealstats']['calcForMembers']:
+    arealstatsStems+=KAPy.listFiles(config,"indicators")
+    
 rule arealstats:
     input:
-        expand(KAPy.buildPath(config,'arealstats','i{ind}_{dataset}.csv'),
-               ind=indList,
-               dataset=datasetList)
+        expand(KAPy.buildPath(config,'arealstats','{fnamestem}.csv'),
+               fnamestem=[os.path.splitext(os.path.basename(x))[0] 
+                               for x in arealstatsStems])
 
-rule arealstats_singular:
+rule arealstats_from_ensstats:
     output:
-        KAPy.buildPath(config,'arealstats','i{ind}_{ds}.csv')
+        KAPy.buildPath(config,'arealstats','{stem}.csv')
     input:
-        KAPy.buildPath(config,'ensstats','i{ind}_ensstat_{ds}.nc')
+        KAPy.buildPath(config,'ensstats','{stem}.nc')
     run:
         KAPy.generateArealstats(config,input,output)
-    
+
+rule arealstats_from_ens_members:
+    output:
+        KAPy.buildPath(config,'arealstats','{stem}.csv')
+    input:
+        KAPy.buildPath(config,'indicators','{stem}.nc')
+    run:
+        KAPy.generateArealstats(config,input,output)
+
+#ruleorder: arealstats_from_ensstats > arealstats_from_ens_members
+
 
 # Outputs ---------------------------------
 # Notebooks, amongst other things

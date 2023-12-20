@@ -35,9 +35,9 @@ spPaths <-
   separate_wider_regex(fname,c("^i",ind=".+","_ensstat_",scenario=".+",".nc") ) 
 arealPaths <- 
   tibble(arealPath=dir(here(cfg$dirs$outputDir,cfg$dirs$arealstats),
-                    pattern=".csv$",full.names = TRUE),
+                    pattern="^.*ensstat.*.csv$",full.names = TRUE),
          fname=basename(arealPath)) %>% 
-  separate_wider_regex(fname,c("^i",ind=".+","_",scenario=".+",".csv") ) 
+  separate_wider_regex(fname,c("^i",ind=".+","_ensstat_",scenario=".+",".csv") ) 
 allPaths <-
   full_join(spPaths,arealPaths,by=c("ind","scenario")) %>% 
   nest(srcs=-ind)
