@@ -32,7 +32,7 @@ ln -sf configs/Ghana/config.yaml
 
 Note that `config.yaml` files in the project directory are ignored by git, to avoid potential conflicts between users with different configurations.
 
-Finally, snakemake can be used to generate the necessary output directories:
+Finally, a small setup script can be used to generate the necessary output directories:
 
 ```
 python ./Setup.py
