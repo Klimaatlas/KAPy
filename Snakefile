@@ -21,14 +21,6 @@ import glob
 #Load configuration 
 config=KAPy.loadConfig()  
 
-#Setup directories
-rule setup:
-    run:
-        for d in config['dirs'].keys():
-            thisDir=KAPy.buildPath(config,d)
-            if not os.path.exists(thisDir):
-                os.mkdir(thisDir)
-
 # Downloading ------------------------
 # This part of the script is activated by the "download" key in
 # the config file. If no download parameters decleared, then don't activate the rules

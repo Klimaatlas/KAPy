@@ -35,7 +35,7 @@ Note that `config.yaml` files in the project directory are ignored by git, to av
 Finally, snakemake can be used to generate the necessary output directories:
 
 ```
-snakemake setup --cores 1
+python ./Setup.py
 ```
 
 And so you're ready to go.
