@@ -12,6 +12,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 To help isolate the bug, please first confirm the following:
+* [ ] you have checked the issue list for similar and related bugs, including those that have been closed already. If a similar bug already exists, please comment there instead of opening a duplicate.
 * [ ] you can reproduce the bug using the latest version of KAPy pulled from https://github.com/Klimaatlas/KAPy/
 * [ ] you have the appropriate packages installed, as defined in `./configs/envy.yaml` 
 * [ ] you can reproduce the bug using the Test dataset and configuration.
