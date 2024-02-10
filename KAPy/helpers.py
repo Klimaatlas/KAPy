@@ -8,10 +8,10 @@ def buildPath(cfg,thisDir, *p):
     
     Gets the full path of a directory key named in the configuration file
     '''
-    if thisDir == "outputDir":
-        return(os.path.join(cfg['dirs']['outputDir'],*p))
+    if thisDir == "workDir":
+        return(os.path.join(cfg['dirs']['workDir'],*p))
     else:
-        return(os.path.join(cfg['dirs']['outputDir'],cfg['dirs'][thisDir],*p))
+        return(os.path.join(cfg['dirs']['workDir'],cfg['dirs'][thisDir],*p))
 
 def listFiles(cfg,thisDir,pattern='*'):
     '''

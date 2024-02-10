@@ -1,6 +1,6 @@
 # KAPy Workflow
 #
-# This snakemake workflow handles the downloading and processing of data for use
+# This snakemake workflow handles the processing of data for use
 # in Klimaatlas-like products. 
 #
 # The pipeline can be run using
@@ -17,87 +17,30 @@ import os
 import re
 import glob
 
-#Configuratioon -----------------------
+#Setup-----------------------
 #Load configuration 
 config=KAPy.loadConfig()  
 
-# Downloading ------------------------
-# This part of the script is activated by the "download" key in
-# the config file. If no download parameters decleared, then don't activate the rules
-# Instead, the script will work with files from disk
-if config['download']:
-    rule search:
-        run:
-            KAPy.searchESGF(config)
-            
-    #Load ESGF configuration for use here
-    ESGFcfg=KAPy.loadConfig(config['download']['ESGF'],useDefaults=False)
-    rule URLs: #Create flag files to show script ran ok
-        input:
-            expand(KAPy.buildPath(config,'search','{varname}.ok'),
-                   varname=ESGFcfg['variables'].keys())
-            
+#Generate filename dicts
+wf=KAPy.getWorkflow(config)
 
-    def varRule(varname):
-        rule:
-            name: f'URLs_{varname}'
-            output:
-                touch(KAPy.buildPath(config,'search',f'{varname}.ok'))
-            input:
-                KAPy.buildPath(config,'search',f'{varname}.pkl')
-            run:
-                KAPy.getESGFurls(config,input)
-
-    for thisVar in ESGFcfg['variables'].keys():
-        varRule(thisVar)
-
-    rule download:
-        input: 
-            expand(KAPy.buildPath(config,'inputs','{fname}'),
-                   fname=[re.sub('.url','',x) 
-                          for x in os.listdir(KAPy.buildPath(config,'URLs'))])
-
-    rule download_file:
-        output:
-            KAPy.buildPath(config,'inputs','{fname}.nc')
-        input: 
-            #Only download if a new URL has been added - ignore updates
-            ancient(KAPy.buildPath(config,'URLs','{fname}.nc.url'))
-        run:
-            KAPy.downloadESGF(config,input,output)
-
-    rule download_status:
-        output:
-            KAPy.buildPath(config,'notebooks','Download_status.nb.html')
-        input: #Any changes in the two directories will trigger a rebuild
-            KAPy.buildPath(config,'URLs'),
-            KAPy.buildPath(config,'inputs')
-        script:
-            "./notebooks/Download_status.Rmd"
-
-# Collate datasets---------------------------------
-# Compile the data available into xarray dataset objects for further processing
-# Get the full list of model inputs first
-allInputs=glob.glob(KAPy.buildPath(config,'inputs',"*.nc"))
-
+# Datachunks---------------------------------
 #Plural rule
-rule datasets:
+rule chunks:
     input:
-        [KAPy.buildPath(config,'datasets',f) \
-                     for f in KAPy.inferDatasets(config,allInputs)]
+        [KAPy.buildPath(config,'chunks',f) \
+                     for f in wf['chunks'].keys()]
 
 #Singular rule
 #Requires a bit of a hack with a lamba function to be able to both use a input function
 #and feed additional arguments to the function
-rule dataset_single:
+rule chunk_single:
     output:
-        KAPy.buildPath(config,'datasets',"{stem}.nc.pkl")
+        KAPy.buildPath(config,'chunks',"{chunk}")
     input:
-        lambda wildcards: KAPy.deduceDatasetInputs(config,
-                                                   wildcards.stem+".nc.pkl",
-                                                   allInputs)
+        lambda wildcards: wf['chunks'][wildcards.chunk]
     run:
-        KAPy.buildDataset(config,input,output)
+        KAPy.buildChunk(config,input,output)
     
         
 # Bias correction -------------------
@@ -111,6 +54,7 @@ rule dataset_single:
 #Can discuss whether we do this before or after bias correction
 #TODO
 
+'''
 
 # Indicators ---------------------------------
 # Create a loop over the indicators that defines the singular and plural rules
@@ -237,3 +181,4 @@ rule notebooks:
     script:
         "./notebooks/Indicator_plots.Rmd"
         
+'''

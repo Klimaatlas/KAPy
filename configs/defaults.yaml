@@ -7,38 +7,25 @@
 
 arealstats:
     calcForMembers: False
+chunks:  #Otherwise store as pickled Xarray objects
+    storeAsNetCDF: True
 dirs:
-    outputDir: 'outputs'
-    search: '0.search'
-    URLs: '1.URLs'
-    inputs: '2.inputs'
-    datasets: '3.datasets'
+    workDir: 'workDir'
+    # search: '0.search'
+    # URLs: '1.URLs'
+    inputs: '1.inputs'
+    chunks: '2.chunks'
+    bc: '3.biascorrected_variables'
     indicators: '4.indicators'
-    gridded: '5.commmon_grid'
+    regridded: '5.commmon_grid'
     ensstats: '6.ensstats'
     arealstats: '7.areal_statistics'
     notebooks: 'notebooks'
-datasets:  #A combination of CMIP experiments that are basis for analysis
-    rcp26:
-        id: 26
-        shortname: 'rcp26'
-        description: 'Low emissions scenario (RCP2.6)'
-        experiments: ['historical','rcp26']
-    rcp45:
-        id: 45
-        shortname: 'rcp45'
-        description: 'Medium emissions scenario (RCP4.5)'
-        experiments: ['historical','rcp45']
-    rcp85:
-        id: 85
-        shortname: 'rcp85'
-        description: 'High emissions scenario (RCP8.5)'
-        experiments: ['historical','rcp85']
-domain:
-download:
+domain: #Defined in separate config.yaml
 ensembles:
     percentiles: [10,50,90]
-indicators:  #None defined by default.
+indicators:  #Defined in separate config.yaml
+inputs: #Defined in separate config.yaml
 periods:  #Define periods here. The period with the lowest ID is used as the reference period
     period1:
         id: 1
@@ -62,6 +49,22 @@ periods:  #Define periods here. The period with the lowest ID is used as the ref
         end: 2100
 regridding:
     method: 'bilinear'  #Regridding method used by xesmf.Regridder()
+scenarios:  #A combination of CMIP experiments that are basis for analysis
+    rcp26:
+        id: 26
+        shortname: 'rcp26'
+        description: 'Low emissions scenario (RCP2.6)'
+        experiments: ['historical','rcp26']
+    rcp45:
+        id: 45
+        shortname: 'rcp45'
+        description: 'Medium emissions scenario (RCP4.5)'
+        experiments: ['historical','rcp45']
+    rcp85:
+        id: 85
+        shortname: 'rcp85'
+        description: 'High emissions scenario (RCP8.5)'
+        experiments: ['historical','rcp85']
 seasons:
     Annual:
         id: 0
