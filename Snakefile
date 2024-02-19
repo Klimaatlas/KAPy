@@ -24,23 +24,23 @@ config=KAPy.loadConfig()
 #Generate filename dicts
 wf=KAPy.getWorkflow(config)
 
-# Datachunks---------------------------------
+# Primary Variables---------------------------------
 #Plural rule
-rule chunks:
+rule primVars:
     input:
-        [KAPy.buildPath(config,'chunks',f) \
-                     for f in wf['chunks'].keys()]
+        [KAPy.buildPath(config,'primVars',f) \
+                     for f in wf['primVars'].keys()]
 
 #Singular rule
 #Requires a bit of a hack with a lamba function to be able to both use a input function
 #and feed additional arguments to the function
-rule chunk_single:
+rule primVar_single:
     output:
-        KAPy.buildPath(config,'chunks',"{chunk}")
+        KAPy.buildPath(config,'primVars',"{pv}")
     input:
-        lambda wildcards: wf['chunks'][wildcards.chunk]
+        lambda wildcards: wf['primVars'][wildcards.pv]
     run:
-        KAPy.buildChunk(config,input,output)
+        KAPy.buildPrimVar(config,input,output)
     
         
 # Bias correction -------------------

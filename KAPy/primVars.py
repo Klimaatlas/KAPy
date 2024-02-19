@@ -1,4 +1,4 @@
-#Given a set of input files, create datachunk objects that can be worked with
+#Given a set of input files, create objects that can be worked with
 
 import KAPy
 import pandas as pd
@@ -13,12 +13,12 @@ import re
 #config=KAPy.loadConfig()  
 
 
-def buildChunk(config,inFiles,outFile):
+def buildPrimVar(config,inFiles,outFile):
     """
     Build the data object
     
     Build the set of input files into a single xarray-based dataset object
-    and pickle it
+    and write it out, either as a NetCDF file or as a pickle.
     """
     #Make dataset object, sorted on time
     ds =xr.open_mfdataset(inFiles,
@@ -35,7 +35,7 @@ def buildChunk(config,inFiles,outFile):
     """
 
     #Write the dataset object to disk, depending on the configuration
-    if config['chunks']['storeAsNetCDF']:
+    if config['primVars']['storeAsNetCDF']:
         ds.to_netcdf(outFile[0]) 
     else:
         with open(outFile[0],'wb') as f:

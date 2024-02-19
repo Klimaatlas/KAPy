@@ -7,14 +7,12 @@
 
 arealstats:
     calcForMembers: False
-chunks:  #Otherwise store as pickled Xarray objects
-    storeAsNetCDF: True
 dirs:
     workDir: 'workDir'
     # search: '0.search'
     # URLs: '1.URLs'
     inputs: '1.inputs'
-    chunks: '2.chunks'
+    primVars: '2.primVars'
     bc: '3.biascorrected_variables'
     indicators: '4.indicators'
     regridded: '5.commmon_grid'
@@ -47,6 +45,8 @@ periods:  #Define periods here. The period with the lowest ID is used as the ref
         name: 'End-of-century\n(2071-2100)'
         start: 2071
         end: 2100
+primVars:  #Otherwise store as pickled Xarray objects
+    storeAsNetCDF: True
 regridding:
     method: 'bilinear'  #Regridding method used by xesmf.Regridder()
 scenarios:  #A combination of CMIP experiments that are basis for analysis

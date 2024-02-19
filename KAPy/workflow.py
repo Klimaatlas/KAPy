@@ -20,7 +20,10 @@ def getWorkflow(config):
     sc=config['scenarios']
     ind=config['indicators']
     
-    #Chunks-----------------------------------------------------------------------
+    #Primary Variables-----------------------------------------------------------------------
+    #PVs are the raw inputs. These need to be read into a single-file format based on 
+    #xarray, and are then exported either as netcdf or as pickles.
+    
     #Reshape the input structure into a more workable format, including
     #the addition of a list of files
     inpDict={}
@@ -42,26 +45,26 @@ def getWorkflow(config):
     inpTbl['stems']=inpTbl['files'].str.extract('^(.*)_.*$') 
 
     #Now loop over the scenario definitions to get the list
-    chList=[]
+    pvList=[]
     for thisSc in sc.values():
         #Get files that match experiments
         matchPat='|'.join([f'_{x}_' for x in thisSc['experiments']])
         inSc=inpTbl['stems'].str.contains(matchPat)
         theseFiles=inpTbl[inSc].copy() #Explicit copy to avoid SettingWithCopyWarning
-        #Generate the datachunk filename
-        chFname=[re.sub(matchPat,'_',os.path.basename(x))
+        #Generate the primary variable filename
+        pvFname=[re.sub(matchPat,'_',os.path.basename(x))
                                for x in theseFiles['stems']]
-        theseFiles['chFname']=theseFiles['varName']+"_" + theseFiles['src'] + "_" + thisSc['shortname'] + "_" + chFname  
-        chList+=[theseFiles]
-    chTbl=pd.concat(chList) 
+        theseFiles['pvFname']=theseFiles['varName']+"_" + theseFiles['src'] + "_" + thisSc['shortname'] + "_" + pvFname  
+        pvList+=[theseFiles]
+    pvTbl=pd.concat(pvList) 
     #Build the full filename
-    if config['chunks']['storeAsNetCDF']:
-        chTbl['chFname']=chTbl['chFname']+'.nc'  #Store as NetCDF
+    if config['primVars']['storeAsNetCDF']:
+        pvTbl['pvFname']=pvTbl['pvFname']+'.nc'  #Store as NetCDF
     else:
-        chTbl['chFname']=chTbl['chFname']+'.pkl' #Pickle
+        pvTbl['pvFname']=pvTbl['pvFname']+'.pkl' #Pickle
 
     #tidy up the output into a dict
-    chDict=chTbl.groupby("chFname").apply(lambda x:list(x['files'])).to_dict()
+    pvDict=pvTbl.groupby("pvFname").apply(lambda x:list(x['files'])).to_dict()
     
     #Indicators -----------------------------------------------------
     #Simplify chunklist 
@@ -73,7 +76,7 @@ def getWorkflow(config):
     '''    
 
     #Finish--------------------------------------------------------
-    rtn={'chunks':chDict}
+    rtn={'primVars':pvDict}
     return(rtn)
 
 
