@@ -14,8 +14,6 @@
 
 import KAPy
 import os
-import re
-import glob
 
 #Setup-----------------------
 #Load configuration 
@@ -41,48 +39,42 @@ rule primVar_single:
         lambda wildcards: wf['primVars'][wildcards.pv]
     run:
         KAPy.buildPrimVar(config,input,output)
-    
+
+# Secondary variables -------------------------
+# "Secondary variables" are calculated as new variables derived from primary variables.  
+# Good examples include FWI and PoteEvap. 
+# TODO
         
 # Bias correction -------------------
 # TODO
 
-# Derived variables -------------------------
-#A useful concept is also the idea of "derived variables", that we might need to calculate as
-#intermediate steps in the processing chain, before we calculate indicators from them.
-#Good examples include FWI and PoteEvap
-#Remember that they will also need xarray pickles too
-#Can discuss whether we do this before or after bias correction
-#TODO
-
-'''
 
 # Indicators ---------------------------------
 # Create a loop over the indicators that defines the singular and plural rules
-# In particular,start with the assumption of univariate indicators - we can always extend it later. The trick will be to loop over the indicators indvidiually, rather than trying to 
-#do it all in one hit.
-allDatasets=glob.glob(KAPy.buildPath(config,'datasets',"*.nc.pkl"))
-datasetList=[ds['shortname'] for ds in config['datasets'].values()]
-indList=[ind['id'] for ind in config['indicators'].values()]
+# as well as the combined run
 
+#Indicator singular rule
 def ind_single_rule(thisInd):
-    rule:  #Indicator singular rule
-        name: f'i{thisInd["id"]}_file'
+    rule:  
+        name: f'i{thisInd["id"]}_single'
         output:
-            KAPy.buildPath(config,'indicators',f'i{thisInd["id"]}_'+'{stem}')
+            KAPy.buildPath(config,'indicators',"{indFname}")
         input:
-            KAPy.buildPath(config,'datasets',f'{thisInd["variables"]}_'+'{stem}.pkl')
+            lambda wildcards: wf['indicators'][thisInd["id"]][wildcards.indFname]
         run:
-            KAPy.calculateIndicators(thisInd=thisInd,
-                                     config=config,
-                                     outPath=output,
-                                     datPkl=input)
+            KAPy.calculateIndicators(config=config,
+                                     inFile=input,
+                                     outFile=output,
+                                     thisInd=thisInd)
+                                     
+
+#Indicator plural rule
 def ind_plural_rule(thisInd):
-    rule:  #Indicator plural rule
+    rule:
         name: f'i{thisInd["id"]}'
         input:
-            expand(KAPy.buildPath(config,'indicators','i{id}_{stem}.nc'),
-                   id=thisInd['id'],
-                   stem=[re.sub('^.+?_|.nc.pkl','',os.path.basename(x)) for x in allDatasets])
+            [KAPy.buildPath(config,'indicators',f) \
+                     for f in wf['indicators'][thisInd['id']].keys()]
             
 for thisInd in config['indicators'].values():
     ind_single_rule(thisInd)
@@ -91,11 +83,12 @@ for thisInd in config['indicators'].values():
 #Run all indicators    
 rule indicators:
     input:
-        expand(KAPy.buildPath(config,'indicators','i{id}_{stem}.nc'),
-                   id=indList,
-                   stem=[re.sub('^.+?_|.nc.pkl','',os.path.basename(x)) for x in allDatasets])
- 
-           
+        [[KAPy.buildPath(config,'indicators',f) for f in ind.keys()] 
+         for ind in wf['indicators'].values()]
+
+'''           
+
+                                               
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
 # This is not always the case, and so we add a regridding step prior to ensemble calculation

@@ -18,7 +18,6 @@ def getWorkflow(config):
     #Extract specific configurations 
     inp=config['inputs']
     sc=config['scenarios']
-    ind=config['indicators']
     
     #Primary Variables-----------------------------------------------------------------------
     #PVs are the raw inputs. These need to be read into a single-file format based on 
@@ -42,7 +41,7 @@ def getWorkflow(config):
     
     #Make into table, extract stems and prepare for matching
     inpTbl= pd.DataFrame.from_dict(inpDict,orient='index').explode('files')
-    inpTbl['stems']=inpTbl['files'].str.extract('^(.*)_.*$') 
+    inpTbl['stems']=inpTbl['files'].str.extract('^(.*)_.*$') #TODO: Use regex stem
 
     #Now loop over the scenario definitions to get the list
     pvList=[]
@@ -67,16 +66,31 @@ def getWorkflow(config):
     pvDict=pvTbl.groupby("pvFname").apply(lambda x:list(x['files'])).to_dict()
     
     #Indicators -----------------------------------------------------
-    #Simplify chunklist 
-    '''   
+    ind=config['indicators']
+    #Combine all variable tables (e.g. prim, sec, bc, tert)
+    varTbl=pvTbl[['varName','src','pvFname']].drop_duplicates()
+    varTbl=varTbl.rename(columns={'pvFname':'varFname'})
+    varTbl['varPath']=KAPy.buildPath(config,'primVars')
+    varTbl['varPath']=varTbl['varPath']+os.path.sep +varTbl['varFname']
     #Loop over indicators and get required files
-    for indKey, indValues in ind.items():
-        #Get the datachunks
-        ind[indKey]
-    '''    
-
+    #Currently only matching one variable. TODO: Add multiple
+    for indKey, indVal in ind.items():
+        #useThis=varTbl['varName'].isin([indVal['variables']])
+        useThese=varTbl['varName'] == indVal['variables']
+        ind[indKey]['varPath']=varTbl['varPath'][useThese]
+    #Now extract the dict
+    indTbl=pd.DataFrame.from_dict(ind,orient='index').explode('varPath')
+    indTbl['varFname']=[os.path.basename(f) for f in indTbl['varPath']]
+    indTbl['indFname']= indTbl.apply(lambda x: f'i{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
+                                    axis=1)
+    indDict=indTbl.groupby("id").apply(lambda x: [x]).to_dict() 
+    for key in indDict.keys():
+        indDict[key]=indDict[key][0].groupby("indFname").apply(lambda x:list(x['varPath'])).to_dict()
+    
+        
     #Finish--------------------------------------------------------
-    rtn={'primVars':pvDict}
+    rtn={'primVars':pvDict,
+         'indicators':indDict}
     return(rtn)
 
 

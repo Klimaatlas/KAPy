@@ -6,15 +6,20 @@ import numpy as np
 import sys
 
 #config=KAPy.loadConfig()
-#indicatorKey='101y'
-#datPkl=['./KAGh/3.datasets/tas_AFR-22_MOHC-HadGEM2-ES_rcp26_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_mon.nc.pkl']
-#datPkl=['./DKHav/3.datasets/tas_nsbs_EUR-11_ICHEC-EC-EARTH_rcp45_r12i1p1_SMHI-RCA4_v4_day.nc.pkl']
+#inFile=['./workDir/2.primVars/tas_CORDEX_rcp26_tas_AFR-22_MOHC-HadGEM2-ES_r1i1p1_GERICS-REMO2015_v1_mon.nc']
 
-def calculateIndicators(thisInd,config,outPath,datPkl):
+def calculateIndicators(config,inFile,outFile,thisInd):
     
-    #Read pickle
-    with open(datPkl[0],'rb') as f:
-        thisDat=pickle.load(f)
+    #Read the dataset object back from disk, depending on the configuration
+    inExt=os.path.splitext(os.path.basename(inFile[0]))[1] 
+    if inExt == '.nc':
+        thisDat=xr.open_dataset(inFile[0])
+    elif inExt == '.pkl': #Read pickle
+        with open(inFile[0],'rb') as f:
+            thisDat=pickle.load(f)
+    else:
+        sys.exit('Unknown file format, "' + inExt +'" in ' + inFile[0])
+        
 
     #Filter by season first (should always work)
     theseMonths=config['seasons'][thisInd['season']]['months']
@@ -62,7 +67,7 @@ def calculateIndicators(thisInd,config,outPath,datPkl):
 
     #Polish final product and write
     dout=dout.rename({thisInd['variables']:"indicator"})  #Fix this up somehow
-    dout.to_netcdf(outPath[0])
+    dout.to_netcdf(outFile[0])
 
 
 
