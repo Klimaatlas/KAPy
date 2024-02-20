@@ -128,6 +128,7 @@ rule ensstats_single:
 rule arealstats:
     input:
         list(wf['arealstats'].keys())
+    default_target: True
 
 #Singular rule
 rule arealstats_single:
