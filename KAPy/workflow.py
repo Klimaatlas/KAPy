@@ -101,12 +101,25 @@ def getWorkflow(config):
     ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['indPath'])).to_dict()
     
     #Arealstatistics----------------------------------------------
+    #Start by building list of input files to calculate arealstatistics for
+    asInps=list(ensDict.keys())
+    if config['arealstats']['calcForMembers']:
+        asInps+=[y for x in ensDict.values() for y in x]
+    asTbl=pd.DataFrame(asInps,columns=['srcPath'])
+    #Now setup output structures
+    asTbl['srcFname']=[os.path.basename(p) for p in asTbl['srcPath']]
+    asTbl['asFname']=asTbl['srcFname'].str.replace('nc','csv')
+    asTbl['asPath']=KAPy.buildPath(config,'arealstats',asTbl['asFname'])
+    #Make the dict
+    asDict=asTbl.groupby("asPath").apply(lambda x:list(x['srcPath'])).to_dict()
+    
     
     
     #Finish--------------------------------------------------------
     rtn={'primVars':pvDict,
          'indicators':indDict,
-        'ensstats':ensDict}
+        'ensstats':ensDict,
+        'arealstats':asDict}
     return(rtn)
 
 

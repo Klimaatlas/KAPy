@@ -111,8 +111,6 @@ rule ensstats:
         list(wf['ensstats'].keys())
 
 #Singular rule
-#Requires a bit of a hack with a lamba function to be able to both use a input function
-#and feed additional arguments to the function
 rule ensstats_single:
     output:
         KAPy.buildPath(config,'ensstats',"{es}")
@@ -122,41 +120,25 @@ rule ensstats_single:
         KAPy.generateEnsstats(config,input,output)
 
 
-'''        
 #Areal statistics------------------
 #Areal statistics can be calculated for both the enssemble statistics and the
 #individual ensemble members - these options can be turned on and off as required
-#via the configuration options. However, this situation also creates an ambiguity 
-#that needs to be resolved explicitly - see ruleorder directive
-arealstatsStems=KAPy.listFiles(config,"ensstats")
-if config['arealstats']['calcForMembers']:
-    arealstatsStems+=KAPy.listFiles(config,"indicators")
-    
+#via the configuration options. 
+#Plural rule
 rule arealstats:
     input:
-        expand(KAPy.buildPath(config,'arealstats','{fnamestem}.csv'),
-               fnamestem=[os.path.splitext(os.path.basename(x))[0] 
-                               for x in arealstatsStems])
+        list(wf['arealstats'].keys())
 
-rule arealstats_from_ensstats:
+#Singular rule
+rule arealstats_single:
     output:
-        KAPy.buildPath(config,'arealstats','{stem}.csv')
+        KAPy.buildPath(config,'arealstats','{arealstats}')
     input:
-        KAPy.buildPath(config,'ensstats','{stem}.nc')
+        lambda wildcards: wf['arealstats'][KAPy.buildPath(config,'arealstats',wildcards.arealstats)]
     run:
         KAPy.generateArealstats(config,input,output)
 
-rule arealstats_from_ens_members:
-    output:
-        KAPy.buildPath(config,'arealstats','{stem}.csv')
-    input:
-        KAPy.buildPath(config,'indicators','{stem}.nc')
-    run:
-        KAPy.generateArealstats(config,input,output)
-
-#ruleorder: arealstats_from_ensstats > arealstats_from_ens_members
-
-
+'''
 # Outputs ---------------------------------
 # Notebooks, amongst other things
 rule notebooks:
