@@ -13,7 +13,6 @@
 #
 
 import KAPy
-import os
 
 #Setup-----------------------
 #Load configuration 
@@ -26,8 +25,7 @@ wf=KAPy.getWorkflow(config)
 #Plural rule
 rule primVars:
     input:
-        [KAPy.buildPath(config,'primVars',f) \
-                     for f in wf['primVars'].keys()]
+        list(wf['primVars'].keys())
 
 #Singular rule
 #Requires a bit of a hack with a lamba function to be able to both use a input function
@@ -36,7 +34,7 @@ rule primVar_single:
     output:
         KAPy.buildPath(config,'primVars',"{pv}")
     input:
-        lambda wildcards: wf['primVars'][wildcards.pv]
+        lambda wildcards: wf['primVars'][KAPy.buildPath(config,'primVars',wildcards.pv)]
     run:
         KAPy.buildPrimVar(config,input,output)
 
@@ -60,7 +58,8 @@ def ind_single_rule(thisInd):
         output:
             KAPy.buildPath(config,'indicators',"{indFname}")
         input:
-            lambda wildcards: wf['indicators'][thisInd["id"]][wildcards.indFname]
+            lambda wildcards: 
+                wf['indicators'][thisInd["id"]][ KAPy.buildPath(config,'indicators',wildcards.indFname)]
         run:
             KAPy.calculateIndicators(config=config,
                                      inFile=input,
@@ -73,8 +72,7 @@ def ind_plural_rule(thisInd):
     rule:
         name: f'i{thisInd["id"]}'
         input:
-            [KAPy.buildPath(config,'indicators',f) \
-                     for f in wf['indicators'][thisInd['id']].keys()]
+            list(wf['indicators'][thisInd['id']].keys())
             
 for thisInd in config['indicators'].values():
     ind_single_rule(thisInd)
@@ -83,11 +81,9 @@ for thisInd in config['indicators'].values():
 #Run all indicators    
 rule indicators:
     input:
-        [[KAPy.buildPath(config,'indicators',f) for f in ind.keys()] 
-         for ind in wf['indicators'].values()]
+        [list(thisInd.keys()) for thisInd in wf['indicators'].values()]
 
 '''           
-
                                                
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
@@ -105,30 +101,28 @@ rule regrid_file:
     run:
         KAPy.regrid(config,input,output)
 
+'''
 
 # Enssemble Statistics ---------------------------------
-# Now we can combine them
+# Now we can combine them into ensembles
+#Plural rule
 rule ensstats:
     input:
-        expand(KAPy.buildPath(config,'ensstats','i{ind}_ensstat_{dataset}.nc'),
-               ind=indList,
-               dataset=datasetList)
+        list(wf['ensstats'].keys())
 
-def enstat_rule(ind,ds):
-        rule:
-            name: f'ensstat_i{ind}_{ds}'
-            output:
-                KAPy.buildPath(config,'ensstats',f'i{ind}_ensstat_{ds}.nc')
-            input:
-                glob.glob(KAPy.buildPath(config,'indicators',f'i{ind}_*_{ds}_*.nc'))
-            run:
-                KAPy.generateEnsstats(config,input,output)
+#Singular rule
+#Requires a bit of a hack with a lamba function to be able to both use a input function
+#and feed additional arguments to the function
+rule ensstats_single:
+    output:
+        KAPy.buildPath(config,'ensstats',"{es}")
+    input:
+        lambda wildcards: wf['ensstats'][KAPy.buildPath(config,'ensstats',wildcards.es)]
+    run:
+        KAPy.generateEnsstats(config,input,output)
 
-for thisDS in datasetList:
-    for thisInd in indList:
-        enstat_rule(thisInd,thisDS)
-        
 
+'''        
 #Areal statistics------------------
 #Areal statistics can be calculated for both the enssemble statistics and the
 #individual ensemble members - these options can be turned on and off as required

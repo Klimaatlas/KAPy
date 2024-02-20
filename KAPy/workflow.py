@@ -37,12 +37,11 @@ def getWorkflow(config):
             inpDict[thisKey]['varName']=thisVar
             inpDict[thisKey]['src']=thisInp
             inpDict[thisKey].update(inp[thisInp][thisVar])
-            inpDict[thisKey]['files']=theseFiles
+            inpDict[thisKey]['inpPath']=theseFiles
     
-    #Make into table, extract stems and prepare for matching
-    inpTbl= pd.DataFrame.from_dict(inpDict,orient='index').explode('files')
-    inpTbl['stems']=inpTbl['files'].str.extract('^(.*)_.*$') #TODO: Use regex stem
-
+    #Make into table and extract stems 
+    inpTbl= pd.DataFrame.from_dict(inpDict,orient='index').explode('inpPath')
+    inpTbl['stems']=[re.search(x['regex'],os.path.basename(x['inpPath'])).group(1) for i,x in inpTbl.iterrows()] 
     #Now loop over the scenario definitions to get the list
     pvList=[]
     for thisSc in sc.values():
@@ -56,22 +55,25 @@ def getWorkflow(config):
         theseFiles['pvFname']=theseFiles['varName']+"_" + theseFiles['src'] + "_" + thisSc['shortname'] + "_" + pvFname  
         pvList+=[theseFiles]
     pvTbl=pd.concat(pvList) 
+    pvTbl['pvPath']=KAPy.buildPath(config,'primVars',pvTbl['pvFname'])
     #Build the full filename
     if config['primVars']['storeAsNetCDF']:
-        pvTbl['pvFname']=pvTbl['pvFname']+'.nc'  #Store as NetCDF
+        pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
     else:
-        pvTbl['pvFname']=pvTbl['pvFname']+'.pkl' #Pickle
+        pvTbl['pvPath']=pvTbl['pvPath']+'.pkl' #Pickle
 
     #tidy up the output into a dict
-    pvDict=pvTbl.groupby("pvFname").apply(lambda x:list(x['files'])).to_dict()
+    pvDict=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath'])).to_dict()
     
     #Indicators -----------------------------------------------------
     ind=config['indicators']
     #Combine all variable tables (e.g. prim, sec, bc, tert)
-    varTbl=pvTbl[['varName','src','pvFname']].drop_duplicates()
-    varTbl=varTbl.rename(columns={'pvFname':'varFname'})
-    varTbl['varPath']=KAPy.buildPath(config,'primVars')
-    varTbl['varPath']=varTbl['varPath']+os.path.sep +varTbl['varFname']
+    varPalette=[pvDict]
+    varTbl=pd.DataFrame([thisKey for varDict in varPalette for thisKey in varDict.keys() ],
+                       columns=["varPath"])
+    varTbl['varFname']=[os.path.basename(p) for p in varTbl['varPath']]
+    varTbl['varName']=varTbl['varFname'].str.extract('^(.*?)_.*$')
+    varTbl['src']=varTbl['varFname'].str.extract('^.*?_(.*?)_.*$')
     #Loop over indicators and get required files
     #Currently only matching one variable. TODO: Add multiple
     for indKey, indVal in ind.items():
@@ -83,14 +85,28 @@ def getWorkflow(config):
     indTbl['varFname']=[os.path.basename(f) for f in indTbl['varPath']]
     indTbl['indFname']= indTbl.apply(lambda x: f'i{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
                                     axis=1)
+    indTbl['indPath']= KAPy.buildPath(config,'indicators',indTbl['indFname'])
     indDict=indTbl.groupby("id").apply(lambda x: [x]).to_dict() 
     for key in indDict.keys():
-        indDict[key]=indDict[key][0].groupby("indFname").apply(lambda x:list(x['varPath'])).to_dict()
+        indDict[key]=indDict[key][0].groupby("indPath").apply(lambda x:list(x['varPath'])).to_dict()
     
-        
+    #Ensembles-------------------------------------
+    #Build ensemble membership
+    ensTbl=pd.DataFrame([i for this in indDict.values() for i in this.keys() ],
+                        columns=["indPath"])
+    ensTbl['indFname']=[os.path.basename(p) for p in ensTbl['indPath']]
+    ensTbl['ens']=ensTbl['indFname'].str.extract("(.*?_.*?_.*?)_.*$")
+    ensTbl['ensPath']=KAPy.buildPath(config,"ensstats",ensTbl['ens']+"_ensstats.nc")
+    #Extract the dict
+    ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['indPath'])).to_dict()
+    
+    #Arealstatistics----------------------------------------------
+    
+    
     #Finish--------------------------------------------------------
     rtn={'primVars':pvDict,
-         'indicators':indDict}
+         'indicators':indDict,
+        'ensstats':ensDict}
     return(rtn)
 
 
