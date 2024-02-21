@@ -23,13 +23,3 @@ def buildPath(cfg,thisDir, files=[]):
         sys.exit("Unsupported variable type supplied to KAPy.buildPath()")
     return(rtn)
         
-"""
-def listFiles(cfg,thisDir,pattern='*'):
-    '''
-    Get files by path
-    
-    Lists the files present in a folder, where the folder is identified
-    by the directory key named in the configuration file
-    '''
-    return glob.glob(KAPy.buildPath(cfg,thisDir,pattern))
-"""
