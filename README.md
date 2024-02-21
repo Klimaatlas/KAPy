@@ -39,41 +39,26 @@ Finally, a small setup script can be used to generate the necessary output direc
 python ./Setup.py
 ```
 
-And so you're ready to go. For tutorials and learning how to use KAPy, we recommend looking in the tutorials folder.
-
-## Usage
-
-A list of targets available to build in the snakefile can be obtained with
-```
-    snakemake -l
-```
-
-An individual target can be built like so
-```
-    snakemake downloads --cores 1 -k
-``` 
-where the `--cores 1` argument will build the target with a single processor, and `-k` indicates that snakemake should "keep-going" if it encounters problems. Individual files can also be specified as targets. A full list of command like arguments to snakemake can be found in the documentation, https://snakemake.readthedocs.io/en/stable/executing/cli.html
-
-Note that the list of tagets is configuration dependent and can vary from case to case. A detailed description of the targets available in the KAPy project can be found in the [KAPY_concepts.md](./docs/KAPy_concepts.md) documentation.
+And so you're ready to go. For getting familar with the workings of KAPy, we recommend looking at the document listed below, and particularly the tutorials.
 
 ## Documentation
 
 Documentation for KAPy is contained in the `./docs` folder. 
-* [Tutorials](./docs/tutorials/README.md) - Tutorials for getting to know KAPy better.
-* [Background.md](./docs/Background.md) - Background knowledge useful for getting started with KAPy.
 * [KAPY_concepts.md](./docs/KAPy_concepts.md) - Explains key concepts and definitions used in KAPy.
+* [Tutorials](./docs/tutorials/README.md) - Worked tutorials for getting to know KAPy better.
+* [Background.md](./docs/Background.md) - Background knowledge useful for getting started with KAPy.
 * [Configuration.md](./docs/Configuration.md) - Details the configuration system and options available in KAPy.
 
 ## Contributing
 
-KAPy is in active development and welcomes all contributions, both large and small.  is being used in production by climate services specialists around the world.
+KAPy is in active development and welcomes all contributions, both large and small.  
     
 * If you have a suggestion for a new feature or want to report a bug, please file an issue via the issue tracker.
 * If you would like to contribute code or documentation, check out the [Contributing Guidelines](./docs/Contributing.md) before you begin!
 
 ## How to cite KAPy
 
-If you wish to cite KAPy in your work, please cite this repository (https://github.com/Klimaatlas/KAPy/) and the push hash. A publication describing KAPy will be prepared in the future.
+If you wish to cite KAPy in your work, please cite this repository (https://github.com/Klimaatlas/KAPy/) and the release version. A publication describing KAPy will be prepared in the future.
 
 ## License
 
