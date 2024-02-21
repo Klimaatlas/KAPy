@@ -1,7 +1,4 @@
-""" Handle downloading of data from ESGF via Xarray 
-
-At the moment, the assumption is that ESGF is the only download source. This may
-change in the future if we add e.g. support for Copernicus CDS
+""" Handle data inputs 
 
 """
 
@@ -18,8 +15,11 @@ from pydap.client import open_url
 from pydap.cas.esgf import setup_session
 import pickle
 
-
+#Debug setup
+#import os
+#os.chdir("..")
 #config=KAPy.loadConfig()  
+
 def searchESGF(config):
     #Load ESGF configuration
     ESGFcfg=KAPy.loadConfig(config['download']['ESGF'],
@@ -115,5 +115,22 @@ def downloadESGF(config,urlFile,ncFile):
     #Write to file
     dsSel.to_netcdf(ncFile[0])
 
+    
+# def downloadCDS(config):
+#     #Read configurations
+#     CDScfg=config['inputs']['CDS']
 
-
+#     #Setup download
+#     import cdsapi
+    
+#     #Setup client
+#     cdsClient=cdsapi.Client()
+    
+#     #Setup retrieve request command
+#     retrieveDict = CDScfg['retrieveOptions']
+#     retrieveDict['area'] = [config['domain'][x] for x in ['ymax','xmin','ymin','xmax']]
+    
+#     #Retrieve
+#     cdsClient.retrieve(CDScfg['name'],retrieveDict,"foo.nc")
+    
+    

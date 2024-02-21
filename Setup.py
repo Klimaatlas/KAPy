@@ -1,14 +1,25 @@
+#!/usr/bin/env python
+
 #Setup KAPy directory structure
 
 import KAPy
 import os
 
-#Configuratioon -----------------------
 #Load configuration 
 config=KAPy.loadConfig()  
 
-#Setup directories
+#Check that the working directory exists first
+wkDir =config['dirs']['workDir']
+if not os.path.exists(wkDir):
+        print("Creating " + wkDir + "...")
+        os.mkdir(wkDir)
+
+#Setup sub directories directories
 for d in config['dirs'].keys():
     thisDir=KAPy.buildPath(config,d)
     if not os.path.exists(thisDir):
+        print("Creating " + thisDir + "...")
         os.mkdir(thisDir)
+    else:
+        print(thisDir + " already exists.")
+            

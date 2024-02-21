@@ -1,6 +1,6 @@
 # KAPy Workflow
 #
-# This snakemake workflow handles the downloading and processing of data for use
+# This snakemake workflow handles the processing of data for use
 # in Klimaatlas-like products. 
 #
 # The pipeline can be run using
@@ -13,132 +13,66 @@
 #
 
 import KAPy
-import os
-import re
-import glob
 
-#Configuratioon -----------------------
+#Setup-----------------------
 #Load configuration 
 config=KAPy.loadConfig()  
 
-# Downloading ------------------------
-# This part of the script is activated by the "download" key in
-# the config file. If no download parameters decleared, then don't activate the rules
-# Instead, the script will work with files from disk
-if config['download']:
-    rule search:
-        run:
-            KAPy.searchESGF(config)
-            
-    #Load ESGF configuration for use here
-    ESGFcfg=KAPy.loadConfig(config['download']['ESGF'],useDefaults=False)
-    rule URLs: #Create flag files to show script ran ok
-        input:
-            expand(KAPy.buildPath(config,'search','{varname}.ok'),
-                   varname=ESGFcfg['variables'].keys())
-            
+#Generate filename dicts
+wf=KAPy.getWorkflow(config)
 
-    def varRule(varname):
-        rule:
-            name: f'URLs_{varname}'
-            output:
-                touch(KAPy.buildPath(config,'search',f'{varname}.ok'))
-            input:
-                KAPy.buildPath(config,'search',f'{varname}.pkl')
-            run:
-                KAPy.getESGFurls(config,input)
-
-    for thisVar in ESGFcfg['variables'].keys():
-        varRule(thisVar)
-
-    rule download:
-        input: 
-            expand(KAPy.buildPath(config,'inputs','{fname}'),
-                   fname=[re.sub('.url','',x) 
-                          for x in os.listdir(KAPy.buildPath(config,'URLs'))])
-
-    rule download_file:
-        output:
-            KAPy.buildPath(config,'inputs','{fname}.nc')
-        input: 
-            #Only download if a new URL has been added - ignore updates
-            ancient(KAPy.buildPath(config,'URLs','{fname}.nc.url'))
-        run:
-            KAPy.downloadESGF(config,input,output)
-
-    rule download_status:
-        output:
-            KAPy.buildPath(config,'notebooks','Download_status.nb.html')
-        input: #Any changes in the two directories will trigger a rebuild
-            KAPy.buildPath(config,'URLs'),
-            KAPy.buildPath(config,'inputs')
-        script:
-            "./notebooks/Download_status.Rmd"
-
-# Collate datasets---------------------------------
-# Compile the data available into xarray dataset objects for further processing
-# Get the full list of model inputs first
-allInputs=glob.glob(KAPy.buildPath(config,'inputs',"*.nc"))
-
+# Primary Variables---------------------------------
 #Plural rule
-rule datasets:
+rule primVars:
     input:
-        [KAPy.buildPath(config,'datasets',f) \
-                     for f in KAPy.inferDatasets(config,allInputs)]
+        list(wf['primVars'].keys())
 
 #Singular rule
 #Requires a bit of a hack with a lamba function to be able to both use a input function
 #and feed additional arguments to the function
-rule dataset_single:
+rule primVar_single:
     output:
-        KAPy.buildPath(config,'datasets',"{stem}.nc.pkl")
+        KAPy.buildPath(config,'primVars',"{pv}")
     input:
-        lambda wildcards: KAPy.deduceDatasetInputs(config,
-                                                   wildcards.stem+".nc.pkl",
-                                                   allInputs)
+        lambda wildcards: wf['primVars'][KAPy.buildPath(config,'primVars',wildcards.pv)]
     run:
-        KAPy.buildDataset(config,input,output)
-    
+        KAPy.buildPrimVar(config,input,output)
+
+# Secondary variables -------------------------
+# "Secondary variables" are calculated as new variables derived from primary variables.  
+# Good examples include FWI and PoteEvap. 
+# TODO
         
 # Bias correction -------------------
 # TODO
 
-# Derived variables -------------------------
-#A useful concept is also the idea of "derived variables", that we might need to calculate as
-#intermediate steps in the processing chain, before we calculate indicators from them.
-#Good examples include FWI and PoteEvap
-#Remember that they will also need xarray pickles too
-#Can discuss whether we do this before or after bias correction
-#TODO
-
 
 # Indicators ---------------------------------
 # Create a loop over the indicators that defines the singular and plural rules
-# In particular,start with the assumption of univariate indicators - we can always extend it later. The trick will be to loop over the indicators indvidiually, rather than trying to 
-#do it all in one hit.
-allDatasets=glob.glob(KAPy.buildPath(config,'datasets',"*.nc.pkl"))
-datasetList=[ds['shortname'] for ds in config['datasets'].values()]
-indList=[ind['id'] for ind in config['indicators'].values()]
+# as well as the combined run
 
+#Indicator singular rule
 def ind_single_rule(thisInd):
-    rule:  #Indicator singular rule
-        name: f'i{thisInd["id"]}_file'
+    rule:  
+        name: f'i{thisInd["id"]}_single'
         output:
-            KAPy.buildPath(config,'indicators',f'i{thisInd["id"]}_'+'{stem}')
+            KAPy.buildPath(config,'indicators',"{indFname}")
         input:
-            KAPy.buildPath(config,'datasets',f'{thisInd["variables"]}_'+'{stem}.pkl')
+            lambda wildcards: 
+                wf['indicators'][thisInd["id"]][ KAPy.buildPath(config,'indicators',wildcards.indFname)]
         run:
-            KAPy.calculateIndicators(thisInd=thisInd,
-                                     config=config,
-                                     outPath=output,
-                                     datPkl=input)
+            KAPy.calculateIndicators(config=config,
+                                     inFile=input,
+                                     outFile=output,
+                                     thisInd=thisInd)
+                                     
+
+#Indicator plural rule
 def ind_plural_rule(thisInd):
-    rule:  #Indicator plural rule
+    rule:
         name: f'i{thisInd["id"]}'
         input:
-            expand(KAPy.buildPath(config,'indicators','i{id}_{stem}.nc'),
-                   id=thisInd['id'],
-                   stem=[re.sub('^.+?_|.nc.pkl','',os.path.basename(x)) for x in allDatasets])
+            list(wf['indicators'][thisInd['id']].keys())
             
 for thisInd in config['indicators'].values():
     ind_single_rule(thisInd)
@@ -147,11 +81,10 @@ for thisInd in config['indicators'].values():
 #Run all indicators    
 rule indicators:
     input:
-        expand(KAPy.buildPath(config,'indicators','i{id}_{stem}.nc'),
-                   id=indList,
-                   stem=[re.sub('^.+?_|.nc.pkl','',os.path.basename(x)) for x in allDatasets])
- 
-           
+        [list(thisInd.keys()) for thisInd in wf['indicators'].values()]
+
+'''           
+                                               
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
 # This is not always the case, and so we add a regridding step prior to ensemble calculation
@@ -168,64 +101,45 @@ rule regrid_file:
     run:
         KAPy.regrid(config,input,output)
 
+'''
 
 # Enssemble Statistics ---------------------------------
-# Now we can combine them
+# Now we can combine them into ensembles
+#Plural rule
 rule ensstats:
     input:
-        expand(KAPy.buildPath(config,'ensstats','i{ind}_ensstat_{dataset}.nc'),
-               ind=indList,
-               dataset=datasetList)
+        list(wf['ensstats'].keys())
 
-def enstat_rule(ind,ds):
-        rule:
-            name: f'ensstat_i{ind}_{ds}'
-            output:
-                KAPy.buildPath(config,'ensstats',f'i{ind}_ensstat_{ds}.nc')
-            input:
-                glob.glob(KAPy.buildPath(config,'indicators',f'i{ind}_*_{ds}_*.nc'))
-            run:
-                KAPy.generateEnsstats(config,input,output)
+#Singular rule
+rule ensstats_single:
+    output:
+        KAPy.buildPath(config,'ensstats',"{es}")
+    input:
+        lambda wildcards: wf['ensstats'][KAPy.buildPath(config,'ensstats',wildcards.es)]
+    run:
+        KAPy.generateEnsstats(config,input,output)
 
-for thisDS in datasetList:
-    for thisInd in indList:
-        enstat_rule(thisInd,thisDS)
-        
 
 #Areal statistics------------------
 #Areal statistics can be calculated for both the enssemble statistics and the
 #individual ensemble members - these options can be turned on and off as required
-#via the configuration options. However, this situation also creates an ambiguity 
-#that needs to be resolved explicitly - see ruleorder directive
-arealstatsStems=KAPy.listFiles(config,"ensstats")
-if config['arealstats']['calcForMembers']:
-    arealstatsStems+=KAPy.listFiles(config,"indicators")
-    
+#via the configuration options. 
+#Plural rule
 rule arealstats:
     input:
-        expand(KAPy.buildPath(config,'arealstats','{fnamestem}.csv'),
-               fnamestem=[os.path.splitext(os.path.basename(x))[0] 
-                               for x in arealstatsStems])
+        list(wf['arealstats'].keys())
+    default_target: True
 
-rule arealstats_from_ensstats:
+#Singular rule
+rule arealstats_single:
     output:
-        KAPy.buildPath(config,'arealstats','{stem}.csv')
+        KAPy.buildPath(config,'arealstats','{arealstats}')
     input:
-        KAPy.buildPath(config,'ensstats','{stem}.nc')
+        lambda wildcards: wf['arealstats'][KAPy.buildPath(config,'arealstats',wildcards.arealstats)]
     run:
         KAPy.generateArealstats(config,input,output)
 
-rule arealstats_from_ens_members:
-    output:
-        KAPy.buildPath(config,'arealstats','{stem}.csv')
-    input:
-        KAPy.buildPath(config,'indicators','{stem}.nc')
-    run:
-        KAPy.generateArealstats(config,input,output)
-
-#ruleorder: arealstats_from_ensstats > arealstats_from_ens_members
-
-
+'''
 # Outputs ---------------------------------
 # Notebooks, amongst other things
 rule notebooks:
@@ -237,3 +151,4 @@ rule notebooks:
     script:
         "./notebooks/Indicator_plots.Rmd"
         
+'''
