@@ -12,7 +12,7 @@ A configured fresh version of KAPy. See the "Getting Started" section of README.
 
 1. Start by choosing the KAPy configuration to work with. The "test" configuration in `./configs/test` is the one to use here. Copy (or soft-link) the `config.yaml` file found there into the KAPy root directory e.g
 
-````
+```
 cp ./configs/tutorial/config.yaml .
 ```
 
@@ -22,7 +22,7 @@ cp ./configs/tutorial/config.yaml .
 
 4. Before running anything, we make sure that we have some working directories. The script `./Setup.py` takes care of setting these up automagically, based on the values defined in the config file. Run it.
 
-````
+```
 ./Setup.py
 ```
 
@@ -37,18 +37,17 @@ cp ./configs/tutorial/config.yaml .
 
 9. We are now actually ready to roll. KAPy is run via the `snakemake` command - you can get lots of help directly from snakemake using
 
-````
+```
 snakemake -h
 ```
 
 10. Before actually making any changes to the disk, it can be a good idea to check when snakemake is actually going to do. The `-n` switch forces a dry-run. Try it:
 
-````
+```
 snakemake -n
 ```
 11. You will get an overview of all of the different targets that are going to be run. Now, lets run them all. The `--cores` argument is required by snakemake - in the example below we only use one processor, handling one job at a time, but feel free to scale this up depending on the resources available. One of the beauties of snakemake is that it scales well from laptops to clusters - you can easily switch between the two by simply adjusting the number of resources used.
-
-````
+```
 snakemake --cores 1
 ```
 
