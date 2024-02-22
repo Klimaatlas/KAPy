@@ -19,19 +19,13 @@ def loadConfig(configfile='config.yaml',useDefaults=True,defaultFile='configs/de
         #Load defaults
         with open(defaultFile, 'r') as f:
             dft=yaml.safe_load(f)
-        #Recursive update function - thanks to ChatGPT
-        def recursive_update_dict(d, update_dict):
-            for key, value in d.items():
-                if isinstance(value, dict) and key in update_dict:
-                    # If the value is another dictionary and the key exists in the update_dict,
-                    # recursively update it with the corresponding update_dict entry.
-                    recursive_update_dict(value, update_dict[key])
-                elif key in update_dict:
-                    # If the key exists in the update_dict, 
-                    # update the value in the original dictionary.
-                    d[key] = update_dict[key]                   
-            return(d)
-        rtn=recursive_update_dict(dft,cfg)
+        #Previously we have done a partial update of the defaults, using a 
+        #recursive function that digs down below the top level. This doesn't
+        #work very well unfortunately, particularly when you want to exclude 
+        #elements. Here we use a simple top-level replacement instead
+        rtn=dft
+        for key,values in cfg.items():
+            rtn[key]=values
         return(rtn)
     else:
         return(cfg)

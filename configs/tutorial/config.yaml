@@ -33,4 +33,14 @@ indicators:
         season: 'Annual'   #Use key name for seasons. Use 'All' for all defined seasons.
         statistic: 'mean'
         time_binning: "periods" #Choose between periods, year, month
-
+scenarios:  #A combination of CMIP experiments that are basis for analysis
+    rcp26:
+        id: 26
+        shortname: 'rcp26'
+        description: 'Low emissions scenario (RCP2.6)'
+        experiments: ['historical','rcp26']
+    rcp85:
+        id: 85
+        shortname: 'rcp85'
+        description: 'High emissions scenario (RCP8.5)'
+        experiments: ['historical','rcp85']

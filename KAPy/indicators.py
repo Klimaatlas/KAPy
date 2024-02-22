@@ -6,7 +6,8 @@ import numpy as np
 import sys
 
 #config=KAPy.loadConfig()
-#inFile=['./workDir/2.primVars/tas_CORDEX_rcp26_tas_AFR-22_MOHC-HadGEM2-ES_r1i1p1_GERICS-REMO2015_v1_mon.nc']
+#inFile=['./workDir/2.primVars/tas_CORDEX_rcp45_AFR-22_MPI-M-MPI-ESM-LR_r1i1p1_GERICS-REMO2015_v1_mon.nc']
+#thisInd=config['indicators'][101]
 
 def calculateIndicators(config,inFile,outFile,thisInd):
     
