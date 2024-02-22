@@ -30,7 +30,7 @@ rule primVars:
 #Singular rule
 #Requires a bit of a hack with a lamba function to be able to both use a input function
 #and feed additional arguments to the function
-rule primVar_single:
+rule primVar_file:
     output:
         KAPy.buildPath(config,'primVars',"{pv}")
     input:
@@ -52,9 +52,9 @@ rule primVar_single:
 # as well as the combined run
 
 #Indicator singular rule
-def ind_single_rule(thisInd):
+def ind_singular_rule(thisInd):
     rule:  
-        name: f'i{thisInd["id"]}_single'
+        name: f'i{thisInd["id"]}_file'
         output:
             KAPy.buildPath(config,'indicators',"{indFname}")
         input:
@@ -75,7 +75,7 @@ def ind_plural_rule(thisInd):
             list(wf['indicators'][thisInd['id']].keys())
             
 for thisInd in config['indicators'].values():
-    ind_single_rule(thisInd)
+    ind_singular_rule(thisInd)
     ind_plural_rule(thisInd)
 
 #Run all indicators    
@@ -111,7 +111,7 @@ rule ensstats:
         list(wf['ensstats'].keys())
 
 #Singular rule
-rule ensstats_single:
+rule ensstats_file:
     output:
         KAPy.buildPath(config,'ensstats',"{es}")
     input:
@@ -131,7 +131,7 @@ rule arealstats:
     default_target: True
 
 #Singular rule
-rule arealstats_single:
+rule arealstats_file:
     output:
         KAPy.buildPath(config,'arealstats','{arealstats}')
     input:
