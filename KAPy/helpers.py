@@ -18,7 +18,10 @@ def buildPath(cfg,thisDir, files=[]):
     if isinstance(files,str):
         rtn=os.path.join(path,files)
     elif isinstance(files,Iterable):
-        rtn=[os.path.join(path,f) for f in files]
+        if len(files)!=0:
+            rtn=[os.path.join(path,f) for f in files]
+        else:
+            rtn=path
     else:
         sys.exit("Unsupported variable type supplied to KAPy.buildPath()")
     return(rtn)
