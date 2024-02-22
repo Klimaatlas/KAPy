@@ -4,14 +4,18 @@ KAPy is an open-source and flexible framework that can be used to generate clima
 
 ## Getting started
 
-Here we describe the basic steps to install and configure KAPy. Start by cloning the latest version of the code from the repository:
+Here we describe the basic steps to install and configure KAPy. First you need to get a copy of the KAPy source code onto the machine where you want to work. This is most easily done by downloading the a zip of the latest release from [https://github.com/Klimaatlas/KAPy/releases]. Unzip the downloaded file to an appropriate location and you've got yourself a copy of KAPy.
+
+Alternatively, if you have git installed on your machine, you can simply clone the latest version of the code directly from the repository:
 
 ```
 git clone https://github.com/Klimaatlas/KAPy.git
 ```
-Alternatively, if you don't have git installed, you can also download the source-code of the latest release from [https://github.com/Klimaatlas/KAPy/releases] or of the very latest version from [https://github.com/Klimaatlas/KAPy/archive/refs/heads/main.zip]. In either case, unzip the downloaded file to an appropriate location and you've got yourself a copy of KAPy.
+Next, we need to setup the Python environment, containing the packages used by KAPy. Add-on libraries in Python are referred to as "packages" and their installation is maintained by a package manager, of which there are many to choose from (e.g. Anaconda, Conda, Miniconda, Mamba, Micromamba etc). The approach depends on the operating system.
 
-Next, we need to setup the Python environment, containing the packages used by KAPy. Add-on libraries in Python are referred to as "packages" and their installation is maintained by a package manager, of which there are many to choose from (e.g. Anaconda, Conda, Miniconda, Mamba, Micromamba etc). The example code given here is for Conda - you can download it from https://conda.io/projects/conda/en/latest/index.html if you don't have it already, but KAPy should work just as well with other package managers.
+### Linux environment setup
+
+The example code given here is for the Conda package manager - you can download it from https://conda.io/projects/conda/en/latest/index.html if you don't have it already, but KAPy should work just as well with other package managers. 
 
 A list of packages required to run KAPy can be found in the file `./configs/eny.yaml`. In the case of Conda, this list can be used to create an environment as follows:
 
@@ -19,7 +23,19 @@ A list of packages required to run KAPy can be found in the file `./configs/eny.
 conda env create -f ./configs/env.yaml
 ```
 
-The resulting environment (called `KAPy`) is a self-contained setup that has everything necessary to run KAPy. Prior to useage, it needs to be activated using:
+### Windows environment setup
+
+The procedure described for Windows installations assumes that Anaconda (https://www.anaconda.com/) is installed on the Windows machine. 
+
+1. Open the Anaconda navigator from the windows menu.
+2. Select "Environments" from the menu at left, then the "Import" button from the options at the bottom.
+3. Select the folder next to "Specification File" in the resulting dialog box. Select the `./configs/env.yaml` file from the KAPy source code.
+4. Creating the environment may take some time.
+5. Next select "Anaconda Prompt" from the Windows menu and browse to the KAPy folder. Use this terminal for all subsequent commands.
+
+### Configuration
+
+The resulting environment (called `KAPy`) is a self-contained setup that has everything necessary to run KAPy. For both operating system, the KAPy environment need to be activated prior to useage.
 
 ```
 conda activate KAPy
