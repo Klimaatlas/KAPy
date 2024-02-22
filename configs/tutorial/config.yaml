@@ -1,0 +1,36 @@
+# Basic configuration file
+#---------------------------
+# This configuration file is intended to be used as a basic example and test
+# dataset for the KAPy suite. It is loosely based on the configuration used in the
+# Ghana Climate Atlas, but with simplifications to make it run faster. Sample datasets
+# can be downloaded from https://download.dmi.dk/Research_Projects/KAPy/
+# For instructions, see 
+
+domain:
+    xmin: -4
+    xmax: 2
+    dx: 0.1
+    ymin: 4
+    ymax: 12
+    dy: 0.1
+inputs:  #Define list of input data sources
+    CORDEX: 
+        tas:
+            path: "CORDEX/tas_*"   #Glob
+            regex: "^tas_(.*)_.*?.nc$" # Brackets are the common element 
+            internalVarName: "tas"
+    ERA5:
+        tas:
+            path: "ERA5_monthly/t2m_ERA5_monthly.nc"
+            regex: "^t2m_(.*).nc$"  
+            internalVarName: "t2m"
+indicators:
+    101:
+        id: 101
+        name: 'Annual mean temperature'
+        units: '°C'
+        variables: 'tas'
+        season: 'Annual'   #Use key name for seasons. Use 'All' for all defined seasons.
+        statistic: 'mean'
+        time_binning: "periods" #Choose between periods, year, month
+
