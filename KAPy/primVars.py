@@ -1,6 +1,5 @@
 #Given a set of input files, create objects that can be worked with
 
-import KAPy
 import pandas as pd
 import os
 import xarray as xr

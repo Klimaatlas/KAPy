@@ -1,4 +1,3 @@
-import KAPy
 import pandas as pd
 import os
 import xarray as xr

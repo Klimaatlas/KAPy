@@ -7,7 +7,7 @@
 # * Get all alternative URLs for duplicate copies. These can be used if the first option fails
 # * Handle issue with facets warning
 
-import KAPy
+from . import helpers
 import xarray as xr
 import os
 import tqdm
@@ -22,7 +22,7 @@ import pickle
 
 def searchESGF(config):
     #Load ESGF configuration
-    ESGFcfg=KAPy.loadConfig(config['download']['ESGF'],
+    ESGFcfg=helpers.loadConfig(config['download']['ESGF'],
                                    useDefaults=False)
     
     #Setup search connection
@@ -41,7 +41,7 @@ def searchESGF(config):
         print('Found', ctx.hit_count ,'hits for', varname,'...')
         
         #Write the dataset object to disk, as a pickle
-        with open(KAPy.buildPath(config,'search',varname+'.pkl'),'wb') as f:
+        with open(helpers.buildPath(config,'search',varname+'.pkl'),'wb') as f:
             pickle.dump(ctx,f,protocol=-1)
 
 def getESGFurls(config,thisPkl):
@@ -58,7 +58,7 @@ def getESGFurls(config,thisPkl):
             files = ds.file_context().search()
             for f in files:
                 fname=os.path.basename(f.download_url)
-                with open(KAPy.buildPath(config,'URLs',fname+'.url'),
+                with open(helpers.buildPath(config,'URLs',fname+'.url'),
                           'w') as URLfile:
                     URLfile.write(f.opendap_url)
                     
@@ -69,9 +69,9 @@ def downloadESGF(config,urlFile,ncFile):
         thisURL=f.read()
     
     #Read configurations
-    ESGFcfg=KAPy.loadConfig(config['download']['ESGF'],
+    ESGFcfg=helpers.loadConfig(config['download']['ESGF'],
                                useDefaults=False)
-    creds=KAPy.loadConfig(ESGFcfg['credentials'],
+    creds=helpers.loadConfig(ESGFcfg['credentials'],
                                useDefaults=False)
 
 

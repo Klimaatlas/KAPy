@@ -1,4 +1,3 @@
-import KAPy
 import pickle
 import xarray as xr
 import os

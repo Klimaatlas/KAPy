@@ -1,6 +1,6 @@
 #Given a set of input files, create datachunk objects that can be worked with
 
-import KAPy
+from . import helpers
 import pandas as pd
 import os
 import sys
@@ -30,7 +30,7 @@ def getWorkflow(config):
     for thisInp in inp.keys():
         for thisVar in inp[thisInp].keys():
             #Get file list
-            theseFiles=glob.glob(KAPy.buildPath(config,'inputs',inp[thisInp][thisVar]['path']))
+            theseFiles=glob.glob(helpers.buildPath(config,'inputs',inp[thisInp][thisVar]['path']))
             #Write back into input list
             thisKey+=1
             inpDict[thisKey]={}
@@ -55,7 +55,7 @@ def getWorkflow(config):
         theseFiles['pvFname']=theseFiles['varName']+"_" + theseFiles['src'] + "_" + thisSc['shortname'] + "_" + pvFname  
         pvList+=[theseFiles]
     pvTbl=pd.concat(pvList) 
-    pvTbl['pvPath']=KAPy.buildPath(config,'primVars',pvTbl['pvFname'])
+    pvTbl['pvPath']=helpers.buildPath(config,'primVars',pvTbl['pvFname'])
     #Build the full filename
     if config['primVars']['storeAsNetCDF']:
         pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
@@ -85,7 +85,7 @@ def getWorkflow(config):
     indTbl['varFname']=[os.path.basename(f) for f in indTbl['varPath']]
     indTbl['indFname']= indTbl.apply(lambda x: f'i{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
                                     axis=1)
-    indTbl['indPath']= KAPy.buildPath(config,'indicators',indTbl['indFname'])
+    indTbl['indPath']= helpers.buildPath(config,'indicators',indTbl['indFname'])
     indDict=indTbl.groupby("id").apply(lambda x: [x]).to_dict() 
     for key in indDict.keys():
         indDict[key]=indDict[key][0].groupby("indPath").apply(lambda x:list(x['varPath'])).to_dict()
@@ -96,7 +96,7 @@ def getWorkflow(config):
                         columns=["indPath"])
     ensTbl['indFname']=[os.path.basename(p) for p in ensTbl['indPath']]
     ensTbl['ens']=ensTbl['indFname'].str.extract("(.*?_.*?_.*?)_.*$")
-    ensTbl['ensPath']=KAPy.buildPath(config,"ensstats",ensTbl['ens']+"_ensstats.nc")
+    ensTbl['ensPath']=helpers.buildPath(config,"ensstats",ensTbl['ens']+"_ensstats.nc")
     #Extract the dict
     ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['indPath'])).to_dict()
     
@@ -109,7 +109,7 @@ def getWorkflow(config):
     #Now setup output structures
     asTbl['srcFname']=[os.path.basename(p) for p in asTbl['srcPath']]
     asTbl['asFname']=asTbl['srcFname'].str.replace('nc','csv')
-    asTbl['asPath']=KAPy.buildPath(config,'arealstats',asTbl['asFname'])
+    asTbl['asPath']=helpers.buildPath(config,'arealstats',asTbl['asFname'])
     #Make the dict
     asDict=asTbl.groupby("asPath").apply(lambda x:list(x['srcPath'])).to_dict()
     
