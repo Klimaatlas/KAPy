@@ -21,7 +21,9 @@ dirs:
     notebooks: 'notebooks'
 domain: #Defined in separate config.yaml
 ensembles:
-    percentiles: [10,50,90]
+    upperPercentile: 90
+    centralPercentile: 50
+    lowerPercentile: 10
 indicators:  #Defined in separate config.yaml
 inputs: #Defined in separate config.yaml
 periods:  #Define periods here. The period with the lowest ID is used as the reference period
