@@ -53,7 +53,7 @@ def generateEnsstats(config,infiles,outfile):
     #Calculate the statistics
     ens_mean_std = xcEns.ensemble_mean_std_max_min(thisEns)
     ens_percs = xcEns.ensemble_percentiles(thisEns, split=False, 
-                                           values=config['ensembles']['percentiles'])
+                                           values=[x for x in config['ensembles'].values()])
     ensOut=xr.merge([ens_mean_std,ens_percs])
     #Write results
     ensOut.to_netcdf(outfile[0])

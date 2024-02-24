@@ -21,9 +21,12 @@ dirs:
     notebooks: 'notebooks'
 domain: #Defined in separate config.yaml
 ensembles:
-    percentiles: [10,50,90]
+    upperPercentile: 90
+    centralPercentile: 50
+    lowerPercentile: 10
 indicators:  #Defined in separate config.yaml
 inputs: #Defined in separate config.yaml
+notebooks: 'KAPy/notebooks/Output_overview.py.ipynb'
 periods:  #Define periods here. The period with the lowest ID is used as the reference period
     period1:
         id: 1
@@ -55,16 +58,19 @@ scenarios:  #A combination of CMIP experiments that are basis for analysis
         shortname: 'rcp26'
         description: 'Low emissions scenario (RCP2.6)'
         experiments: ['historical','rcp26']
+        colour: 'darkblue'
     rcp45:
         id: 45
         shortname: 'rcp45'
         description: 'Medium emissions scenario (RCP4.5)'
         experiments: ['historical','rcp45']
+        colour: 'orange'
     rcp85:
         id: 85
         shortname: 'rcp85'
         description: 'High emissions scenario (RCP8.5)'
         experiments: ['historical','rcp85']
+        colour: 'maroon'
 seasons:
     Annual:
         id: 0

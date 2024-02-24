@@ -63,7 +63,7 @@ def getWorkflow(config):
         pvTbl['pvPath']=pvTbl['pvPath']+'.pkl' #Pickle
 
     #tidy up the output into a dict
-    pvDict=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath'])).to_dict()
+    pvDict=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath']),include_groups=False).to_dict()
     
     #Indicators -----------------------------------------------------
     ind=config['indicators']
@@ -86,9 +86,9 @@ def getWorkflow(config):
     indTbl['indFname']= indTbl.apply(lambda x: f'i{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
                                     axis=1)
     indTbl['indPath']= helpers.buildPath(config,'indicators',indTbl['indFname'])
-    indDict=indTbl.groupby("id").apply(lambda x: [x]).to_dict() 
+    indDict=indTbl.groupby("id").apply(lambda x: [x],include_groups=False).to_dict() 
     for key in indDict.keys():
-        indDict[key]=indDict[key][0].groupby("indPath").apply(lambda x:list(x['varPath'])).to_dict()
+        indDict[key]=indDict[key][0].groupby("indPath").apply(lambda x:list(x['varPath']),include_groups=False).to_dict()
     
     #Ensembles-------------------------------------
     #Build ensemble membership
@@ -98,7 +98,7 @@ def getWorkflow(config):
     ensTbl['ens']=ensTbl['indFname'].str.extract("(.*?_.*?_.*?)_.*$")
     ensTbl['ensPath']=helpers.buildPath(config,"ensstats",ensTbl['ens']+"_ensstats.nc")
     #Extract the dict
-    ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['indPath'])).to_dict()
+    ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['indPath']),include_groups=False).to_dict()
     
     #Arealstatistics----------------------------------------------
     #Start by building list of input files to calculate arealstatistics for
@@ -111,15 +111,26 @@ def getWorkflow(config):
     asTbl['asFname']=asTbl['srcFname'].str.replace('nc','csv')
     asTbl['asPath']=helpers.buildPath(config,'arealstats',asTbl['asFname'])
     #Make the dict
-    asDict=asTbl.groupby("asPath").apply(lambda x:list(x['srcPath'])).to_dict()
+    asDict=asTbl.groupby("asPath").apply(lambda x:list(x['srcPath']),include_groups=False).to_dict()
     
-    
+    #Notebooks----------------------------------------------------
+    #This is easy - notebooks need everything in ensstats and arealstats
+    nbInps=list(ensDict.keys())+list(asDict.keys())
+    if isinstance(config['notebooks'],str):
+        nbTbl=pd.DataFrame([config['notebooks']],columns=['nbPath'])
+    else:
+        nbTbl=pd.DataFrame(config['notebooks'],columns=['nbPath'])
+    nbTbl['nbFname']=[os.path.basename(f) for f in nbTbl['nbPath']]
+    nbTbl['htmlFname']=nbTbl['nbFname'].str.replace(".ipynb",".html")
+    nbTbl['htmlPath']=helpers.buildPath(config,'notebooks',nbTbl['htmlFname'])
+    nbDict={r['htmlPath']: [r['nbPath']] + nbInps for i,r in nbTbl.iterrows()}
     
     #Finish--------------------------------------------------------
     rtn={'primVars':pvDict,
          'indicators':indDict,
         'ensstats':ensDict,
-        'arealstats':asDict}
+        'arealstats':asDict,
+        'notebooks':nbDict}
     return(rtn)
 
 

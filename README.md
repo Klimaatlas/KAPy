@@ -36,7 +36,7 @@ Note that `config.yaml` files in the project directory are ignored by git, to av
 Finally, a small setup script can be used to generate the necessary output directories:
 
 ```
-python ./Setup.py
+python ./setupdirs.py
 ```
 
 And so you're ready to go. For getting familar with the workings of KAPy, we recommend looking at the document listed below, and particularly the tutorials.
