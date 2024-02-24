@@ -73,7 +73,9 @@ def makeSpatialplot(config,thisInd,srcFiles):
      labs(x="",y="",fill=f"Change\n({thisInd['units']})",
          caption="Change in indicator from first period to last period")+
      scale_x_continuous(expand=[0,0])+
-     scale_y_continuous(expand=[0,0])
+     scale_y_continuous(expand=[0,0])+
+     theme(legend_position='bottom')+
+     coord_fixed()
     )
     return(p)    
     

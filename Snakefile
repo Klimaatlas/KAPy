@@ -128,7 +128,6 @@ rule ensstats_file:
 rule arealstats:
     input:
         list(wf['arealstats'].keys())
-    default_target: True
 
 #Singular rule
 rule arealstats_file:
@@ -139,16 +138,32 @@ rule arealstats_file:
     run:
         KAPy.generateArealstats(config,input,output)
 
-'''
 # Outputs ---------------------------------
 # Notebooks, amongst other things
+#Plural rule
 rule notebooks:
+    input:
+        list(wf['notebooks'].keys())
+    default_target: True
+
+#Singular rule
+rule notebook_file:
     output:
-        KAPy.buildPath(config,'notebooks','Indicator_notebook.nb.html')
-    input: #Any changes in this directory will trigger a rebuild
-        KAPy.buildPath(config,'ensstats'),
-        KAPy.buildPath(config,'arealstats'),
-    script:
-        "./notebooks/Indicator_plots.Rmd"
+        KAPy.buildPath(config,'notebooks','{notebook}')
+    input:
+        lambda wildcards: wf['notebooks'][KAPy.buildPath(config,'notebooks',wildcards.notebook)]
+    shell:
+        "jupyter nbconvert --execute --to html --TemplateExporter.exclude_input=True --output-dir=. --output='{output}' {input[0]}"
+
         
+'''
+
+rule all:
+    input:
+        {primVars.input},
+        {indicators.input},
+        {ensstats.input},
+        {arealstats.input}
+    default_target: True
+
 '''

@@ -26,7 +26,7 @@ ensembles:
     lowerPercentile: 10
 indicators:  #Defined in separate config.yaml
 inputs: #Defined in separate config.yaml
-outputNotebook: './notebooks/Output_overview.py.ipynb'
+notebooks: 'KAPy/notebooks/Output_overview.py.ipynb'
 periods:  #Define periods here. The period with the lowest ID is used as the reference period
     period1:
         id: 1
