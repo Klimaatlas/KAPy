@@ -32,7 +32,7 @@ indicators:
         variables: 'tas'
         season: 'Annual'   #Use key name for seasons. Use 'All' for all defined seasons.
         statistic: 'mean'
-        time_binning: "periods" #Choose between periods, year, month
+        time_binning: "periods" #Choose between periods, years, months
 scenarios:  #A combination of CMIP experiments that are basis for analysis
     rcp26:
         id: 26
