@@ -41,6 +41,13 @@ python ./setupdirs.py
 
 And so you're ready to go. For getting familar with the workings of KAPy, we recommend looking at the document listed below, and particularly the [Tutorials](./docs/tutorials/README.md).
 
+In the future, you may need to update the environment to reflect changes. This can be done with:
+
+```
+conda env update --file ./configs/env.yaml --prune
+```
+
+
 ## Documentation
 
 Documentation for KAPy is contained in the `./docs` folder. 
