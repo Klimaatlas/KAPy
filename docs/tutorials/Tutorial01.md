@@ -10,7 +10,7 @@ A configured fresh version of KAPy. See the "Getting Started" section of README.
 
 ## Instructions
 
-1. Start by choosing the KAPy configuration to work with. The "test" configuration in `./configs/test` is the one to use here. Copy (or soft-link) the `config.yaml` file found there into the KAPy root directory e.g
+1. Start by choosing the KAPy configuration to work with. The "tutorial" configuration in `./configs/tutorial` is the one to use here. Copy (or soft-link) the `config.yaml` file found there into the KAPy root directory e.g
 
 ```
 cp ./configs/tutorial/config.yaml .
@@ -52,3 +52,13 @@ snakemake --cores 1
 ```
 
 12. Snakemake will take a few minutes to run - take note of the outputs, which detail what is being done at each step, together with the input and output files.  
+
+13. Now have a look in `workDir` and the subdirectories there. You will see that they have all be filled out with the corresponding files.
+
+14. A Jupyter notebook is used to give a quick overview of the results. Note that this is intended to be generic and work for all possible configurations - the plot that you actually want is most likely not there. Nevertheless, it does still provide a nice overview. Open the file `./workDir/notebooks/Output_overview.py.html` in e.g. a browser to view the results:
+
+```
+firefox workDir/notebooks/Output_overview.py.html 
+```
+
+15. Congratulations! You've finished your first analysis in KAPy! You can learn more in the other [Tutorials](README.md) that follow on from this point.
