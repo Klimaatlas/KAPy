@@ -125,12 +125,23 @@ def getWorkflow(config):
     nbTbl['htmlPath']=helpers.buildPath(config,'notebooks',nbTbl['htmlFname'])
     nbDict={r['htmlPath']: [r['nbPath']] + nbInps for i,r in nbTbl.iterrows()}
     
-    #Finish--------------------------------------------------------
+    #Collate and round off--------------------------------------------------------
     rtn={'primVars':pvDict,
          'indicators':indDict,
         'ensstats':ensDict,
         'arealstats':asDict,
         'notebooks':nbDict}
+    #Need to create an "all" dict as well containing all targets in the workflow
+    allList=[]
+    for k,v in rtn.items():
+        if k=='indicators':  #Requires special handling, as it is a nested list
+            for x in v.values():
+                allList+=x.keys()
+        else:
+            allList+=v.keys()
+    rtn['all']=allList
+    
+    #Fin-----------------------------------
     return(rtn)
 
 
