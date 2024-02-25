@@ -144,7 +144,6 @@ rule arealstats_file:
 rule notebooks:
     input:
         list(wf['notebooks'].keys())
-    default_target: True
 
 #Singular rule
 rule notebook_file:
@@ -155,15 +154,10 @@ rule notebook_file:
     shell:
         "jupyter nbconvert --execute --to html --TemplateExporter.exclude_input=True --output-dir=. --output='{output}' {input[0]}"
 
-        
-'''
 
+#All-------------------
 rule all:
     input:
-        {primVars.input},
-        {indicators.input},
-        {ensstats.input},
-        {arealstats.input}
+        wf['all']
     default_target: True
 
-'''
