@@ -47,11 +47,11 @@ def calculateIndicators(config,inFile,outFile,thisInd):
         dout=dout.assign_coords(period=periodIds)
 
     #Time binning by defined units
-    elif thisInd['time_binning'].lower() in ['year','month']:
+    elif thisInd['time_binning'].lower() in ['years','months']:
         #Then group by time
-        if thisInd['time_binning'].lower()=="year":
+        if thisInd['time_binning'].lower()=="years":
             datGroupped=datSeason.resample(time="1Y",label="right")
-        elif thisInd['time_binning'].lower()=="month":
+        elif thisInd['time_binning'].lower()=="months":
             datGroupped=datSeason.resample(time="1M",label="right")
         else:
             sys.exit("Shouldn't be here")
