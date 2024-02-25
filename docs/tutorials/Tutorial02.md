@@ -1,54 +1,79 @@
-# Tutorial 1 - A basic run through
+# Tutorial 2 - Workflow control
 
 ## Goal
 
-To familiarise yourself with a minimum working example of setting up and running an analysis with KAPy.
+To familiarise yourself with snakemake and how the concepts of workflow control are implemented in KAPy.
 
 ## Point of departure
 
-A configured fresh version of KAPy. See the "Getting Started" section of README.md for more on this.
+This tutorial follows on directly from the end of [Tutorial 1](Tutorial01.md).
 
 ## Instructions
 
-1. Start by choosing the KAPy configuration to work with. The "test" configuration in `./configs/test` is the one to use here. Copy (or soft-link) the `config.yaml` file found there into the KAPy root directory e.g
-
+1. In Tutorial 1, you should have performed a complete run of a KAPy pipeline, starting from a fresh installation. You can get an overview of the files that have been created using:
 ```
-cp ./configs/tutorial/config.yaml .
-```
-
-2. Open `config.yaml` in a text viewer (e.g. vi, less) and browse through it. Note in particular the definition of the spatial domains, the input files, and the indicators. 
-
-3. Now open the file `./configs/defaults.yaml` and compare with `config.yaml`. `defaults.yaml` defines lot more options used by KAPy, but these are less frequently modified than those in `config.yaml`. In particular, pay attention to the "dirs" options, which defines the names of the default files. If you wish to modify one of the defaults, it is best to do it in `config.yaml`- values defined here will override the defaults. Details of all configuration options can be found in [./docs/Configuration.md]. 
-
-4. Before running anything, we make sure that we have some working directories. The script `./Setup.py` takes care of setting these up automagically, based on the values defined in the config file. Run it.
-
-```
-./Setup.py
+ls ./workDir/*
 ```
 
-5. Do a quick check of the `./workDir/` directory - you should now see a load of directories waiting to receive data.
+2. The status of the KAPy pipeline is maintained by a Python tool called Snakemake, which will be the focus of this Tutorial. Snakemake is conceptually very similar to GNU Make if you're familar with that - the main difference is that it is implemented in Python and therefore allows the full range of the Python language to be used in describing the workflow. Both tools work by creating a conceptual model of all the files in workflow, and the relationship and dependencies between them, known as a [https://en.wikipedia.org/wiki/Directed_acyclic_graph](Directed Acyclic Graph) (DAG for short). In Snakemake, these rules are specified in the `Snakefile` in the root directory. Open it in a text editor and have a look at it. You don't need to worry about understanding it, and in most use cases you won't need to edit it, but its good to know that it exists.
 
-
-6. So now we need some data. Download the example working dataset into a temporary directory from here https://download.dmi.dk/Research_Projects/KAPy/tas_example_dataset.zip This dataset provides a small set of CORDEX Africa monthly temperature outputs over Ghana for two different climate emissions scenarios, together with corresponding data from ERA5.
-
-7. Unzip the .zip file. You should get two directories: "CORDEX" and "ERA5_monthly".
-
-8. Move the two directories (and their contents) into the KAPy folder `./workDir/1.inputs/`. 
-
-9. We are now actually ready to roll. KAPy is run via the `snakemake` command - you can get lots of help directly from snakemake using
+3. Snakemake is built up around a series of "targets" that can be built individually, or that can be chained together into a coherent pipeline. We can get a list of these targets with the following command. Compare the titles here with what you see in the Snakefile - they are the same because the Snakefile defines these targets.
 
 ```
-snakemake -h
+snakemake -l
 ```
 
-10. Before actually making any changes to the disk, it can be a good idea to check when snakemake is actually going to do. The `-n` switch forces a dry-run. Try it:
+4. Snakemake has a handy visualisation tool that lets you examine the DAG. Try running this command, and then open `dag.png` in a graphics viewer or browser. You should be able to see the basic workflow of the pipeline, starting at the left from the primVar_files that serve as inputs, to the i101_files where the indicators are calculated, then aggregated into the ensemble stats, then the arealstats, and then finally the outbook notebook. 
 
 ```
-snakemake -n
+snakemake notebooks --dag | dot -Tpng -Grankdir=LR > dag.png
 ```
-11. You will get an overview of all of the different targets that are going to be run. Now, lets run them all. The `--cores` argument is required by snakemake - in the example below we only use one processor, handling one job at a time, but feel free to scale this up depending on the resources available. One of the beauties of snakemake is that it scales well from laptops to clusters - you can easily switch between the two by simply adjusting the number of resources used.
+
+5. Ok, lets do something a bit more concrete. A natural start is to run the pipeline again with the command below. What do you think is going to happen? And what actually happens this time?
+
 ```
 snakemake --cores 1
 ```
 
-12. Snakemake will take a few minutes to run - take note of the outputs, which detail what is being done at each step, together with the input and output files.  
+6. *Answer*: Nothing. Snakemake reports `Nothing to be done (all requested files are present and up to date).` This is perhaps surprising if you are thinking about KAPy as being a classical script. On the other hand, if you are thinking about it as a form of GNU Make, then you should have guessed the answer. What Snakemake has done here is to take the DAG specified in `Snakefile`and compare it with what actually exists on disk. When all the required files are present and correct, Snakemake is lazy and doesn't do anything.
+
+7. Ok. So lets say then that something needs to be done - maybe we have, for example, updated our input data with a new version. Part of the way that Snakemake monitors changes and dependencies is via the modification time of the files - a downstream file should be "younger" (i.e. have a more recent modification date) than an "older" upstream file. We can throw the pipeline out of balance by modifying the time of once of the source files, to make it appear new:
+
+```
+touch workDir/1.inputs/CORDEX/tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v1_mon_209101-210012.nc 
+```
+
+8. Snakemake will recognise this and want to update the pipeline. But, because it is smart (and lazy), it will only update the downstream files that are dependent on the input file. Try this:
+```
+snakemake -n
+```
+
+9. Only one of the primVar files will be updated, out of the six in total, which is smart. Lets do the update
+
+```
+snakemake --cores 1
+```
+
+10. We can illustrate this point further by damaging the state of pipeline. Lets remove an individual file in the middle of the pipeline.
+```
+rm workDir/6.ensstats/i101_CORDEX_rcp26_ensstats.nc 
+```
+11. Whats going to happen when we run snakemake now? Try and form a hypothesis.
+
+12. So, lets see. We can ask Snakemake what its going to do by doing a "dry-run" `-n:
+
+```
+snakemake -n
+```
+
+13. *Answer*: Snakemake will only run the necessary parts of the pipeline, recreating the missing indicator file (the `ensstats_file` rule is going to be run). However, recreating this file creates a version of `i101_CORDEX_rcp26_ensstats.nc` that is younger than the rest of the downstream dependencies, triggering a rebuild of them as well.
+
+14. Run the pipeline to completion to finish. 
+
+```
+snakemake --cores 1
+```
+
+15. The concepts of workflow management are fundamental to a better understanding of KAPy and its strengths. While you probably won't need to manage or edit the workflow in daily useage (this is handled automatically as a result of the configuration) it is nevertheless good to have an idea of what is going on behind the scenes.
+
+

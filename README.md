@@ -4,7 +4,7 @@ KAPy is an open-source and flexible framework that can be used to generate clima
 
 ## Getting started
 
-Here we describe the basic steps to install and configure KAPy. First you need to get a copy of the KAPy source code onto the machine where you want to work. This is most easily done by downloading the a zip of the latest version from [https://github.com/Klimaatlas/KAPy/archive/refs/heads/main.zip]. Unzip the downloaded file to an appropriate location and you've got yourself a copy of KAPy.
+Here we describe the basic steps to install and configure KAPy. First you need to get a copy of the KAPy source code onto the machine where you want to work. This is most easily done by downloading the a zip of the latest version from https://github.com/Klimaatlas/KAPy/archive/refs/heads/main.zip. Unzip the downloaded file to an appropriate location and you've got yourself a copy of KAPy.
 
 Alternatively, if you have git installed on your machine, you can simply clone the latest version of the code directly from the repository:
 
@@ -39,7 +39,7 @@ Finally, a small setup script can be used to generate the necessary output direc
 python ./setupdirs.py
 ```
 
-And so you're ready to go. For getting familar with the workings of KAPy, we recommend looking at the document listed below, and particularly the tutorials.
+And so you're ready to go. For getting familar with the workings of KAPy, we recommend looking at the document listed below, and particularly the [Tutorials](./docs/tutorials/README.md).
 
 ## Documentation
 
