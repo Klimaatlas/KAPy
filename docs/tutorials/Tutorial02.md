@@ -74,6 +74,6 @@ snakemake -n
 snakemake --cores 1
 ```
 
-15. The concepts of workflow management are fundamental to a better understanding of KAPy and its strengths. While you probably won't need to manage or edit the workflow in daily usage (this is handled automatically as a result of the configuration) it is nevertheless good to have an idea of what is going on behind the scenes.
+15. The concepts of workflow management are fundamental to a better understanding of KAPy and its strengths. While you probably won't need to manage or edit the workflow in daily usage (this is handled automatically as a result of the configuration), it is nevertheless good to have an idea of what is going on behind the scenes.
 
 
