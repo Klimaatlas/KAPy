@@ -1,10 +1,10 @@
 # KAPy - *Klimaatlases* in Python
 
-KAPy is an open-source and flexible framework that can be used to generate climate indicators anywhere in the world, working from both CMIP and CORDEX datasets. KAPy is a ground-up python-based rethink of the pipeline originally developed to power the Danish Meterological Institute's *Klimaatlas* climate service.
+KAPy is an open-source and flexible framework that can be used to generate climate indicators anywhere in the world, working from both CMIP and CORDEX datasets. KAPy is a ground-up python-based rethink of the pipeline originally developed to power the Danish Meteorological Institute's *Klimaatlas* climate service.
 
 ## Getting started
 
-Here we describe the basic steps to install and configure KAPy. First you need to get a copy of the KAPy source code onto the machine where you want to work. This is most easily done by downloading the a zip of the latest version from https://github.com/Klimaatlas/KAPy/archive/refs/heads/main.zip. Unzip the downloaded file to an appropriate location and you've got yourself a copy of KAPy.
+Here we describe the basic steps to install and configure KAPy. First, you need to get a copy of the KAPy source code onto the machine where you want to work. This is most easily done by downloading the zip of the latest version from https://github.com/Klimaatlas/KAPy/archive/refs/heads/main.zip. Unzip the downloaded file to an appropriate location and you've got yourself a copy of KAPy.
 
 Alternatively, if you have git installed on your machine, you can simply clone the latest version of the code directly from the repository:
 
@@ -13,13 +13,13 @@ git clone https://github.com/Klimaatlas/KAPy.git
 ```
 Next, we need to setup the Python environment, containing the packages used by KAPy. Add-on libraries in Python are referred to as "packages" and their installation is maintained by a package manager, of which there are many to choose from (e.g. Anaconda, Conda, Miniconda, Mamba, Micromamba etc). The example code given here is for the Conda package manager - you can download it from https://conda.io/projects/conda/en/latest/index.html if you don't have it already, but KAPy should work just as well with other package managers. The examples are also for a Linux environment - however, a similar approach will hold if you want to try and get KAPy running in Windows.
 
-A list of packages required to run KAPy can be found in the file `./configs/eny.yaml`. In the case of Conda, this list can be used to create an environment as follows:
+A list of packages required to run KAPy can be found in the file `./configs/env.yaml`. In the case of Conda, this list can be used to create an environment as follows:
 
 ```
 conda env create -f ./configs/env.yaml
 ```
 
-The resulting environment (called `KAPy`) is a self-contained setup that has everything necessary to run KAPy. The KAPy environment needs to be activated prior to useage:
+The resulting environment (called `KAPy`) is a self-contained setup that has everything necessary to run KAPy. The KAPy environment needs to be activated prior to use:
 
 ```
 conda activate KAPy
@@ -28,7 +28,7 @@ conda activate KAPy
 KAPy is configured via a configuration file, `config.yaml`, in the project base directory. Some example configuration files are stored in the folder `./configs` and can be either copied or soft-linked into the project root folder. The tutorials contained with this documentation can be configured like so:
 
 ```
-cp configs/tutorials/config.yaml .
+cp configs/tutorial/config.yaml .
 ```
 
 Note that `config.yaml` files in the project directory are ignored by git, to avoid potential conflicts between users with different configurations.
@@ -39,7 +39,7 @@ Finally, a small setup script can be used to generate the necessary output direc
 python ./setupdirs.py
 ```
 
-And so you're ready to go. For getting familar with the workings of KAPy, we recommend looking at the document listed below, and particularly the [Tutorials](./docs/tutorials/README.md).
+And so you're ready to go. To get familiar with the workings of KAPy, we recommend looking at the document listed below, and particularly the [Tutorials](./docs/tutorials/README.md).
 
 In the future, you may need to update the environment to reflect changes. This can be done with:
 
@@ -77,7 +77,7 @@ A code of conduct for the KAPy community is found in the [Code of Conduct](./doc
     
 ## Credits
     
-The development of KAPy is financed via a grant from the Danish Central Government to the Danish Meterological Institute.    
+The development of KAPy is financed via a grant from the Danish Central Government to the Danish Meteorological Institute.    
     
 ## Why KAPy?
 
@@ -86,6 +86,6 @@ KAPy takes its name from joining the KA from DMI's *Klimaatlas* with the Py from
 More importantly, the name is also a homonym for the phrase *ka pai* from *Te Reo Maori*, the language of the Maori people, the *tangata whenua* (indigenous people) of Aotearoa New Zealand. The phrase means simply "good", but can also be used as praise, as in "well done". e.g.
 
 ```
-Son: Look dad! I made a Klimaatlas in Python!
+Son: Look Dad! I made a Klimaatlas in Python!
 Dad: Ka pai, son, ka pai!
 ```
