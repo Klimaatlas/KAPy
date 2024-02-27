@@ -1,4 +1,4 @@
-# Tutorial 4 - Adding a new datasource
+# Tutorial 4 - Adding a new data source
 
 ## Goal
 
@@ -10,7 +10,7 @@ This tutorial follows on directly from the end of [Tutorial 1](Tutorial01.md).
 
 ## Instructions
 
-1. In Tutorial 1, you performed a complete run of a KAPy pipeline, starting from a fresh installation. This configuration only used a single data source (CORDEX tas) whereas in a real setting we will want to work with more than that. Here we will add precipitation to the original tas dataset, and then define new indicators to exploit it.
+1. In Tutorial 1, you performed a complete run of a KAPy pipeline, starting from a fresh installation. This configuration only used a single data source (CORDEX tas) whereas, in a real setting, we will want to work with more than that. Here we will add precipitation to the original tas dataset, and then define new indicators to exploit it.
 
 2. First, we need to get some more data. Precipitation data for the same Ghana domain is available from https://download.dmi.dk/Research_Projects/KAPy/pr_example_dataset.zip. Download the file into a temporary directory, unzip it, and copy the contents into `./workDir/1.inputs` as before. Check the contents of this directory - you should see files starting with both `tas_*`and `pr_*` now.
 
@@ -83,7 +83,7 @@ indicators:
         time_binning: "years" #Choose between periods, years, months
 ```
 
-6. So now we are ready to go. Firstly, lets see how snakemake responds to this new configuration - lots of new things to do.
+6. So now we are ready to go. Firstly, let's see how snakemake responds to this new configuration - lots of new things to do.
 ```
 snakemake -n
 

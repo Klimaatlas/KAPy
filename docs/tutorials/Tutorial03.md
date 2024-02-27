@@ -10,7 +10,7 @@ This tutorial follows on directly from the end of [Tutorial 1](Tutorial01.md).
 
 ## Instructions
 
-1. In Tutorial 1, you performed a complete run of a KAPy pipeline, starting from a fresh installation. This configuration calculated a single indicator, an average over 30 year periods. Here we will add a second indicator to the configuration and rerun the analysis.
+1. In Tutorial 1, you performed a complete run of a KAPy pipeline, starting from a fresh installation. This configuration calculated a single indicator, an average over 30-year periods. Here we will add a second indicator to the configuration and rerun the analysis.
 
 2. Start by getting an overview of the files present in the current version of the pipeline. Note in particular that the `indicators` folder only contains one set of indicators, `i101_`
 ```
@@ -40,7 +40,7 @@ indicators:
         time_binning: "years" #Choose between periods, years, months
 ```
 
-5. So now we are ready to go. Firstly, lets see how snakemake responds to this new configuration.
+5. So now we are ready to go. Firstly, let's see how snakemake responds to this new configuration.
 ```
 snakemake -n
 
@@ -54,14 +54,14 @@ snakemake -n
 snakemake notebooks --dag | dot -Tpng -Grankdir=LR > dag_tutorial03.png
 ```
 
-8. So, lets do it.
+8. So, let's do it.
 
 ```
 snakemake --cores 1
 
 ```
 
-9. Once the output has completed, start by having a look at the `arealstats` files. Comparing `i101` and `i102`you will see the difference in the time resoluton straight away.
+9. Once the output has been completed, start by having a look at the `arealstats` files. Comparing `i101` and `i102`you will see the difference in the time resolution straight away.
 ```
 head workDir/7.areal_statistics/i101_CORDEX_rcp85_ensstats.csv 
 head workDir/7.areal_statistics/i102_CORDEX_rcp85_ensstats.csv 
@@ -73,5 +73,5 @@ head workDir/7.areal_statistics/i102_CORDEX_rcp85_ensstats.csv
 firefox workDir/notebooks/Output_overview.py.html 
 ```
 
-11. That concludes this tutorial KAPy is currently only limited to calculating means over a time window, but within a short time more functions will be added, including the ability to define custom functions.
+11. That concludes this tutorial KAPy is currently only limited to calculating means over a time window, but within a short time, more functions will be added, including the ability to define custom functions.
 
