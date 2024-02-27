@@ -23,7 +23,7 @@ ls ./workDir/*
 snakemake -l
 ```
 
-4. Snakemake has a handy visualisation tool that lets you examine the DAG. Try running this command, and then open `dag.png` in a graphics viewer or browser. You should be able to see the basic workflow of the pipeline, starting at the left from the primVar_files that serve as inputs, to the i101_files where the indicators are calculated, then aggregated into the ensemble stats, then the arealstats, and then finally the outbook notebook. 
+4. Snakemake has a handy visualisation tool that lets you examine the DAG. Try running this command, and then open `dag.png` in a graphics viewer or browser. You should be able to see the basic workflow of the pipeline, starting at the left from the primVar_files that serve as inputs, to the i101_files where the indicators are calculated, then aggregated into the ensemble stats, then the arealstats, and then finally the outbook notebook. This command uses the `dot` tool installed. If you don't have it installed, it can be installed in e.g. ubuntu as part of the `graphviz` package: `sudo apt install graphviz`. Make the DAG with the following command.
 
 ```
 snakemake notebooks --dag | dot -Tpng -Grankdir=LR > dag.png
