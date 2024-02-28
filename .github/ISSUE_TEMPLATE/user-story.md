@@ -1,6 +1,7 @@
 ---
 name: User story
-about: Describe this user story purpose here.
+about: 'User story: <Describe this user story purpose here. Keep the "user story"
+  tag>'
 title: ''
 labels: user story
 assignees: ''
