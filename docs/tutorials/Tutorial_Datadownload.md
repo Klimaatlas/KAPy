@@ -10,7 +10,9 @@ This provides a quick standardised way of downloading climate model data which c
 
 ## Instructions
 1. There is a need to login to the data servers where the data will be sourced.
-'''
+
+```
 esgpull login
-'''
-1. 
+```
+
+2. 
