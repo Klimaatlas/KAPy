@@ -83,7 +83,7 @@ The development of KAPy is financed via a grant from the Danish Central Governme
 
 KAPy takes its name from joining the KA from DMI's *Klimaatlas* with the Py from Python, in the style of many Python libraries. 
 
-More importantly, the name is also a homonym for the phrase *ka pai* from *Te Reo Maori*, the language of the Maori people, the *tangata whenua* (indigenous people) of Aotearoa New Zealand. The phrase means simply "good", but can also be used as praise, as in "well done". e.g.
+More importantly, the name is also a homonym for the phrase *ka pai* from *Te Reo Maori*, the language of the Māori people, the *tangata whenua* (indigenous people) of Aotearoa New Zealand. The phrase means simply "good", but can also be used as praise, as in "well done". e.g.
 
 ```
 Son: Look Dad! I made a Klimaatlas in Python!
