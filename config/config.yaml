@@ -24,17 +24,13 @@ seasons: 'config/seasons.tsv'
 arealstats:
     calcForMembers: False
 dirs:
-    workDir: 'results'
-    # search: '0.search'
-    # URLs: '1.URLs'
-    inputs: '1.inputs'
-    primVars: '2.primVars'
-    bc: '3.biascorrected_variables'
-    indicators: '4.indicators'
-    regridded: '5.commmon_grid'
-    ensstats: '6.ensstats'
-    arealstats: '7.areal_statistics'
-    notebooks: 'notebooks'
+    primVars: 'results/1.primVars'
+    bc: 'results/2.biascorrected_variables'
+    indicators: 'results/3.indicators'
+    regridded: 'results/4.commmon_grid'
+    ensstats: 'results/5.ensstats'
+    arealstats: 'results/6.areal_statistics'
+    notebooks: 'results/7.notebooks'
 ensembles:
     upperPercentile: 90
     centralPercentile: 50
