@@ -28,7 +28,9 @@ def buildPath(cfg,thisDir, files=[]):
     return(rtn)
         
 
-def loadConfig(configfile='config.yaml',useDefaults=True,defaultFile='configs/defaults.yaml'):
+def loadConfig(configfile='config.yaml',
+               useDefaults=True,
+               defaultFile='config/defaults.yaml'):
     '''
     Load config file
     

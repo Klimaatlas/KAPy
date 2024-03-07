@@ -2,6 +2,8 @@
 
 #Setup KAPy directory structure
 
+import sys
+sys.path.append('workflow')
 import KAPy
 import os
 
