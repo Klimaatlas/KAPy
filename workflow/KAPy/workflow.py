@@ -7,7 +7,15 @@ import sys
 import glob
 import re
 
-#config=KAPy.loadConfig()  
+"""
+#Setup for debugging with a Jupyterlab console
+import os
+import helpers
+os.chdir("..")
+import KAPy
+os.chdir("..")
+config=KAPy.loadConfig()  
+"""
 
 def getWorkflow(config):
     '''
@@ -22,25 +30,15 @@ def getWorkflow(config):
     #Primary Variables-----------------------------------------------------------------------
     #PVs are the raw inputs. These need to be read into a single-file format based on 
     #xarray, and are then exported either as netcdf or as pickles.
-    
-    #Reshape the input structure into a more workable format, including
-    #the addition of a list of files
-    inpDict={}
-    thisKey=0
-    for thisInp in inp.keys():
-        for thisVar in inp[thisInp].keys():
-            #Get file list
-            theseFiles=glob.glob(helpers.buildPath(config,'inputs',inp[thisInp][thisVar]['path']))
-            #Write back into input list
-            thisKey+=1
-            inpDict[thisKey]={}
-            inpDict[thisKey]['varName']=thisVar
-            inpDict[thisKey]['src']=thisInp
-            inpDict[thisKey].update(inp[thisInp][thisVar])
-            inpDict[thisKey]['inpPath']=theseFiles
+    #Add list of files to the input dictioanry
+    for thisKey,thisInp in inp.items():
+        #Get file list
+        theseFiles=glob.glob(thisInp['path'])
+        #Write filelist back into input list
+        inp[thisKey]['inpPath']=theseFiles
     
     #Make into table and extract stems 
-    inpTbl= pd.DataFrame.from_dict(inpDict,orient='index').explode('inpPath')
+    inpTbl= pd.DataFrame.from_dict(inp,orient='index').explode('inpPath')
     inpTbl['stems']=[re.search(x['regex'],os.path.basename(x['inpPath'])).group(1) for i,x in inpTbl.iterrows()] 
     #Now loop over the scenario definitions to get the list
     pvList=[]
@@ -52,7 +50,7 @@ def getWorkflow(config):
         #Generate the primary variable filename
         pvFname=[re.sub(matchPat,'_',os.path.basename(x))
                                for x in theseFiles['stems']]
-        theseFiles['pvFname']=theseFiles['varName']+"_" + theseFiles['src'] + "_" + thisSc['shortname'] + "_" + pvFname  
+        theseFiles['pvFname']=theseFiles['varName']+"_" + theseFiles['srcName'] + "_" + thisSc['shortname'] + "_" + pvFname  
         pvList+=[theseFiles]
     pvTbl=pd.concat(pvList) 
     pvTbl['pvPath']=helpers.buildPath(config,'primVars',pvTbl['pvFname'])

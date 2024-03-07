@@ -1,0 +1,3 @@
+id	shortname	description	experiments	colour
+rcp26	rcp26	Low emissions scenario (RCP2.6)	'historical','rcp26'	darkblue
+rcp85	rcp85	High emissions scenario (RCP8.5)	'historical','rcp85'	maroon

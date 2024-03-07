@@ -13,67 +13,12 @@ domain:
     ymin: 4
     ymax: 12
     dy: 0.1
-inputs:  #Define list of input data sources
-    CORDEX: 
-        tas:
-            path: "CORDEX/tas_*"   #Glob
-            regex: "^tas_(.*)_.*?.nc$" # Brackets are the common element 
-            internalVarName: "tas"
-    ERA5:
-        tas:
-            path: "ERA5_monthly/t2m_ERA5_monthly.nc"
-            regex: "^t2m_(.*).nc$"  
-            internalVarName: "t2m"
-indicators:
-    101:
-        id: 101
-        name: 'Annual mean temperature'
-        units: 'K'
-        variables: 'tas'
-        season: 'Annual'   #Use key name for seasons. Use 'All' for all defined seasons.
-        statistic: 'mean'
-        time_binning: "periods" #Choose between periods, years, months
-scenarios:  #A combination of CMIP experiments that are basis for analysis
-    rcp26:
-        id: 26
-        shortname: 'rcp26'
-        description: 'Low emissions scenario (RCP2.6)'
-        experiments: ['historical','rcp26']
-        colour: 'darkblue'
-    rcp85:
-        id: 85
-        shortname: 'rcp85'
-        description: 'High emissions scenario (RCP8.5)'
-        experiments: ['historical','rcp85']
-        colour: 'maroon'
+inputs:  'config/inputs.tsv'
+indicators: 'config/indicators.tsv'
+scenarios:  'config/scenarios.tsv'
 notebooks: 'workflow/notebooks/Output_overview.py.ipynb'
-periods:  #Define periods here. The period with the lowest ID is used as the reference period
-    period1:
-        id: 1
-        name: 'Historical\n(1981-2010)'
-        start: 1981
-        end: 2010
-    period2:
-        id: 2
-        name: 'Start of century\n(2011-2040)'
-        start: 2011
-        end: 2040
-    period3:
-        id: 3
-        name: 'Mid-century\n(2041-2070)'
-        start: 2041
-        end: 2070
-    period4:
-        id: 4
-        name: 'End-of-century\n(2071-2100)'
-        start: 2071
-        end: 2100
-seasons:
-    Annual:
-        id: 0
-        name: 'Annual'
-        months: [1,2,3,4,5,6,7,8,9,10,11,12]
-
+periods:  'config/periods.tsv'
+seasons: 'config/seasons.tsv'
 
 # Configuration options------------------------------------
 arealstats:

@@ -16,7 +16,7 @@ import KAPy
 
 #Setup-----------------------
 #Load configuration 
-configfile: "config.yaml"
+config=KAPy.loadConfig()  
 
 #Generate filename dicts
 wf=KAPy.getWorkflow(config)
