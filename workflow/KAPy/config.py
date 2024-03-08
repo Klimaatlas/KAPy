@@ -2,6 +2,14 @@ import yaml
 import pandas as pd
 from ast import literal_eval
 from snakemake.utils import validate
+import os
+import sys
+
+"""
+#Debug setup
+import os
+os.chdir("../..")
+"""
 
 def loadConfig(configfile='config.yaml'):
     '''
@@ -16,7 +24,15 @@ def loadConfig(configfile='config.yaml'):
         
     #Validate configuration file
     validate(cfg,"./workflow/schemas/config.schema.yaml")
-        
+
+    #Now check that the other configuration tables exist
+    for thisKey,thisPath in cfg['tables'].items():
+        if not os.path.exists(thisPath):
+            sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
+            
+    #Validate each table in turn
+    
+    
     #Load the variables that are defined as tabular configurations
     #We allow some columns to be defined here as lists, but these need to be
     #parsed before we can actually use them for something

@@ -9,16 +9,15 @@
 domain:
     xmin: -4
     xmax: 2
-    dx: 0.1
     ymin: 4
     ymax: 12
-    dy: 0.1
-inputs:  'config/inputs.tsv'
-indicators: 'config/indicators.tsv'
-scenarios:  'config/scenarios.tsv'
+tables:
+    inputs:  'config/inputs.tsv'
+    indicators: 'config/indicators.tsv'
+    scenarios:  'config/scenarios.tsv'
+    periods:  'config/periods.tsv'
+    seasons: 'config/seasons.tsv'
 notebooks: 'workflow/notebooks/Output_overview.py.ipynb'
-periods:  'config/periods.tsv'
-seasons: 'config/seasons.tsv'
 
 # Configuration options------------------------------------
 arealstats:
@@ -37,5 +36,3 @@ ensembles:
     lowerPercentile: 10
 primVars:  #Otherwise store as pickled Xarray objects
     storeAsNetCDF: True
-regridding:
-    method: 'bilinear'  #Regridding method used by xesmf.Regridder()
