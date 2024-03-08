@@ -3,6 +3,8 @@
   "title": "Measurement Schema",
   "description": "Schema for representing measurements.",
   "type": "object",
+  "required": ["id", "name", "units", "variables", "season", "statistic", "time_binning"],
+  "additionalProperties": false,
   "properties": {
     "id": {
       "description": "Identifier for the indicators. Must be unique.",
@@ -21,19 +23,20 @@
       "description": "List of input variables required to calculate the indicator. Must be at least one specified.",
       "oneOf": [
         {
-          "type": ["string","null"]
+          "type": "string"
         },
         {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "string",
+            "minitems": 1
           },
           "minitems": 0
         }
       ]
     },
     "season": {
-      "description": "Season IDs over which the indicator is to be calculated.  in the seasons .",
+      "description": "Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons](seasons.md) configuration table. In addition, `all` selects all seasons",
       "oneOf": [
         {
           "type": "string"
@@ -43,10 +46,9 @@
           "items": {
             "type": "string"
           },
-          "minitems": 0
+          "minitems": 1
         }
       ]
-    }
     },
     "statistic": {
       "description": "Metric to be used to calculate the indicator.",
@@ -54,9 +56,9 @@
       "type": "string"
     },
     "time_binning": {
-      "description": "Time binning method: 'periods', 'years', or 'months'.",
+      "description": "Time bins over which indicators are calculated. `periods` is defined in the (periods.md) table",
       "type": "string",
       "enum": ["periods", "years", "months"]
-    },
-  "required": ["id", "name", "units", "variables", "season", "statistic", "time_binning"]
+    }
+    }
 }
