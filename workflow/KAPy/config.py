@@ -1,10 +1,7 @@
-import os
-import glob
-import sys
-from collections.abc import Iterable
 import yaml
 import pandas as pd
 from ast import literal_eval
+from snakemake.utils import validate
 
 def loadConfig(configfile='config.yaml'):
     '''
@@ -16,6 +13,9 @@ def loadConfig(configfile='config.yaml'):
     #Load config file
     with open(configfile, 'r') as f:
     	cfg=yaml.safe_load(f)
+        
+    #Validate configuration file
+    validate(cfg,"./workflow/schemas/config.schema.yaml")
         
     #Load the variables that are defined as tabular configurations
     #We allow some columns to be defined here as lists, but these need to be
