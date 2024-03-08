@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Measurement Schema",
-  "description": "Schema for representing measurements.",
+  "title": "KAPy indicator configuration",
+  "description": "Configuration of indicators is set through a tab-separated table, with one row per indicator. The available configuration options are described here. All options are required",
   "type": "object",
   "required": ["id", "name", "units", "variables", "season", "statistic", "time_binning"],
   "additionalProperties": false,
@@ -36,7 +36,7 @@
       ]
     },
     "season": {
-      "description": "Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons](seasons.md) configuration table. In addition, `all` selects all seasons",
+      "description": "Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons",
       "oneOf": [
         {
           "type": "string"
@@ -56,7 +56,7 @@
       "type": "string"
     },
     "time_binning": {
-      "description": "Time bins over which indicators are calculated. `periods` is defined in the (periods.md) table",
+      "description": "Time bins over which indicators are calculated. `periods` is defined in the [periods configuration](periods.md) table",
       "type": "string",
       "enum": ["periods", "years", "months"]
     }
