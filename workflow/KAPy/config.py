@@ -31,24 +31,26 @@ def loadConfig(configfile='config.yaml'):
             sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
             
     #Validate each table in turn
-    
-    
-    #Load the variables that are defined as tabular configurations
-    #We allow some columns to be defined here as lists, but these need to be
-    #parsed before we can actually use them for something
-    listCols={'inputs':[],
-         'indicators':[],
+    listCols={'indicators':[],
+         'inputs':[],
          'scenarios':['experiments'],
          'periods':[],
          'seasons':['months']}
     for thisTblKey,theseCols in listCols.items():
-        thisTbl=pd.read_csv(cfg[thisTblKey],sep="\t",
+        #Load the variables that are defined as tabular configurations
+        #We allow some columns to be defined here as lists, but these need to be
+        #parsed before we can actually use them for something
+        thisTbl=pd.read_csv(cfg['tables'][thisTblKey],sep="\t",
                             converters={col: literal_eval for col in theseCols})
+        #Validate against the appropriate schema
+        validate(thisTbl, f"./workflow/schemas/{thisTblKey}.schema.yaml")
         #If there is an id column set it as the index so it can be used as the key
         if "id" in thisTbl.columns:
             thisTbl=thisTbl.set_index('id',drop=False)
         #Make dict
         cfg[thisTblKey]=thisTbl.to_dict(orient='index')
+        
+    
     
     return(cfg)
 

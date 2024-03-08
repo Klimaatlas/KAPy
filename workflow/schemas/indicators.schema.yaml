@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Measurement Schema",
+  "description": "Schema for representing measurements.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Identifier for the indicators. Must be unique.",
+      "type": ["string","integer"],
+      "unique": true
+    },
+    "name": {
+      "description": "Name of the indicator.",
+      "type": "string"
+    },
+    "units": {
+      "description": "Units of measurement for the indicator.",
+      "type": "string"
+    },
+    "variables": {
+      "description": "List of input variables required to calculate the indicator. Must be at least one specified.",
+      "oneOf": [
+        {
+          "type": ["string","null"]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minitems": 0
+        }
+      ]
+    },
+    "season": {
+      "description": "Season IDs over which the indicator is to be calculated.  in the seasons .",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minitems": 0
+        }
+      ]
+    }
+    },
+    "statistic": {
+      "description": "Metric to be used to calculate the indicator.",
+      "enum": ["mean"],
+      "type": "string"
+    },
+    "time_binning": {
+      "description": "Time binning method: 'periods', 'years', or 'months'.",
+      "type": "string",
+      "enum": ["periods", "years", "months"]
+    },
+  "required": ["id", "name", "units", "variables", "season", "statistic", "time_binning"]
+}
