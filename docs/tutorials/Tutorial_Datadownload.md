@@ -2,38 +2,37 @@
 
 ## Goal
 
-To familiarise yourself with how to download climate model data of interest using the esgpull approach.
+To familiarise yourself with how to download climate model data of interest ESGF using the esgpull tool.
 
 ## Point of departure
 
-This provides a quick standardised way of downloading climate model data which can then be used in the KAPy for processing. This is part of the data preprocessing stage used in KAPy.
+This provides a quick standardised way of downloading climate model data which can then be used in the KAPy for processing. This is part of the data preprocessing stage done in KAPy.
 
 ## Instructions
-1. The first thing you need before starting the download process using esgpull is to make sure that esgpull is well installed, and configured and that you have set up authentification cedentials for one of the ESGF nodes where the data will be sourced. This process is explained in Tutorial ***.
+1. The first thing you need before starting the download process using esgpull is to make sure that esgpull is well installed, and configured. You also need to have setup authentification credentials for one of the ESGF nodes where the data will be sourced by esgpull. This process is explained in Tutorial ***.
    
-2. Before esgpull can be used for data search and download, check if it is set up and configured correctly. The following command can be used which checks the esgpull version
+2. Before esgpull can be used for data search and download, check if it is set up and configured correctly. The following command can be used which checks the esgpull version istalled.
    
 ```
 esgpull -V
 ```
 
-3. Identify the specs of the data you want to search and download e.g., variable (pr, tas, etc), project (CMIP or CORDEX), etc. This can be done using the Facet Search Approach. Facests are keywords that can be used to search for your data of interest. The list of Facets you can use can be found in the selection.py file found in the esgpull root folder you would have created when installing it:
+3. Identify the specs of the data you want to search and download e.g., variable (pr, tas, etc), project (CMIP or CORDEX), etc. This can be done using the Facet Search Approach. Facests are keywords that can be used with esgpull to search for your data of interest. The list of Facets one can use can be found in the selection.py file found in the esgpull root folder you would have created during installation:
 ```
-/my_esgpull_folder/data/selection.py
+/my_esgpull_main_folder/data/selection.py
 ```
 
-4. The Facets are not always the same for different projects. The Facets of CMIP5-based suite of CORDEX models are different from the CMIP6 suite of models. An example of how you can download model data with the following specifications:
+4. The Facets are not always the same for different projects. The Facets of the CMIP5-based suite of CORDEX models are different from the CMIP6 suite of models. An example of how you can download model data with the following specifications:
+   (a) temperature and precipitation; (b) downscaled CORDEX model for the Africa domain at 0.5degrees; (c) at monthly timescale; (d) from SMHI institute who did the downscaling; (e) from the MOHC driving model; (f) for future projections under rcp85 scenario; (g) for only the first ensemble member of the model.
 
-   temperature and precipitation; downscaled CORDEX model for the Africa domain at 0.5degrees; at monthly timescale; from SMHI institute who did the downscaling; from the MOHC driving model; for future projections under rcp85 scenario; for only the first ensemble member of the model.
-
-   You can use the following facets query to check the keywords you can use in the search for CORDEX data:
+   You can use the following Facets query to check the keywords you can use in the search for CORDEX data:
 
 ```
 esgpull search project:CORDEX --facets
 ```
 
 This gives:
-[
+#'[
      "access",
   "cf_standard_name",
   "data_node",
@@ -54,7 +53,7 @@ This gives:
   "variable",
   "variable_long_name",
   "version"
-]
+]'#
 
 5. Search for the data which fits the criteria of the above example. This will also give the size of the datasets. THis gives you the sense of data you are looking for before downloading it.
 
