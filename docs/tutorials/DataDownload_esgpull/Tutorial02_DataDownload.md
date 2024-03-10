@@ -1,4 +1,4 @@
-# Tutorial 00 - Data download with esgpull
+# Tutorial 01 - Data download with esgpull
 
 ## Goal
 
