@@ -3,10 +3,14 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Configuration schema for KAPy configuration objects. These configurations are usually stored in the `config.yaml` file in the root directory of the project.",
   "type": "object",
+  "required": ["domain","tables","arealstats","dirs","ensembles",    "primVars"],
+  "additionalProperties": false,
   "properties": {
     "domain": {
       "description": "Defines the spatial region-of-interest that KAPy should perform the analysis over.",
       "type": "object",
+      "required": ["xmin", "xmax",  "ymin", "ymax"],
+      "additionalProperties": false,
       "properties": {
         "xmin": { 
             "description": "Western boundary of domain. ",
@@ -20,12 +24,12 @@
         "ymax": { 
             "description": "Northern boundary of domain. ",
             "type": "number" }
-      },
-      "required": ["xmin", "xmax",  "ymin", "ymax"],
-      "additionalProperties": false
+      }
     },
     "tables": {
         "description": "Paths to configuration tables. See the documentation for each table separately",
+        "required": ["inputs","indicators","scenarios","periods","seasons"],
+         "additionalProperties": false,
         "properties": {
             "inputs": { 
                 "description": "Path to input configuration table, relative to working directory. See (inputs.md) for more detail.",
@@ -41,9 +45,7 @@
                 "type": "string" },
             "seasons": { 
                 "description": "Path to season configuration table, relative to working directory. See (seasons.md) for more detail.",
-                "type": "string" }},
-        "required": ["inputs","indicators","scenarios","periods","seasons"],
-         "additionalProperties": false
+                "type": "string" }}
     },
     "notebooks": { 
         "description": "List of paths to Jupyter notebooks that should be compiled in the pipeline. Multiple notebooks can be specified using square-braces e.g. ['foo','bar']. If empty, no notebooks will be built.",
@@ -61,18 +63,20 @@
       ]
     },
     "arealstats": {
+      "required": ["calcForMembers"],
+      "additionalProperties": false,
       "type": "object",
       "properties": {
         "calcForMembers": {
             "description": "Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.",
             "type": "boolean" }
-      },
-      "required": ["calcForMembers"],
-      "additionalProperties": false
+      }
     },
     "dirs": {
         "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See [KAPy_concepts.md](../KAPy_concepts.md) for a more detailed description of these items",
         "type": "object",
+      "required": ["primVars", "bc", "indicators", "regridded", "ensstats", "arealstats", "notebooks"],
+      "additionalProperties": false,
         "properties": {
             "primVars": { 
                 "description": "Directory for storing primary variables.",
@@ -95,13 +99,13 @@
             "notebooks": {
                 "description": "Directory for storing compiled Jupyter notebooks.",
                 "type": "string" }
-      },
-      "required": ["primVars", "bc", "indicators", "regridded", "ensstats", "arealstats", "notebooks"],
-      "additionalProperties": false
+      }
     },
     "ensembles": {
         "description": "Specify the percentiles [0-100] calculated from the ensemble. We allow three values, corresponding to the upper and lower confidence limits, and the central value.",
         "type": "object",
+        "required": ["upperPercentile", "centralPercentile", "lowerPercentile"],
+        "additionalProperties": false,
         "properties": {
             "upperPercentile": {
                 "type": "integer",
@@ -115,29 +119,18 @@
                 "type": "integer",
                 "exclusiveMinimum": 0,
                 "exclusiveMaximum": 100}
-      },
-      "required": ["upperPercentile", "centralPercentile", "lowerPercentile"],
-      "additionalProperties": false
+      }
     },
     "primVars": {
         "description": "Configuration options relating to the primary variables.",
         "type": "object",
+        "required": ["storeAsNetCDF"],
+        "additionalProperties": false,
         "properties": {
             "storeAsNetCDF": {
                 "description": "Should the primary variables be stored as NetCDF files (`true`) or written as pickled versions of the internal xarray objects (`false`). The former work with intermediate tools, the later saves disk space.",
                 "type": "boolean" }
-      },
-      "required": ["storeAsNetCDF"],
-      "additionalProperties": false
+      }
     }
-  },
-  "required": [
-    "domain",
-    "tables",
-    "arealstats",
-    "dirs",
-    "ensembles",
-    "primVars"],
-    "additionalProperties": false
-
+  }
 }

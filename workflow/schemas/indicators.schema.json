@@ -56,7 +56,7 @@
       "type": "string"
     },
     "time_binning": {
-      "description": "Time bins over which indicators are calculated. `periods` is defined in the [periods configuration](periods.md) table",
+      "description": "Time bins over which indicators are calculated. In the case of choosing `periods`, the indicator will be calculated for all periods defined in the [periods configuration](periods.md) table.",
       "type": "string",
       "enum": ["periods", "years", "months"]
     }

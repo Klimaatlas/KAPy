@@ -18,4 +18,4 @@
     - *array*
       - **Items** *(string)*
 - **`statistic`** *(string)*: Metric to be used to calculate the indicator. Must be one of: `["mean"]`.
-- **`time_binning`** *(string)*: Time bins over which indicators are calculated. `periods` is defined in the [periods configuration](periods.md) table. Must be one of: `["periods", "years", "months"]`.
+- **`time_binning`** *(string)*: Time bins over which indicators are calculated. In the case of choosing `periods`, the indicator will be calculated for all periods defined in the [periods configuration](periods.md) table. Must be one of: `["periods", "years", "months"]`.

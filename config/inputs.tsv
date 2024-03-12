@@ -1,3 +1,3 @@
-srcName	varName	path	regex	internalVarName
-CORDEX	tas	resources/CORDEX/tas_*	^tas_(.*)_.*?.nc$	tas
-ERA5	tas	resources/ERA5_monthly/t2m_ERA5_monthly.nc	^(.*)$	t2m
+srcName	varName	path	regex	internalVarName	hasScenarios
+CORDEX	tas	resources/CORDEX/tas_*	^tas_(.*)_.*?.nc$	tas	TRUE
+ERA5	tas	resources/ERA5_monthly/t2m_ERA5_monthly.nc	^(.*)$	t2m	FALSE

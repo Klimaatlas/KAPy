@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KAPy periods configuration",
+  "description": "Calculation periods in KAPy are configured through a tab-separated table, with one row per period. The available options are described here. All options are required",
+  "required": ["id", "name", "start", "end"],
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique identifier for the period. This can be numeric, but as it will be used in e.g. output files, it is recommended to use a short descriptive string e.g `hist`",
+      "type": ["integer","string"],
+      "uniqueItems": true
+    },
+    "name": {
+      "description": "A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long! Remember that you can include linebreaks using the `\\n` character. e.g. `Historical\\n(1981-2010)` ",
+      "type": "string"
+    },
+    "start": { 
+      "description": "The start year of the period. The full year is included in the calculation.",
+      "type": "integer"
+    },
+    "end": {
+      "type": "integer",
+      "description": "The end year of the period. The full year is included in the calculation."
+    }
+  }
+}
