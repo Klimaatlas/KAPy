@@ -1,3 +1,3 @@
 id	description	regex	colour
-rcp26	Low emissions scenario (RCP2.6)	.*_(historical| rcp26)_	darkblue
-rcp85	High emissions scenario (RCP8.5)	.*_(historical| rcp85)_	maroon
+rcp26	Low emissions scenario (RCP2.6)	historical|rcp26	darkblue
+rcp85	High emissions scenario (RCP8.5)	historical|rcp85	maroon

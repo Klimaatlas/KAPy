@@ -1,11 +1,5 @@
 #Given a set of input files, create datachunk objects that can be worked with
 
-import pandas as pd
-import os
-import sys
-import glob
-import re
-
 """
 #Setup for debugging with a Jupyterlab console
 import os
@@ -14,6 +8,13 @@ import KAPy
 os.chdir("..")
 config=KAPy.loadConfig()  
 """
+
+import pandas as pd
+import os
+import sys
+import glob
+import re
+
 
 def getWorkflow(config):
     '''
@@ -40,29 +41,36 @@ def getWorkflow(config):
     inpTbl= pd.DataFrame.from_dict(inp,orient='index').explode('inpPath')
     inpTbl['stems']=[re.search(x['regex'],os.path.basename(x['inpPath'])).group(1) 
                       for i,x in inpTbl.iterrows()] 
-    #Now loop over the scenario definitions to get the list
+    
+    #Process inputs that have scenarios first
     pvList=[]
+    inpWithSc=inpTbl[inpTbl['hasScenarios']]
     for thisSc in sc.values():
         #Get files that match experiments
-        matchPat='|'.join([f'_{x}_' for x in thisSc['experiments']])
-        inSc=inpTbl['stems'].str.contains(matchPat)
-        theseFiles=inpTbl[inSc].copy() #Explicit copy to avoid SettingWithCopyWarning
+        inSc=inpWithSc['stems'].str.contains(thisSc['regex'])
+        theseFiles=inpWithSc[inSc].copy() #Explicit copy to avoid SettingWithCopyWarning
         #Generate the primary variable filename
-        pvFname=[re.sub(matchPat,'_',os.path.basename(x))
+        pvFname=[re.sub(thisSc['regex'],'_',os.path.basename(x))
                                for x in theseFiles['stems']]
         theseFiles['pvFname']=theseFiles['varName']+"_" + theseFiles['srcName'] + \
-                                "_" + thisSc['shortname'] + "_" + pvFname  
+                                "_" + thisSc['id'] + "_" + pvFname  
         pvList+=[theseFiles]
+        
+    #Inputs without scenarios are a bit easier
+    inpWithoutSc=inpTbl[~inpTbl['hasScenarios']].copy() #Explicit copy to avoid SettingWithCopyWarning
+    inpWithoutSc['pvFname']=inpWithoutSc['varName']+"_" + inpWithoutSc['srcName'] + \
+                            "_" + inpWithoutSc['stems']  
+    pvList+=[inpWithoutSc]
+        
+    #Build the full filename and tidy up the output into a dict
     pvTbl=pd.concat(pvList) 
     pvTbl['pvPath']=[os.path.join(outDirs['primVars'],f)
                      for f in pvTbl['pvFname']]
-    #Build the full filename
     if config['primVars']['storeAsNetCDF']:
         pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
     else:
         pvTbl['pvPath']=pvTbl['pvPath']+'.pkl' #Pickle
 
-    #tidy up the output into a dict
     pvDict=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath']),
                                          include_groups=False).to_dict()
     

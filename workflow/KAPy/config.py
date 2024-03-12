@@ -73,7 +73,7 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
     #Firstly, We need to validate the months part of the seasons table manually.
     mnthList=pd.DataFrame.from_dict(cfg['seasons'],orient='index')['months']
     for thisMnt in mnthList:
-        if max(thisMnt)>12 | min(thisMnt)<1:
+        if max([int(i) for i in thisMnt])>12 | min([int(i) for i in thisMnt])<1:
             sys.exit("Month specification must be between 1 and 12 inclusive")
         if len(thisMnt) ==0 | len(thisMnt) > 12:
             sys.exit("Between 1 and 12 months should be selected")
