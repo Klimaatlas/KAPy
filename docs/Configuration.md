@@ -3,8 +3,8 @@
 Configuration of KAPy is based around a series of YAML and TSV files that specify all of the necessary options. KAPy is built with the fundamental design philosophy that as much as possible should be configurable via configuration files, and with a minimal (preferably no) degree of hard-coding.
 
 The primary configuration file in KAPy is the `config.yaml`file. KAPy looks for this file in two locations and uses the first file found:
-* `./config/config.yaml` 
 * `./config.yaml`
+* `./config/config.yaml` 
 
 `config.yaml` also draws in configuration tables defining other configuration options, including inputs, indicators and variables. In practice, the user will work with all sets of configuration files. 
 

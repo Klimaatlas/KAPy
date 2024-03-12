@@ -11,7 +11,7 @@ import os
 import sys
 
 
-def loadConfig(configfiles=['./config/config.yaml','./config.yaml']):
+def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
     '''
     Load config file
     
@@ -29,28 +29,28 @@ def loadConfig(configfiles=['./config/config.yaml','./config.yaml']):
             break
     if not foundCfg:
         sys.exit(f"Cannot find a configuration file in: {configfiles}")
-               
         
     #Validate configuration file
     validate(cfg,"./workflow/schemas/config.schema.json")
 
     #Now check that the other configuration tables exist
-    for thisKey,thisPath in cfg['tables'].items():
+    for thisKey,thisPath in cfg['configurationTables'].items():
         if not os.path.exists(thisPath):
             sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
             
     #Validate each table in turn
-    listCols={'indicators':[],
+    listCols={'indicators':['season'],
          'inputs':[],
-         'scenarios':['experiments'],
+         'scenarios':[],
          'periods':[],
          'seasons':['months']}
     for thisTblKey,theseCols in listCols.items():
         #Load the variables that are defined as tabular configurations
+        thisTbl=pd.read_csv(cfg['configurationTables'][thisTblKey],sep="\t")
         #We allow some columns to be defined here as lists, but these need to be
         #parsed before we can actually use them for something
-        thisTbl=pd.read_csv(cfg['tables'][thisTblKey],sep="\t",
-                            converters={col: pd.eval for col in theseCols})
+        for col in theseCols:
+            thisTbl[col]=thisTbl[col].str.split(",")
         #Validate against the appropriate schema.
         #Note that Snakemake doesn't validate arrays in tabular configurations at the moment
         # https://github.com/snakemake/snakemake/issues/2601
@@ -66,13 +66,24 @@ def loadConfig(configfiles=['./config/config.yaml','./config.yaml']):
         #Make dict
         cfg[thisTblKey]=thisTbl.to_dict(orient='index')
     
-    ##TODO:
-    #Indicators
-        # Check that season ids are in the seasons table, or that all is chosen
-        # Check that variables choices are valid
-    #Throw validation error in an informative manner.
-        
-    
-    
+    #Manual validation -----------------
+    #Some things are a bit tricky to validate with JSON schemas alone, particular where
+    #we have validations that cross schemes. The following checks are therefore done
+    #manually.
+    #Firstly, We need to validate the months part of the seasons table manually.
+    mnthList=pd.DataFrame.from_dict(cfg['seasons'],orient='index')['months']
+    for thisMnt in mnthList:
+        if max(thisMnt)>12 | min(thisMnt)<1:
+            sys.exit("Month specification must be between 1 and 12 inclusive")
+        if len(thisMnt) ==0 | len(thisMnt) > 12:
+            sys.exit("Between 1 and 12 months should be selected")
+
+    #Season selected in the indicator table must be valid
+    indTbl=pd.DataFrame.from_dict(cfg['indicators'],orient='index')
+    validSeasons=list(cfg['seasons'].keys()) + ['all']
+    for seasonRequest in indTbl['season']:
+        if not(all([this in validSeasons for this in seasonRequest])):
+            sys.exit(f"Unknown season specified in: {seasonRequest}")
+            
     return(cfg)
 
