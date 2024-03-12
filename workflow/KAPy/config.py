@@ -11,16 +11,25 @@ import os
 import sys
 
 
-def loadConfig(configfile='config.yaml'):
+def loadConfig(configfiles=['./config/config.yaml','./config.yaml']):
     '''
     Load config file
     
-    Loads the KAPy config file specified in the yaml format.
+    Loads the KAPy config file specified in the yaml format. The script loops
+    through the list of files until a file is found
     '''
     
-    #Load config file
-    with open(configfile, 'r') as f:
-    	cfg=yaml.safe_load(f)
+    #Find existing files
+    foundCfg=False
+    for cfgFile in configfiles:
+        if os.path.exists(cfgFile):
+            with open(cfgFile, 'r') as f:
+                cfg=yaml.safe_load(f)
+            foundCfg=True
+            break
+    if not foundCfg:
+        sys.exit(f"Cannot find a configuration file in: {configfiles}")
+               
         
     #Validate configuration file
     validate(cfg,"./workflow/schemas/config.schema.json")
