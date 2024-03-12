@@ -11,7 +11,7 @@ domain:
     xmax: 2
     ymin: 4
     ymax: 12
-tables:
+configurationTables:
     inputs:  'config/inputs.tsv'
     indicators: 'config/indicators.tsv'
     scenarios:  'config/scenarios.tsv'

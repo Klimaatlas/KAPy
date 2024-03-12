@@ -9,7 +9,7 @@
   - **`xmax`** *(number, required)*: Eastern boundary of domain. .
   - **`ymin`** *(number, required)*: Southern boundary of domain. .
   - **`ymax`** *(number, required)*: Northern boundary of domain. .
-- **`tables`**: Paths to configuration tables. See the documentation for each table separately. Cannot contain additional properties.
+- **`configurationTables`**: Paths to configuration tables. See the documentation for each table separately. Cannot contain additional properties.
   - **`inputs`** *(string, required)*: Path to input configuration table, relative to working directory. See (inputs.md) for more detail.
   - **`indicators`** *(string, required)*: Path to indicator configuration table, relative to working directory. See (indicators.md) for more detail.
   - **`scenarios`** *(string, required)*: Path to scenario configuration table, relative to working directory. See (scenarios.md) for more detail.
@@ -22,7 +22,7 @@
       - **Items** *(string)*
 - **`arealstats`** *(object)*: Cannot contain additional properties.
   - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
-- **`dirs`** *(object)*: Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See [KAPy_concepts.md](../KAPy_concepts.md) for a more detailed description of these items. Cannot contain additional properties.
+- **`dirs`** *(object)*: Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items. Cannot contain additional properties.
   - **`primVars`** *(string, required)*: Directory for storing primary variables.
   - **`bc`** *(string, required)*: Directory for storing bias-corrected variables.
   - **`indicators`** *(string, required)*: Directory for storing indicators variables.

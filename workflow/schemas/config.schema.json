@@ -26,7 +26,7 @@
             "type": "number" }
       }
     },
-    "tables": {
+    "configurationTables": {
         "description": "Paths to configuration tables. See the documentation for each table separately",
         "required": ["inputs","indicators","scenarios","periods","seasons"],
          "additionalProperties": false,
@@ -73,7 +73,7 @@
       }
     },
     "dirs": {
-        "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See [KAPy_concepts.md](../KAPy_concepts.md) for a more detailed description of these items",
+        "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items",
         "type": "object",
       "required": ["primVars", "bc", "indicators", "regridded", "ensstats", "arealstats", "notebooks"],
       "additionalProperties": false,
