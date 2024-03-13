@@ -39,7 +39,7 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
             sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
             
     #Validate each table in turn
-    listCols={'indicators':['season'],
+    listCols={'indicators':[],
          'inputs':[],
          'scenarios':[],
          'periods':[],
@@ -71,18 +71,25 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
     #we have validations that cross schemes. The following checks are therefore done
     #manually.
     #Firstly, We need to validate the months part of the seasons table manually.
-    mnthList=pd.DataFrame.from_dict(cfg['seasons'],orient='index')['months']
-    for thisMnt in mnthList:
-        if max([int(i) for i in thisMnt])>12 | min([int(i) for i in thisMnt])<1:
-            sys.exit("Month specification must be between 1 and 12 inclusive")
-        if len(thisMnt) ==0 | len(thisMnt) > 12:
+    for thisKey,theseValues in cfg['seasons'].items():
+        theseMnths=theseValues['months']
+        if len(theseMnths) > 12:
             sys.exit("Between 1 and 12 months should be selected")
+        if len(theseMnths) == 0: #Set to all months
+            theseMnths=list(range(1,13))
+        #Length is ok. Now convert to integers
+        theseMnths=[int(i) for i in theseMnths]
+        if max(theseMnths)>12 | min(theseMnths)<1:
+            sys.exit("Month specification must be between 1 and 12 inclusive")
+        #Write the integers back to finish
+        cfg['seasons'][thisKey]['months']=theseMnths
 
     #Season selected in the indicator table must be valid
+    #Currently allow only one season per indicator. This needs to be fixed in the future
     indTbl=pd.DataFrame.from_dict(cfg['indicators'],orient='index')
     validSeasons=list(cfg['seasons'].keys()) + ['all']
     for seasonRequest in indTbl['season']:
-        if not(all([this in validSeasons for this in seasonRequest])):
+        if not(all([this in validSeasons for this in [seasonRequest]])):
             sys.exit(f"Unknown season specified in: {seasonRequest}")
             
     return(cfg)
