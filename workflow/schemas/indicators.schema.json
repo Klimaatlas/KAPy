@@ -36,19 +36,8 @@
       ]
     },
     "season": {
-      "description": "Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons",
-      "oneOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minitems": 1
-        }
-      ]
+        "description": "Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons. Currently, only one season is supported - this will be modified in the future.",
+        "type": "string"
     },
     "statistic": {
       "description": "Metric to be used to calculate the indicator.",
