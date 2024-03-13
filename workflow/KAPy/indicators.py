@@ -15,7 +15,10 @@ import os
 import numpy as np
 import sys
 
-def calculateIndicators(config,inFile,outFile,thisInd):
+def calculateIndicators(config,inFile,outFile,indID):
+    
+    #Retrieve indicator information
+    thisInd=config['indicators'][indID]
     
     #Read the dataset object back from disk, depending on the configuration
     inExt=os.path.splitext(os.path.basename(inFile[0]))[1] 

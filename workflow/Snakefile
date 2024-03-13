@@ -54,31 +54,31 @@ rule primVar_file:
 # as well as the combined run
 
 #Indicator singular rule
-def ind_singular_rule(thisInd):
+def ind_singular_rule(thisID):
     rule:  
-        name: f'i{thisInd["id"]}_file'
+        name: f'i{thisID}_file'
         output:
             os.path.join(outDirs['indicators'],"{indFname}")
         input:
             lambda wildcards: 
-                wf['indicators'][thisInd["id"]][ os.path.join(outDirs['indicators'],wildcards.indFname)]
+                wf['indicators'][thisID][ os.path.join(outDirs['indicators'],wildcards.indFname)]
         run:
             KAPy.calculateIndicators(config=config,
                                      inFile=input,
                                      outFile=output,
-                                     thisInd=thisInd)
+                                     indID=thisID)
                                      
 
 #Indicator plural rule
-def ind_plural_rule(thisInd):
+def ind_plural_rule(thisID):
     rule:
-        name: f'i{thisInd["id"]}'
+        name: f'i{thisID}'
         input:
-            list(wf['indicators'][thisInd['id']].keys())
+            list(wf['indicators'][thisID].keys())
             
-for thisInd in config['indicators'].values():
-    ind_singular_rule(thisInd)
-    ind_plural_rule(thisInd)
+for indID in config['indicators'].keys():
+    ind_singular_rule(indID)
+    ind_plural_rule(indID)
 
 #Run all indicators    
 rule indicators:
