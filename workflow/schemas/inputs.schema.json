@@ -3,9 +3,14 @@
     "title": "KAPy input configuration",
     "description": "The configuration of inputs in KAPy is set through a tab-separated table, with one row per input variable. The available configuration options are described here. All options are required",
     "type": "object",
-    "required": ["srcName", "varName", "path", "regex", "internalVarName","hasScenarios"],
+    "required": ["id","srcName", "varName", "path", "regex", "internalVarName","hasScenarios"],
     "additionalProperties": false,    
     "properties": {
+        "id": {
+          "description": "Identifier for the input. Must be unique. It is usually easiest to join the srcName and varName together into one string.",
+          "type": "string",
+          "unique": true
+        },
       "srcName": {
         "description": "The name of the data source e.g CORDEX, ERA5. Need not be unique. Is used to group related variables from the same datasource together further in the analysis (e.g. tas and pr from ERA5). ",
         "type": "string"

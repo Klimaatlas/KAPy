@@ -28,7 +28,7 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
             foundCfg=True
             break
     if not foundCfg:
-        sys.exit(f"Cannot find a configuration file in: {configfiles}")
+        sys.exit(f"Cannot find a configuration file in: {configfiles}. Working directory: '{os.getcwd()}'")
         
     #Validate configuration file
     validate(cfg,"./workflow/schemas/config.schema.json")
@@ -60,9 +60,8 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
         else:
             valThis=thisTbl
         validate(valThis, f"./workflow/schemas/{thisTblKey}.schema.json")
-        #If there is an id column set it as the index so it can be used as the key
-        if "id" in thisTbl.columns:
-            thisTbl=thisTbl.set_index('id',drop=False)
+        #Set id column as the index so it can be used as the key
+        thisTbl=thisTbl.set_index('id',drop=False)
         #Make dict
         cfg[thisTblKey]=thisTbl.to_dict(orient='index')
     

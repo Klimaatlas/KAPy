@@ -24,21 +24,37 @@ outDirs=config['dirs']
 wf=KAPy.getWorkflow(config)
 
 # Primary Variables---------------------------------
-#Plural rule
+#Primary variable singular rule
+def primVar_singular_rule(thisID):
+    rule:  
+        name: f'primVar_{thisID}_files'
+        output:
+            os.path.join(outDirs['primVars'],"{pvFname}")
+        input:
+            lambda wildcards: 
+                wf['primVars'][thisID][ os.path.join(outDirs['primVars'],wildcards.pvFname)]
+        run:
+            KAPy.buildPrimVar(config=config,
+                                     inFiles=input,
+                                     outFile=output,
+                                     inpID=thisID)
+
+#Indicator plural rule
+def primVar_plural_rule(thisID):
+    rule:
+        name: f'primVar_{thisID}'
+        input:
+            list(wf['primVars'][thisID].keys())
+            
+for inpID in wf['primVars'].keys():
+    primVar_singular_rule(inpID)
+    primVar_plural_rule(inpID)
+
+#Run all indicators    
 rule primVars:
     input:
-        list(wf['primVars'].keys())
-
-#Singular rule
-#Requires a bit of a hack with a lamba function to be able to both use a input function
-#and feed additional arguments to the function
-rule primVar_file:
-    output:
-        os.path.join(outDirs['primVars'],"{pv}")
-    input:
-        lambda wildcards: wf['primVars'][os.path.join(outDirs['primVars'],wildcards.pv)]
-    run:
-        KAPy.buildPrimVar(config,input,output)
+        [list(thisInp.keys()) for thisInp in wf['primVars'].values()]
+        
 
 # Secondary variables -------------------------
 # "Secondary variables" are calculated as new variables derived from primary variables.  
@@ -56,7 +72,7 @@ rule primVar_file:
 #Indicator singular rule
 def ind_singular_rule(thisID):
     rule:  
-        name: f'indicator_{thisID}_file'
+        name: f'indicator_{thisID}_files'
         output:
             os.path.join(outDirs['indicators'],"{indFname}")
         input:

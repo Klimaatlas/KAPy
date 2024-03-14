@@ -24,60 +24,54 @@ def getWorkflow(config):
     '''
     #Extract specific configurations 
     inp=config['inputs']
+    ind=config['indicators']
     sc=config['scenarios']
     outDirs=config['dirs']
     
     #Primary Variables ---------------------------------------------------------------
     #PVs are the raw inputs. These need to be read into a single-file format based on 
     #xarray, and are then exported either as netcdf or as pickles.
-    #Add list of files to the input dictioanry
+    #We loop over the individual items maintaining the dict format, as this is a touch easier to
+    #work with
+    pvDict={}
     for thisKey,thisInp in inp.items():
         #Get file list
-        theseFiles=glob.glob(thisInp['path'])
-        #Write filelist back into input list
-        inp[thisKey]['inpPath']=theseFiles
-    
-    #Make into table and extract stems 
-    inpTbl= pd.DataFrame.from_dict(inp,orient='index').explode('inpPath')
-    inpTbl['stems']=[re.search(x['regex'],os.path.basename(x['inpPath'])).group(1) 
-                      for i,x in inpTbl.iterrows()] 
-    
-    #Process inputs that have scenarios first
-    pvList=[]
-    inpWithSc=inpTbl[inpTbl['hasScenarios']]
-    for thisSc in sc.values():
-        #Get files that match experiments
-        inSc=inpWithSc['stems'].str.contains(thisSc['regex'])
-        theseFiles=inpWithSc[inSc].copy() #Explicit copy to avoid SettingWithCopyWarning
-        #Generate the primary variable filename
-        pvFname=[re.sub(thisSc['regex'],'_',os.path.basename(x))
-                               for x in theseFiles['stems']]
-        theseFiles['pvFname']=theseFiles['varName']+"_" + theseFiles['srcName'] + \
-                                "_" + thisSc['id'] + "_" + pvFname  
-        pvList+=[theseFiles]
+        inpTbl=pd.DataFrame(glob.glob(thisInp['path']),columns=['inpPath'])
+        #Make into table and extract stems 
+        inpTbl['stems']=[re.search(thisInp['regex'],os.path.basename(x)).group(1)
+                          for x in inpTbl['inpPath']] 
+        #Process inputs that have scenarios first
+        pvList=[]
+        if thisInp['hasScenarios']:
+            for thisSc in sc.values():
+                #Get files that match experiments
+                inSc=inpTbl['stems'].str.contains(thisSc['regex'])
+                theseFiles=inpTbl[inSc].copy() #Explicit copy to avoid SettingWithCopyWarning
+                #Generate the primary variable filename
+                theseFiles['pvFname']=[re.sub(thisSc['regex'],'',os.path.basename(x))
+                                       for x in theseFiles['stems']]
+                theseFiles['pvFname']=f"{thisInp['varName']}_{thisInp['srcName']}_{thisSc['id']}_" + \
+                                    theseFiles['pvFname']
+                pvList+=[theseFiles]
+        else:
+            inpTbl['pvFname']=f"{thisInp['varName']}_{thisInp['srcName']}_"+ inpTbl['stems']
+            pvList+=[inpTbl]
         
-    #Inputs without scenarios are a bit easier
-    inpWithoutSc=inpTbl[~inpTbl['hasScenarios']].copy() #Explicit copy to avoid SettingWithCopyWarning
-    inpWithoutSc['pvFname']=inpWithoutSc['varName']+"_" + inpWithoutSc['srcName'] + \
-                            "_" + inpWithoutSc['stems']  
-    pvList+=[inpWithoutSc]
-        
-    #Build the full filename and tidy up the output into a dict
-    pvTbl=pd.concat(pvList) 
-    pvTbl['pvPath']=[os.path.join(outDirs['primVars'],f)
-                     for f in pvTbl['pvFname']]
-    if config['primVars']['storeAsNetCDF']:
-        pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
-    else:
-        pvTbl['pvPath']=pvTbl['pvPath']+'.pkl' #Pickle
+        #Build the full filename and tidy up the output into a dict
+        pvTbl=pd.concat(pvList) 
+        pvTbl['pvPath']=[os.path.join(outDirs['primVars'],f)
+                         for f in pvTbl['pvFname']]
+        if config['primVars']['storeAsNetCDF']:
+            pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
+        else:
+            pvTbl['pvPath']=pvTbl['pvPath']+'.pkl' #Pickle
 
-    pvDict=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath']),
-                                         include_groups=False).to_dict()
+        pvDict[thisKey]=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath']),
+                                             include_groups=False).to_dict()
     
     #Indicators -----------------------------------------------------
-    ind=config['indicators']
     #Combine all variable tables (e.g. prim, sec, bc, tert)
-    varPalette=[pvDict]
+    varPalette=[v for v in pvDict.values()]
     varTbl=pd.DataFrame([thisKey 
                          for varDict in varPalette 
                          for thisKey in varDict.keys() ],
@@ -152,7 +146,7 @@ def getWorkflow(config):
     #Need to create an "all" dict as well containing all targets in the workflow
     allList=[]
     for k,v in rtn.items():
-        if k=='indicators':  #Requires special handling, as it is a nested list
+        if k in ['primVars','indicators']:  #Requires special handling, as it is a nested list
             for x in v.values():
                 allList+=x.keys()
         else:
