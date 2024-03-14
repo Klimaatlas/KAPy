@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KAPy indicator configuration",
+  "description": "Configuration of indicators is set through a tab-separated table, with one row per indicator. The available configuration options are described here. All options are required",
+  "type": "object",
+  "required": ["id", "name", "units", "variables", "season", "statistic", "time_binning"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "description": "Identifier for the indicators. Must be unique.",
+      "type": ["string","integer"],
+      "unique": true
+    },
+    "name": {
+      "description": "Name of the indicator.",
+      "type": "string"
+    },
+    "units": {
+      "description": "Units of measurement for the indicator.",
+      "type": "string"
+    },
+    "variables": {
+      "description": "List of input variables required to calculate the indicator. Must be at least one specified.",
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minitems": 1
+          },
+          "minitems": 0
+        }
+      ]
+    },
+    "season": {
+        "description": "Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons. Currently, only one season is supported - this will be modified in the future.",
+        "type": "string"
+    },
+    "statistic": {
+      "description": "Metric to be used to calculate the indicator.",
+      "enum": ["mean"],
+      "type": "string"
+    },
+    "time_binning": {
+      "description": "Time bins over which indicators are calculated. In the case of choosing `periods`, the indicator will be calculated for all periods defined in the [periods configuration](periods.md) table.",
+      "type": "string",
+      "enum": ["periods", "years", "months"]
+    }
+    }
+}

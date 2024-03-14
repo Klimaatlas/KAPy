@@ -1,0 +1,38 @@
+# Basic configuration file
+#---------------------------
+# This configuration file is intended to be used as a basic example and test
+# dataset for the KAPy suite. It is loosely based on the configuration used in the
+# Ghana Climate Atlas, but with simplifications to make it run faster. Sample datasets
+# can be downloaded from https://download.dmi.dk/Research_Projects/KAPy/
+# For instructions, see 
+
+domain:
+    xmin: -4
+    xmax: 2
+    ymin: 4
+    ymax: 12
+configurationTables:
+    inputs:  'config/inputs.tsv'
+    indicators: 'config/indicators.tsv'
+    scenarios:  'config/scenarios.tsv'
+    periods:  'config/periods.tsv'
+    seasons: 'config/seasons.tsv'
+notebooks: 'workflow/notebooks/Output_overview.py.ipynb'
+
+# Configuration options------------------------------------
+arealstats:
+    calcForMembers: False
+dirs:
+    primVars: 'results/1.primVars'
+    bc: 'results/2.biascorrected_variables'
+    indicators: 'results/3.indicators'
+    regridded: 'results/4.commmon_grid'
+    ensstats: 'results/5.ensstats'
+    arealstats: 'results/6.areal_statistics'
+    notebooks: 'results/7.notebooks'
+ensembles:
+    upperPercentile: 90
+    centralPercentile: 50
+    lowerPercentile: 10
+primVars:  #Otherwise store as pickled Xarray objects
+    storeAsNetCDF: True

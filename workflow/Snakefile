@@ -13,30 +13,48 @@
 #
 
 import KAPy
+import os
 
 #Setup-----------------------
 #Load configuration 
-config=KAPy.loadConfig()  
+config=KAPy.loadConfig()
+outDirs=config['dirs']
 
 #Generate filename dicts
 wf=KAPy.getWorkflow(config)
 
 # Primary Variables---------------------------------
-#Plural rule
+#Primary variable singular rule
+def primVar_singular_rule(thisID):
+    rule:  
+        name: f'primVar_{thisID}_files'
+        output:
+            os.path.join(outDirs['primVars'],"{pvFname}")
+        input:
+            lambda wildcards: 
+                wf['primVars'][thisID][ os.path.join(outDirs['primVars'],wildcards.pvFname)]
+        run:
+            KAPy.buildPrimVar(config=config,
+                                     inFiles=input,
+                                     outFile=output,
+                                     inpID=thisID)
+
+#Indicator plural rule
+def primVar_plural_rule(thisID):
+    rule:
+        name: f'primVar_{thisID}'
+        input:
+            list(wf['primVars'][thisID].keys())
+            
+for inpID in wf['primVars'].keys():
+    primVar_singular_rule(inpID)
+    primVar_plural_rule(inpID)
+
+#Run all indicators    
 rule primVars:
     input:
-        list(wf['primVars'].keys())
-
-#Singular rule
-#Requires a bit of a hack with a lamba function to be able to both use a input function
-#and feed additional arguments to the function
-rule primVar_file:
-    output:
-        KAPy.buildPath(config,'primVars',"{pv}")
-    input:
-        lambda wildcards: wf['primVars'][KAPy.buildPath(config,'primVars',wildcards.pv)]
-    run:
-        KAPy.buildPrimVar(config,input,output)
+        [list(thisInp.keys()) for thisInp in wf['primVars'].values()]
+        
 
 # Secondary variables -------------------------
 # "Secondary variables" are calculated as new variables derived from primary variables.  
@@ -52,31 +70,31 @@ rule primVar_file:
 # as well as the combined run
 
 #Indicator singular rule
-def ind_singular_rule(thisInd):
+def ind_singular_rule(thisID):
     rule:  
-        name: f'i{thisInd["id"]}_file'
+        name: f'indicator_{thisID}_files'
         output:
-            KAPy.buildPath(config,'indicators',"{indFname}")
+            os.path.join(outDirs['indicators'],"{indFname}")
         input:
             lambda wildcards: 
-                wf['indicators'][thisInd["id"]][ KAPy.buildPath(config,'indicators',wildcards.indFname)]
+                wf['indicators'][thisID][ os.path.join(outDirs['indicators'],wildcards.indFname)]
         run:
             KAPy.calculateIndicators(config=config,
                                      inFile=input,
                                      outFile=output,
-                                     thisInd=thisInd)
+                                     indID=thisID)
                                      
 
 #Indicator plural rule
-def ind_plural_rule(thisInd):
+def ind_plural_rule(thisID):
     rule:
-        name: f'i{thisInd["id"]}'
+        name: f'indicator_{thisID}'
         input:
-            list(wf['indicators'][thisInd['id']].keys())
+            list(wf['indicators'][thisID].keys())
             
-for thisInd in config['indicators'].values():
-    ind_singular_rule(thisInd)
-    ind_plural_rule(thisInd)
+for indID in config['indicators'].keys():
+    ind_singular_rule(indID)
+    ind_plural_rule(indID)
 
 #Run all indicators    
 rule indicators:
@@ -113,9 +131,9 @@ rule ensstats:
 #Singular rule
 rule ensstats_file:
     output:
-        KAPy.buildPath(config,'ensstats',"{es}")
+        os.path.join(outDirs['ensstats'],"{es}")
     input:
-        lambda wildcards: wf['ensstats'][KAPy.buildPath(config,'ensstats',wildcards.es)]
+        lambda wildcards: wf['ensstats'][os.path.join(outDirs['ensstats'],wildcards.es)]
     run:
         KAPy.generateEnsstats(config,input,output)
 
@@ -132,9 +150,9 @@ rule arealstats:
 #Singular rule
 rule arealstats_file:
     output:
-        KAPy.buildPath(config,'arealstats','{arealstats}')
+        os.path.join(outDirs['arealstats'],'{arealstats}')
     input:
-        lambda wildcards: wf['arealstats'][KAPy.buildPath(config,'arealstats',wildcards.arealstats)]
+        lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],wildcards.arealstats)]
     run:
         KAPy.generateArealstats(config,input,output)
 
@@ -148,9 +166,9 @@ rule notebooks:
 #Singular rule
 rule notebook_file:
     output:
-        KAPy.buildPath(config,'notebooks','{notebook}')
+        os.path.join(outDirs['notebooks'],'{notebook}')
     input:
-        lambda wildcards: wf['notebooks'][KAPy.buildPath(config,'notebooks',wildcards.notebook)]
+        lambda wildcards: wf['notebooks'][os.path.join(outDirs['notebooks'],wildcards.notebook)]
     shell:
         "jupyter nbconvert --execute --to html --TemplateExporter.exclude_input=True --output-dir=. --output='{output}' {input[0]}"
 

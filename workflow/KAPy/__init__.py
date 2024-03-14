@@ -1,7 +1,6 @@
 #Top level init.py for KAPy package
 
-from .helpers import *
-from .download import *
+from .config import *
 from .primVars import *
 from .ensembles import *
 from .indicators import *
