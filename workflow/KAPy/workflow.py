@@ -94,7 +94,7 @@ def getWorkflow(config):
     #Now extract the dict
     indTbl=pd.DataFrame.from_dict(ind,orient='index').explode('varPath')
     indTbl['varFname']=[os.path.basename(f) for f in indTbl['varPath']]
-    indTbl['indFname']= indTbl.apply(lambda x: f'i{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
+    indTbl['indFname']= indTbl.apply(lambda x: f'{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
                                     axis=1)
     indTbl['indPath']= [os.path.join(outDirs['indicators'],f) 
                           for f in indTbl['indFname']]

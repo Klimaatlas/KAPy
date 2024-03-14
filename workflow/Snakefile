@@ -56,7 +56,7 @@ rule primVar_file:
 #Indicator singular rule
 def ind_singular_rule(thisID):
     rule:  
-        name: f'i{thisID}_file'
+        name: f'indicator_{thisID}_file'
         output:
             os.path.join(outDirs['indicators'],"{indFname}")
         input:
@@ -72,7 +72,7 @@ def ind_singular_rule(thisID):
 #Indicator plural rule
 def ind_plural_rule(thisID):
     rule:
-        name: f'i{thisID}'
+        name: f'indicator_{thisID}'
         input:
             list(wf['indicators'][thisID].keys())
             
