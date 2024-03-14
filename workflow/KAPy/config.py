@@ -29,14 +29,26 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
             break
     if not foundCfg:
         sys.exit(f"Cannot find a configuration file in: {configfiles}. Working directory: '{os.getcwd()}'")
-        
+     
+    #Setup location of validation schemas
+    schemaDir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","schemas")
+
     #Validate configuration file
-    validate(cfg,"./workflow/schemas/config.schema.json")
+    validate(cfg,os.path.join(schemaDir,"config.schema.json"))
 
     #Now check that the other configuration tables exist
     for thisKey,thisPath in cfg['configurationTables'].items():
         if not os.path.exists(thisPath):
             sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
+
+    #Now check that notebooks exist
+    if isinstance(cfg['notebooks'],str):
+        notebookPaths=[cfg['notebooks']]
+    else:
+        notebookPaths=cfg['notebooks']
+    for thisPath in notebookPaths:
+        if not os.path.exists(thisPath):
+            sys.exit(f"Cannot find notebook '{thisPath}'.")
             
     #Validate each table in turn
     listCols={'indicators':[],
@@ -59,7 +71,7 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
             valThis=thisTbl.drop(columns=['months'])
         else:
             valThis=thisTbl
-        validate(valThis, f"./workflow/schemas/{thisTblKey}.schema.json")
+        validate(valThis, os.path.join(schemaDir,f"{thisTblKey}.schema.json"))
         #Set id column as the index so it can be used as the key
         thisTbl=thisTbl.set_index('id',drop=False)
         #Make dict
