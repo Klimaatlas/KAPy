@@ -12,6 +12,7 @@ inpID='ERA5-tas'
 #Given a set of input files, create objects that can be worked with
 import xarray as xr
 import pickle
+import sys
 
 #config=KAPy.loadConfig()  
 
@@ -27,15 +28,22 @@ def buildPrimVar(config,inFiles,outFile,inpID):
     thisInp=config['inputs'][inpID]
     
     #Make dataset object
-    ds =xr.open_mfdataset(inFiles,
+    dsIn =xr.open_mfdataset(inFiles,
                  combine='nested',
                 concat_dim='time')
     #Sort on time
-    ds=ds.sortby('time')
+    ds=dsIn.sortby('time')
     
     #Select the desired variable and rename it
-    selVar=ds.rename({thisInp['internalVarName']:thisInp['varName']})
-    selVar=selVar[thisInp['varName']]
+    ds=ds.rename({thisInp['internalVarName']:thisInp['varName']})
+    ds=ds[thisInp['varName']]
+    
+    #Drop degenerate dimensions. If any remain, throw an error
+    ds=ds.squeeze()
+    if len(ds.dims)!=3:
+        sys.exit(f"Extra dimensions found in processing '{inpID}' - there should be only " +\
+                 f"three dimensions after degenerate dimensions are dropped but "+\
+                 f"found {len(ds.dims)} i.e. {ds.dims}.")
     
     """
     #Reapply domain criteria here
@@ -47,9 +55,9 @@ def buildPrimVar(config,inFiles,outFile,inpID):
 
     #Write the dataset object to disk, depending on the configuration
     if config['primVars']['storeAsNetCDF']:
-        selVar.to_netcdf(outFile[0]) 
+        ds.to_netcdf(outFile[0]) 
     else:
         with open(outFile[0],'wb') as f:
-            pickle.dump(selVar,f,protocol=-1)
+            pickle.dump(ds,f,protocol=-1)
 
     
