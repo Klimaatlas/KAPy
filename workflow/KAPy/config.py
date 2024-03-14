@@ -40,6 +40,15 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
     for thisKey,thisPath in cfg['configurationTables'].items():
         if not os.path.exists(thisPath):
             sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
+
+    #Now check that notebooks exist
+    if isinstance(cfg['notebooks'],str):
+        notebookPaths=[cfg['notebooks']]
+    else:
+        notebookPaths=cfg['notebooks']
+    for thisPath in notebookPaths:
+        if not os.path.exists(thisPath):
+            sys.exit(f"Cannot find notebook '{thisPath}'.")
             
     #Validate each table in turn
     listCols={'indicators':[],
