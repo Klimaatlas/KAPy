@@ -2,7 +2,7 @@
 
 ## Goal
 
-To familiarise yourself with a minimum working example of setting up and running an analysis with KAPy.
+To familiarise yourself with KAPy via a minimum working example of setting up and running an analysis.
 
 ## Point of departure
 
@@ -10,17 +10,13 @@ A configured fresh version of KAPy. See the "Getting Started" section of README.
 
 ## Instructions
 
-1. Start by choosing the KAPy configuration to work with. The "tutorial" configuration in `./configs/tutorial` is the one to use here. Copy (or soft-link) the `config.yaml` file found there into the KAPy root directory e.g
+1. KAPy comes with the necessary configuration files already in place. Configuration files are stored in `./config`. Open this directory, either on the webpage or in your terminal, and note the files that are present. The primary configuration file `./config/config.yaml` provides general coordination, while the tabular configuration files (ending with `.tsv`) are spreadsheet-like tables that provide configuration of indvidiual aspects (e.g. inputs, indicators, scenarios etc).
+  
+2. Open `./config/config.yaml` in a text viewer (e.g. `vi`, `less`) and browse through it. Note in particular the definition of the spatial domains, the input files, and the indicators. 
 
-```
-cp ./configs/tutorial/config.yaml .
-```
+4. Now open the file `./configs/defaults.yaml` and compare with `config.yaml`. `defaults.yaml` defines lot more options used by KAPy, but these are less frequently modified than those in `config.yaml`. In particular, pay attention to the "dirs" options, which defines the names of the default files. If you wish to modify one of the defaults, it is best to do it in `config.yaml`- values defined here will override the defaults. Details of all configuration options can be found in [./docs/Configuration.md]. 
 
-2. Open `config.yaml` in a text viewer (e.g. vi, less) and browse through it. Note in particular the definition of the spatial domains, the input files, and the indicators. 
-
-3. Now open the file `./configs/defaults.yaml` and compare with `config.yaml`. `defaults.yaml` defines lot more options used by KAPy, but these are less frequently modified than those in `config.yaml`. In particular, pay attention to the "dirs" options, which defines the names of the default files. If you wish to modify one of the defaults, it is best to do it in `config.yaml`- values defined here will override the defaults. Details of all configuration options can be found in [./docs/Configuration.md]. 
-
-4. Make sure that you have the KAPy environment activated - you should see `(KAPy)`in your command prompt. If you have `(base)` or similar activate it with the following command. If you're unsure, it doesn't hurt to activate it again.
+5. Make sure that you have the KAPy environment activated - you should see `(KAPy)`in your command prompt. If you have `(base)` or similar activate it with the following command. If you're unsure, it doesn't hurt to activate it again.
 
 ```
 conda activate KAPy
