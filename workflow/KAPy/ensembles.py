@@ -67,7 +67,8 @@ def generateArealstats(config,inFile,outFile):
     #Perform masking
     #TODO
     
-    #Average spatially
+    #Average spatially;  ============> LINE 71 BELOW THROWS AN ERROR WHEN SNAKEMAKE IS DEALING WITH ERA5 DATA BECAUSE ERA5 HAS "latitude" AND "longitude" iINSTEAD OF "rlat" and "rlon".
+    #I went around this problem by just renaming the lat and lon coordinates to rlat and rlon outside KAPy. I guess maybe we can incoperate a line code "eraData = eraData.rename({'latitude': 'rlat', 'longitude': 'rlon'})"
     spMean=thisDat.indicator.mean(dim=["rlon","rlat"])
     
     #Save files pandas
