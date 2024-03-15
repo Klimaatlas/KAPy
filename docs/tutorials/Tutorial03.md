@@ -21,7 +21,7 @@ ls ./results/3.indicators/*
 
 4. The periods are defined in `./config/periods.tsv`. Open this file and you will see that they are declared as consecutive 30 year blocks with a start-year and end-year.
 
-4. Now lets add a new indicator. The configuration tables are defined as tables in the `.tsv` (tab-separated variables) format. They can be edited using a text editor, if you take care to ensure that the tab separators are maintained between each entry. However, a more robust and recommended way to do it is to edit it via a spreadsheet programme, such as LibreOffice or Excel. Open `./config/indicators.tsv` in your spreadsheet programme and modify it to look like the following. Save the file. In this new configuration indicator `102` is a direct copy of `101`, but with annual time resolution rather than binning over periods.
+4. Now lets add a new indicator. The configuration tables are defined as tables in the `.tsv` (tab-separated variables) format. They can be edited using a text editor, if you take care to ensure that the tab separators are maintained between each entry. However, a more robust and recommended way to do it is to edit it via a spreadsheet programme, such as LibreOffice or Excel. Open `./config/indicators.tsv` in your spreadsheet programme and modify it to look like the following. Save the file. In this new configuration indicator `102` is a direct copy of `101`, but with annual time resolution rather than binning over periods. If you strike problems, a correctly formated version of this table can be downloaded from [here](Tutorial03_files).
 ```
 id  name  units  variables  season  statistic  time_binning
 101  Annual mean temperature  K  tas  annual  mean  periods
