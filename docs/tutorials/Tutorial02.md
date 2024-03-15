@@ -56,7 +56,7 @@ snakemake --cores 1
 
 10. We can illustrate this point further by damaging the state of the pipeline. Let's remove an individual file in the middle of the pipeline.
 ```
-rm results/6.ensstats/101_CORDEX_rcp26_ensstats.nc 
+rm results/5.ensstats/101_CORDEX_rcp26_ensstats.nc 
 ```
 11. What's going to happen when we run snakemake now? Try and form a hypothesis.
 
