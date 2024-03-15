@@ -1,0 +1,5 @@
+id	name	units	variables	season	statistic	time_binning
+101	Annual mean temperature	K	tas	annual	mean	periods
+102	Annual mean temperature	K	tas	annual	mean	years
+201	Annual mean precipitation	kg m-2 s-1	pr	annual	mean	periods
+202	Annual mean precipitation	kg m-2 s-1	pr	annual	mean	years
