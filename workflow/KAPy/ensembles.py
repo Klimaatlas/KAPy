@@ -67,7 +67,7 @@ def generateArealstats(config,inFile,outFile):
     #Perform masking
     #TODO
     
-    #Average spatially;
+    #Average spatially
     spMean=thisDat.indicator.mean(dim=["rlon","rlat"])
     
     #Save files pandas
