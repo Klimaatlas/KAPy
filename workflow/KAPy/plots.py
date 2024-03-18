@@ -13,7 +13,7 @@ def makeBoxplot(config,thisInd,srcFiles):
     for f in srcFiles:
         datIn=pd.read_csv(f)
         datIn['fname']=os.path.basename(f)
-        datIn['scenario']=datIn['fname'].str.extract("^i.*?_.*?_(.*?)_.*$")
+        datIn['scenario']=datIn['fname'].str.extract("^.*?_.*?_(.*?)_.*$")
         dat+=[datIn]
     datdf=pd.concat(dat)
 
@@ -23,7 +23,7 @@ def makeBoxplot(config,thisInd,srcFiles):
     periodTbl['periodLbl']=periodTbl['periodLbl'].str.replace('\\n','\n')
     periodLblDict={x['period'] : x['periodLbl'] for i,x in periodTbl.iterrows()}
     scTbl=pd.DataFrame.from_dict(config['scenarios'],orient='index')
-    scColourDict={ x['shortname'] : x['colour'] for i,x in scTbl.iterrows()}
+    scColourDict={ x['id'] : x['colour'] for i,x in scTbl.iterrows()}
 
     #Now merge into dataframe and pivot for plotting
     pltLong=pd.merge(datdf, ptileTbl, on='percentiles', how='left')
@@ -61,7 +61,7 @@ def makeSpatialplot(config,thisInd,srcFiles):
         change=thisdat.isel(period=-1)-thisdat.isel(period=0)
         changedf=change.indicator_mean.to_dataframe().reset_index()
         changedf['fname']=os.path.basename(d)
-        changedf['scenario']=changedf['fname'].str.extract("^i.*?_.*?_(.*?)_.*$")
+        changedf['scenario']=changedf['fname'].str.extract("^.*?_.*?_(.*?)_.*$")
         datdf+=[changedf]
     pltDat=pd.concat(datdf)
 
@@ -86,14 +86,14 @@ def makeLineplot(config,thisInd,srcFiles):
     for f in srcFiles:
         datIn=pd.read_csv(f)
         datIn['fname']=os.path.basename(f)
-        datIn['scenario']=datIn['fname'].str.extract("^i.*?_.*?_(.*?)_.*$")
+        datIn['scenario']=datIn['fname'].str.extract("^.*?_.*?_(.*?)_.*$")
         dat+=[datIn]
     datdf=pd.concat(dat)
     datdf['datetime']=pd.to_datetime(datdf['time'])
 
     #Get metafra data from configuration
     scTbl=pd.DataFrame.from_dict(config['scenarios'],orient='index')
-    scColourDict={ x['shortname'] : x['colour'] for i,x in scTbl.iterrows()}
+    scColourDict={ x['id'] : x['colour'] for i,x in scTbl.iterrows()}
 
     #Now select data for plotting - we only plot the central value, not the full range
     pltDat=datdf[datdf['percentiles']==config['ensembles']['centralPercentile']]

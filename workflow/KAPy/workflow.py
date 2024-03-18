@@ -1,13 +1,20 @@
 #Given a set of input files, create datachunk objects that can be worked with
 
-from . import helpers
+"""
+#Setup for debugging with a Jupyterlab console
+import os
+os.chdir("..")
+import KAPy
+os.chdir("..")
+config=KAPy.loadConfig()  
+"""
+
 import pandas as pd
 import os
 import sys
 import glob
 import re
 
-#config=KAPy.loadConfig()  
 
 def getWorkflow(config):
     '''
@@ -17,59 +24,57 @@ def getWorkflow(config):
     '''
     #Extract specific configurations 
     inp=config['inputs']
+    ind=config['indicators']
     sc=config['scenarios']
+    outDirs=config['dirs']
     
-    #Primary Variables-----------------------------------------------------------------------
+    #Primary Variables ---------------------------------------------------------------
     #PVs are the raw inputs. These need to be read into a single-file format based on 
     #xarray, and are then exported either as netcdf or as pickles.
-    
-    #Reshape the input structure into a more workable format, including
-    #the addition of a list of files
-    inpDict={}
-    thisKey=0
-    for thisInp in inp.keys():
-        for thisVar in inp[thisInp].keys():
-            #Get file list
-            theseFiles=glob.glob(helpers.buildPath(config,'inputs',inp[thisInp][thisVar]['path']))
-            #Write back into input list
-            thisKey+=1
-            inpDict[thisKey]={}
-            inpDict[thisKey]['varName']=thisVar
-            inpDict[thisKey]['src']=thisInp
-            inpDict[thisKey].update(inp[thisInp][thisVar])
-            inpDict[thisKey]['inpPath']=theseFiles
-    
-    #Make into table and extract stems 
-    inpTbl= pd.DataFrame.from_dict(inpDict,orient='index').explode('inpPath')
-    inpTbl['stems']=[re.search(x['regex'],os.path.basename(x['inpPath'])).group(1) for i,x in inpTbl.iterrows()] 
-    #Now loop over the scenario definitions to get the list
-    pvList=[]
-    for thisSc in sc.values():
-        #Get files that match experiments
-        matchPat='|'.join([f'_{x}_' for x in thisSc['experiments']])
-        inSc=inpTbl['stems'].str.contains(matchPat)
-        theseFiles=inpTbl[inSc].copy() #Explicit copy to avoid SettingWithCopyWarning
-        #Generate the primary variable filename
-        pvFname=[re.sub(matchPat,'_',os.path.basename(x))
-                               for x in theseFiles['stems']]
-        theseFiles['pvFname']=theseFiles['varName']+"_" + theseFiles['src'] + "_" + thisSc['shortname'] + "_" + pvFname  
-        pvList+=[theseFiles]
-    pvTbl=pd.concat(pvList) 
-    pvTbl['pvPath']=helpers.buildPath(config,'primVars',pvTbl['pvFname'])
-    #Build the full filename
-    if config['primVars']['storeAsNetCDF']:
-        pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
-    else:
-        pvTbl['pvPath']=pvTbl['pvPath']+'.pkl' #Pickle
+    #We loop over the individual items maintaining the dict format, as this is a touch easier to
+    #work with
+    pvDict={}
+    for thisKey,thisInp in inp.items():
+        #Get file list
+        inpTbl=pd.DataFrame(glob.glob(thisInp['path']),columns=['inpPath'])
+        #Make into table and extract stems 
+        inpTbl['stems']=[re.search(thisInp['regex'],os.path.basename(x)).group(1)
+                          for x in inpTbl['inpPath']] 
+        #Process inputs that have scenarios first
+        pvList=[]
+        if thisInp['hasScenarios']:
+            for thisSc in sc.values():
+                #Get files that match experiments
+                inSc=inpTbl['stems'].str.contains(thisSc['regex'])
+                theseFiles=inpTbl[inSc].copy() #Explicit copy to avoid SettingWithCopyWarning
+                #Generate the primary variable filename
+                theseFiles['pvFname']=[re.sub(thisSc['regex'],'',os.path.basename(x))
+                                       for x in theseFiles['stems']]
+                theseFiles['pvFname']=f"{thisInp['varName']}_{thisInp['srcName']}_{thisSc['id']}_" + \
+                                    theseFiles['pvFname']
+                pvList+=[theseFiles]
+        else:
+            inpTbl['pvFname']=f"{thisInp['varName']}_{thisInp['srcName']}_"+ inpTbl['stems']
+            pvList+=[inpTbl]
+        
+        #Build the full filename and tidy up the output into a dict
+        pvTbl=pd.concat(pvList) 
+        pvTbl['pvPath']=[os.path.join(outDirs['primVars'],f)
+                         for f in pvTbl['pvFname']]
+        if config['primVars']['storeAsNetCDF']:
+            pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
+        else:
+            pvTbl['pvPath']=pvTbl['pvPath']+'.pkl' #Pickle
 
-    #tidy up the output into a dict
-    pvDict=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath']),include_groups=False).to_dict()
+        pvDict[thisKey]=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath']),
+                                             include_groups=False).to_dict()
     
     #Indicators -----------------------------------------------------
-    ind=config['indicators']
     #Combine all variable tables (e.g. prim, sec, bc, tert)
-    varPalette=[pvDict]
-    varTbl=pd.DataFrame([thisKey for varDict in varPalette for thisKey in varDict.keys() ],
+    varPalette=[v for v in pvDict.values()]
+    varTbl=pd.DataFrame([thisKey 
+                         for varDict in varPalette 
+                         for thisKey in varDict.keys() ],
                        columns=["varPath"])
     varTbl['varFname']=[os.path.basename(p) for p in varTbl['varPath']]
     varTbl['varName']=varTbl['varFname'].str.extract('^(.*?)_.*$')
@@ -83,12 +88,14 @@ def getWorkflow(config):
     #Now extract the dict
     indTbl=pd.DataFrame.from_dict(ind,orient='index').explode('varPath')
     indTbl['varFname']=[os.path.basename(f) for f in indTbl['varPath']]
-    indTbl['indFname']= indTbl.apply(lambda x: f'i{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
+    indTbl['indFname']= indTbl.apply(lambda x: f'{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
                                     axis=1)
-    indTbl['indPath']= helpers.buildPath(config,'indicators',indTbl['indFname'])
+    indTbl['indPath']= [os.path.join(outDirs['indicators'],f) 
+                          for f in indTbl['indFname']]
     indDict=indTbl.groupby("id").apply(lambda x: [x],include_groups=False).to_dict() 
     for key in indDict.keys():
-        indDict[key]=indDict[key][0].groupby("indPath").apply(lambda x:list(x['varPath']),include_groups=False).to_dict()
+        indDict[key]=indDict[key][0].groupby("indPath").apply(lambda x:list(x['varPath']),
+                                                              include_groups=False).to_dict()
     
     #Ensembles-------------------------------------
     #Build ensemble membership
@@ -96,9 +103,11 @@ def getWorkflow(config):
                         columns=["indPath"])
     ensTbl['indFname']=[os.path.basename(p) for p in ensTbl['indPath']]
     ensTbl['ens']=ensTbl['indFname'].str.extract("(.*?_.*?_.*?)_.*$")
-    ensTbl['ensPath']=helpers.buildPath(config,"ensstats",ensTbl['ens']+"_ensstats.nc")
+    ensTbl['ensPath']=[os.path.join(outDirs["ensstats"],f+"_ensstats.nc")
+                        for f in ensTbl['ens']]
     #Extract the dict
-    ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['indPath']),include_groups=False).to_dict()
+    ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['indPath']),
+                                            include_groups=False).to_dict()
     
     #Arealstatistics----------------------------------------------
     #Start by building list of input files to calculate arealstatistics for
@@ -109,9 +118,11 @@ def getWorkflow(config):
     #Now setup output structures
     asTbl['srcFname']=[os.path.basename(p) for p in asTbl['srcPath']]
     asTbl['asFname']=asTbl['srcFname'].str.replace('nc','csv')
-    asTbl['asPath']=helpers.buildPath(config,'arealstats',asTbl['asFname'])
+    asTbl['asPath']=[os.path.join(outDirs['arealstats'],f)
+                     for f in asTbl['asFname']]
     #Make the dict
-    asDict=asTbl.groupby("asPath").apply(lambda x:list(x['srcPath']),include_groups=False).to_dict()
+    asDict=asTbl.groupby("asPath").apply(lambda x:list(x['srcPath']),
+                                         include_groups=False).to_dict()
     
     #Notebooks----------------------------------------------------
     #This is easy - notebooks need everything in ensstats and arealstats
@@ -122,7 +133,8 @@ def getWorkflow(config):
         nbTbl=pd.DataFrame(config['notebooks'],columns=['nbPath'])
     nbTbl['nbFname']=[os.path.basename(f) for f in nbTbl['nbPath']]
     nbTbl['htmlFname']=nbTbl['nbFname'].str.replace(".ipynb",".html")
-    nbTbl['htmlPath']=helpers.buildPath(config,'notebooks',nbTbl['htmlFname'])
+    nbTbl['htmlPath']=[os.path.join(outDirs['notebooks'],f)
+                       for f in nbTbl['htmlFname']]
     nbDict={r['htmlPath']: [r['nbPath']] + nbInps for i,r in nbTbl.iterrows()}
     
     #Collate and round off--------------------------------------------------------
@@ -134,7 +146,7 @@ def getWorkflow(config):
     #Need to create an "all" dict as well containing all targets in the workflow
     allList=[]
     for k,v in rtn.items():
-        if k=='indicators':  #Requires special handling, as it is a nested list
+        if k in ['primVars','indicators']:  #Requires special handling, as it is a nested list
             for x in v.values():
                 allList+=x.keys()
         else:

@@ -1,0 +1,8 @@
+#Indicator configuration table
+#------------------------------
+#For more details on configuration options, please see the configuration documentation here:
+#https://github.com/Klimaatlas/KAPy/blob/main/docs/Configuration.md
+#Lines starting with a "#" are ignored when loading the configuration
+#
+id	name	units	variables	season	statistic	time_binning
+101	Annual mean temperature	K	tas	annual	mean	periods

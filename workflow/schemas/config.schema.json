@@ -1,0 +1,136 @@
+{
+  "title": "KAPy configuration options",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Configuration schema for KAPy configuration objects. These configurations are usually stored in the `config.yaml` file in the root directory of the project.",
+  "type": "object",
+  "required": ["domain","configurationTables","arealstats","dirs","ensembles",    "primVars"],
+  "additionalProperties": false,
+  "properties": {
+    "domain": {
+      "description": "Defines the spatial region-of-interest that KAPy should perform the analysis over.",
+      "type": "object",
+      "required": ["xmin", "xmax",  "ymin", "ymax"],
+      "additionalProperties": false,
+      "properties": {
+        "xmin": { 
+            "description": "Western boundary of domain. ",
+            "type": "number"},
+        "xmax": { 
+            "description": "Eastern boundary of domain. ",
+            "type": "number"},
+        "ymin": { 
+            "description": "Southern boundary of domain. ",
+            "type": "number" },
+        "ymax": { 
+            "description": "Northern boundary of domain. ",
+            "type": "number" }
+      }
+    },
+    "configurationTables": {
+        "description": "Paths to configuration tables. See the documentation for each table separately",
+        "required": ["inputs","indicators","scenarios","periods","seasons"],
+         "additionalProperties": false,
+        "properties": {
+            "inputs": { 
+                "description": "Path to input configuration table, relative to working directory. See (inputs.md) for more detail.",
+                "type": "string"},
+            "indicators": {
+                "description": "Path to indicator configuration table, relative to working directory. See (indicators.md) for more detail.",
+                "type": "string" },
+            "scenarios": {
+                "description": "Path to scenario configuration table, relative to working directory. See (scenarios.md) for more detail.",
+                "type": "string" },
+            "periods": { 
+                "description": "Path to period configuration table, relative to working directory. See (periods.md) for more detail.",
+                "type": "string" },
+            "seasons": { 
+                "description": "Path to season configuration table, relative to working directory. See (seasons.md) for more detail.",
+                "type": "string" }}
+    },
+    "notebooks": { 
+        "description": "List of paths to Jupyter notebooks that should be compiled in the pipeline. Multiple notebooks can be specified using square-braces e.g. ['foo','bar']. If empty, no notebooks will be built.",
+      "oneOf": [
+        {
+          "type": ["string","null"]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minitems": 0
+        }
+      ]
+    },
+    "arealstats": {
+      "required": ["calcForMembers"],
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "calcForMembers": {
+            "description": "Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.",
+            "type": "boolean" }
+      }
+    },
+    "dirs": {
+        "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items",
+        "type": "object",
+      "required": ["primVars", "bc", "indicators", "regridded", "ensstats", "arealstats", "notebooks"],
+      "additionalProperties": false,
+        "properties": {
+            "primVars": { 
+                "description": "Directory for storing primary variables.",
+                "type": "string" },
+            "bc": { 
+                "description": "Directory for storing bias-corrected variables.",
+                "type": "string" },
+            "indicators": {
+                "description": "Directory for storing indicators variables.",
+                "type": "string" },
+            "regridded": {
+                "description": "Directory for storing indicators regridded to a common grid.",
+                "type": "string" },
+            "ensstats": { 
+                "description": "Directory for storing enssemble statistics.",
+                "type": "string" },
+            "arealstats": { 
+                "description": "Directory for storing statistics calculated over areas.",
+                "type": "string" },
+            "notebooks": {
+                "description": "Directory for storing compiled Jupyter notebooks.",
+                "type": "string" }
+      }
+    },
+    "ensembles": {
+        "description": "Specify the percentiles [0-100] calculated from the ensemble. We allow three values, corresponding to the upper and lower confidence limits, and the central value.",
+        "type": "object",
+        "required": ["upperPercentile", "centralPercentile", "lowerPercentile"],
+        "additionalProperties": false,
+        "properties": {
+            "upperPercentile": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "exclusiveMaximum": 100},
+            "centralPercentile": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "exclusiveMaximum": 100},
+            "lowerPercentile": { 
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "exclusiveMaximum": 100}
+      }
+    },
+    "primVars": {
+        "description": "Configuration options relating to the primary variables.",
+        "type": "object",
+        "required": ["storeAsNetCDF"],
+        "additionalProperties": false,
+        "properties": {
+            "storeAsNetCDF": {
+                "description": "Should the primary variables be stored as NetCDF files (`true`) or written as pickled versions of the internal xarray objects (`false`). The former work with intermediate tools, the later saves disk space.",
+                "type": "boolean" }
+      }
+    }
+  }
+}
