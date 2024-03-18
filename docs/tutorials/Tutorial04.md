@@ -20,7 +20,7 @@ ls resources/CORDEX/*
 
 3. Input data sources are defined via the input configuration table `./config/inputs.tsv`. Open this file in a text editor (e.g. `vi`). Each row corresponds to an input file type. You should be able to identify one row for CORDEX tas inputs and one for ERA5 inputs.
 
-4. Next, we need to modify this file to incorporate the new data inputs using a spreadsheet. Make the following changes, and save the file.
+4. Next, we need to modify this file to incorporate the new data inputs using a spreadsheet. Make the following changes, and save the file. Alternatively you can download a correctly formatted version of this file from [here](Tutorial04_files).
 
 ```
 id      srcName varName path    regex   internalVarName hasScenarios
@@ -33,7 +33,8 @@ ERA5-pr ERA5    pr      resources/ERA5_monthly/pr_ERA5_monthly.nc       ^pr_(.*)
 
 5. Note the addition of the new `pr` tags to the `CORDEX` and `ERA5` inputs. `path` is the path to the files, including a `*` glob to allow for general pattern matching. `regex` is a regular expression used to describe the structure of the filenames - the bracketed section are the common elements in the filename. `internalVarName` is the internal representation of the variable - in this case, ERA5 calls precipitation `tp` rather than `pr` in CORDEX.
 
-6. We also want to do something with this input dataset, so we need to define some indicators that can use it as well. Modify the indicator section of `config.yaml` to look like the following and save the file, maintaining indenting. Here we have added two parallel indicators to `101` and `102` that work with `pr` rather than `tas`. 
+6. We also want to do something with this input dataset, so we need to define some indicators that can use it as well. Modify the indicator section of `config.yaml` to look like the following and save the file, maintaining indenting. Here we have added two parallel indicators to `101` and `102` that work with `pr` rather than `tas`. Alternatively you can download a correctly formatted version of this file from [here](Tutorial04_files).
+
 ```
 id      name    units   variables       season  statistic       time_binning
 101     Annual mean temperature K       tas     annual  mean    periods
