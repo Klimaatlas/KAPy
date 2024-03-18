@@ -31,6 +31,7 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
         sys.exit(f"Cannot find a configuration file in: {configfiles}. Working directory: '{os.getcwd()}'")
      
     #Setup location of validation schemas
+    #schemaDir="./workflow/schemas/"
     schemaDir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","schemas")
 
     #Validate configuration file
@@ -58,7 +59,7 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
          'seasons':['months']}
     for thisTblKey,theseCols in listCols.items():
         #Load the variables that are defined as tabular configurations
-        thisTbl=pd.read_csv(cfg['configurationTables'][thisTblKey],sep="\t")
+        thisTbl=pd.read_csv(cfg['configurationTables'][thisTblKey],sep="\t",comment="#")
         #We allow some columns to be defined here as lists, but these need to be
         #parsed before we can actually use them for something
         for col in theseCols:
