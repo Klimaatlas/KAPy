@@ -14,35 +14,42 @@ import re
 #config=KAPy.loadConfig()  
 #inFile=["./KAGh/6.ensstats/i101_ensstat_rcp85.nc"]
 
-    
-def regrid(config,inFile,outFile,):
-    #Setup grid onto which regridding takes place
+config_path= "../../config/config.yaml"
+def regrid(config,inFile,outFile):
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f)
+    #print("Config:", config) 
+
     outGrd = xr.Dataset(
     {
         "lat": (["lat"], np.arange(config['domain']['ymin'],
                                    config['domain']['ymax'],
-                                   config['domain']['dy']),
+                                   config['regridding']['dy']),
                 {"units": "degrees_north"}),
         "lon": (["lon"], np.arange(config['domain']['xmin'],
                                    config['domain']['xmax'],
-                                   config['domain']['dx']),
+                                   config['regridding']['dx']),
                 {"units": "degrees_east"})
     })
-    
+
+    if not inFile:
+        raise ValueError("Empty list of inFile")
+        
+
     #Setup xarray object
-    dsIn= xr.open_dataset(inFile[0])
-    
-    #Do the regridding
+    dsIn= xr.open_dataset(inFile)
+
     regridder = xe.Regridder(dsIn, outGrd, 
-                             config['regridding']['method'],
-                             unmapped_to_nan=True)
+                             method=config['regridding']['method'],
+                             extrap_method=config['regridding']['extrap_method'])
+
     dsout=regridder(dsIn)
     
     #Write out
-    dname=os.path.dirname(outFile[0])
+    dname=os.path.dirname(outFile)
     if not os.path.exists(dname):
         os.makedirs(dname)
-    dsout.to_netcdf(outFile[0])
+    dsout.to_netcdf(outFile)
     
 
 def generateEnsstats(config,infiles,outfile):
