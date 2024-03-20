@@ -26,6 +26,27 @@
             "type": "number" }
       }
     },
+    "regridding": {
+      "description": "Defines the spatial regridding attributes that KAPy should use"
+      "type": "object",
+      "required": ["dx", "dy","method","extrap_method"],
+      "additionalProperties": false,
+      "properties": {
+        "dx": {
+            "description": "grid resolution dx. ",
+            "type": "number"},
+        "dy": {
+            "description": "grid resolution dy. ",
+            "type": "number"},
+        "method": {
+            "description": "The regridding method to use ",
+            "type": "string" },
+        "extrap_method": {
+            "description": "The extrapolation method to use ",
+            "type": "string" }
+      }
+    },
+
     "configurationTables": {
         "description": "Paths to configuration tables. See the documentation for each table separately",
         "required": ["inputs","indicators","scenarios","periods","seasons"],
