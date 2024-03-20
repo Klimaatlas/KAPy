@@ -11,6 +11,14 @@ domain:
     xmax: 2
     ymin: 4
     ymax: 12
+    
+#regridding options based on the 0.25deg ERA5 grid
+regridding:
+  method: bilinear
+  extrap_method: nearest_s2d
+  dy: 0.25
+  dx: 0.25
+  
 configurationTables:
     inputs:  'config/inputs.tsv'
     indicators: 'config/indicators.tsv'
