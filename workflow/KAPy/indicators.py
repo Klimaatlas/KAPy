@@ -23,7 +23,7 @@ def calculateIndicators(config,inFile,outFile,indID):
     #Read the dataset object back from disk, depending on the configuration
     inExt=os.path.splitext(os.path.basename(inFile[0]))[1] 
     if inExt == '.nc':
-        thisDat=xr.open_dataset(inFile[0])
+        thisDat=xr.open_dataarray(inFile[0])
     elif inExt == '.pkl': #Read pickle
         with open(inFile[0],'rb') as f:
             thisDat=pickle.load(f)
@@ -79,7 +79,7 @@ def calculateIndicators(config,inFile,outFile,indID):
         sys.exit("Unknown time_binning method, '" + thisInd['time_binning']+ "'")
 
     #Polish final product and write
-    dout=dout.rename({thisInd['variables']:"indicator"})  #Fix this up somehow
+    dout.name='indicator'
     dout.to_netcdf(outFile[0])
 
 

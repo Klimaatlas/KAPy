@@ -36,7 +36,7 @@ def buildPrimVar(config,inFiles,outFile,inpID):
     
     #Select the desired variable and rename it
     ds=ds.rename({thisInp['internalVarName']:thisInp['varName']})
-    ds=ds[thisInp['varName']]
+    ds=ds[thisInp['varName']] #Convert to dataarray
     
     #Drop degenerate dimensions. If any remain, throw an error
     ds=ds.squeeze()
