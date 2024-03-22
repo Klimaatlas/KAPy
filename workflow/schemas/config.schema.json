@@ -3,29 +3,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "description": "Configuration schema for KAPy configuration objects. These configurations are usually stored in the `config.yaml` file in the root directory of the project.",
   "type": "object",
-  "required": ["domain","configurationTables","arealstats","dirs","ensembles",    "primVars"],
-  "additionalProperties": false,
+  "required": ["configurationTables","notebooks","outputGrid","arealstats","dirs","ensembles",    "primVars"],
+  "additionalProperties": true,
   "properties": {
-    "domain": {
-      "description": "Defines the spatial region-of-interest that KAPy should perform the analysis over.",
-      "type": "object",
-      "required": ["xmin", "xmax",  "ymin", "ymax"],
-      "additionalProperties": false,
-      "properties": {
-        "xmin": { 
-            "description": "Western boundary of domain. ",
-            "type": "number"},
-        "xmax": { 
-            "description": "Eastern boundary of domain. ",
-            "type": "number"},
-        "ymin": { 
-            "description": "Southern boundary of domain. ",
-            "type": "number" },
-        "ymax": { 
-            "description": "Northern boundary of domain. ",
-            "type": "number" }
-      }
-    },
     "configurationTables": {
         "description": "Paths to configuration tables. See the documentation for each table separately",
         "required": ["inputs","indicators","scenarios","periods","seasons"],
@@ -61,6 +41,55 @@
           "minitems": 0
         }
       ]
+    },
+    "outputGrid": {
+      "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Regridding is currently performed using the xesmf package - see also the [documentation for xesmf](https://xesmf.readthedocs.io/) for a more detailed description of specific configurations.",
+      "type": "object",
+      "required": ["interpMethod","extrapMethod","xname","xunits","xmin", "xmax", "dx","yname","yunits", "ymin", "ymax","dy"],
+      "additionalProperties": false,
+      "properties": {
+        "interpMethod": { 
+            "description": "The `method` argument to `xesmf.frontend.Regridder` that chooses the regridding method. See documentation for a description of options.",
+            "enum": ["bilinear","conservative","conservative_normed","patch","nearest_s2d","nearest_d2s"],
+            "type": "string"},
+        "extrapMethod": { 
+            "description": "The `extrap_method` argument to `xesmf.frontend.Regridder` that chooses the extrapolation method. See documentation for a description of options.",
+            "enum": ["inverse_dist","nearest_s2d",null],
+            "type": "string"},
+        "xname": { 
+            "description": "Name of x axis in output files ",
+            "type": "string"},
+        "xunits": { 
+            "description": "Units of the y axis in output files ",
+            "type": "string"},
+        "xmin": { 
+            "description": "Western boundary of output grid. ",
+            "type": "number"},
+        "xmin": { 
+            "description": "Western boundary of output grid. ",
+            "type": "number"},
+        "xmax": { 
+            "description": "Eastern boundary of output grid. ",
+            "type": "number"},
+        "dx": { 
+            "description": "Spacing between nodes in the x direction ",
+            "type": "number"},
+        "yname": { 
+            "description": "Name of y axis in output files ",
+            "type": "string"},
+        "yunits": { 
+            "description": "Units of the y axis in output files ",
+            "type": "string"},
+        "ymin": { 
+            "description": "Southern boundary of output grid. ",
+            "type": "number" },
+        "ymax": { 
+            "description": "Northern boundary of output grid. ",
+            "type": "number" },
+        "dy": { 
+            "description": "Spacing between nodes in the y direction ",
+            "type": "number"}
+      }
     },
     "arealstats": {
       "required": ["calcForMembers"],

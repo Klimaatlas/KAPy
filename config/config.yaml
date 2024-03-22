@@ -6,17 +6,25 @@
 # can be downloaded from https://download.dmi.dk/Research_Projects/KAPy/
 # For instructions, see 
 
-domain:
-    xmin: -4
-    xmax: 2
-    ymin: 4
-    ymax: 12
 configurationTables:
     inputs:  'config/inputs.tsv'
     indicators: 'config/indicators.tsv'
     scenarios:  'config/scenarios.tsv'
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
+outputGrid:
+    interpMethod: 'bilinear'
+    extrapMethod: 'nearest_s2d'
+    xname: 'longitude'
+    xunits: 'degrees_east'
+    xmin: -4
+    xmax: 2
+    dx: 0.1
+    yname: 'latitude'
+    yunits: 'degrees_north'
+    ymin: 4
+    ymax: 12
+    dy: 0.1
 notebooks: 'workflow/notebooks/Output_overview.py.ipynb'
 
 # Configuration options------------------------------------

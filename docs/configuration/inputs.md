@@ -4,6 +4,7 @@
 
 ## Properties
 
+- **`id`** *(string)*: Identifier for the input. Must be unique. It is usually easiest to join the srcName and varName together into one string.
 - **`srcName`** *(string)*: The name of the data source e.g CORDEX, ERA5. Need not be unique. Is used to group related variables from the same datasource together further in the analysis (e.g. tas and pr from ERA5). .
 - **`varName`** *(string)*: The name of the variable contained in this dataset. While there is no enforcement of naming conventions in KAPy, the variable names should anyway be standardised across the entire configuration and across input datasets. For example, both ERA5 and CORDEX provide surface temperature, but with different internal variable names in the input files - to ensure that they can be matched together, they should both be assigned the varName `tas`.
 - **`path`** *(string)*: Path to input files, relative to the working directory. Glob-matching (e.g. `./resources/CORDEX/tas_*`) can be used when then input covers multiple files  and/or there are multiple variable types in the same directory.

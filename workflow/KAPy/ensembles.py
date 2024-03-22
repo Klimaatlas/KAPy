@@ -3,7 +3,7 @@ import os
 import xarray as xr
 import xclim
 import xclim.ensembles as xcEns
-#import xesmf as xe
+import xesmf as xe
 import pickle
 import numpy as np
 import tqdm
@@ -11,39 +11,15 @@ import sys
 import glob
 import re
 
-#config=KAPy.loadConfig()  
-#inFile=["./KAGh/6.ensstats/i101_ensstat_rcp85.nc"]
-
-    
-def regrid(config,inFile,outFile,):
-    #Setup grid onto which regridding takes place
-    outGrd = xr.Dataset(
-    {
-        "lat": (["lat"], np.arange(config['domain']['ymin'],
-                                   config['domain']['ymax'],
-                                   config['domain']['dy']),
-                {"units": "degrees_north"}),
-        "lon": (["lon"], np.arange(config['domain']['xmin'],
-                                   config['domain']['xmax'],
-                                   config['domain']['dx']),
-                {"units": "degrees_east"})
-    })
-    
-    #Setup xarray object
-    dsIn= xr.open_dataset(inFile[0])
-    
-    #Do the regridding
-    regridder = xe.Regridder(dsIn, outGrd, 
-                             config['regridding']['method'],
-                             unmapped_to_nan=True)
-    dsout=regridder(dsIn)
-    
-    #Write out
-    dname=os.path.dirname(outFile[0])
-    if not os.path.exists(dname):
-        os.makedirs(dname)
-    dsout.to_netcdf(outFile[0])
-    
+"""
+#Setup for debugging with a Jupyterlab console
+import os
+os.chdir("..")
+import KAPy
+os.chdir("..")
+config=KAPy.loadConfig()  
+inFile=["results/5.ensstats/i101_ensstat_rcp85.nc"]
+"""
 
 def generateEnsstats(config,infiles,outfile):
     #Setup the ensemble

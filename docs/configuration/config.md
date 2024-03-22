@@ -4,11 +4,6 @@
 
 ## Properties
 
-- **`domain`** *(object)*: Defines the spatial region-of-interest that KAPy should perform the analysis over. Cannot contain additional properties.
-  - **`xmin`** *(number, required)*: Western boundary of domain. .
-  - **`xmax`** *(number, required)*: Eastern boundary of domain. .
-  - **`ymin`** *(number, required)*: Southern boundary of domain. .
-  - **`ymax`** *(number, required)*: Northern boundary of domain. .
 - **`configurationTables`**: Paths to configuration tables. See the documentation for each table separately. Cannot contain additional properties.
   - **`inputs`** *(string, required)*: Path to input configuration table, relative to working directory. See (inputs.md) for more detail.
   - **`indicators`** *(string, required)*: Path to indicator configuration table, relative to working directory. See (indicators.md) for more detail.
@@ -20,6 +15,19 @@
     - *['string', 'null']*
     - *array*
       - **Items** *(string)*
+- **`outputGrid`** *(object)*: Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Regridding is currently performed using the xesmf package - see also the [documentation for xesmf](https://xesmf.readthedocs.io/) for a more detailed description of specific configurations. Cannot contain additional properties.
+  - **`interpMethod`** *(string, required)*: The `method` argument to `xesmf.frontend.Regridder` that chooses the regridding method. See documentation for a description of options. Must be one of: `["bilinear", "conservative", "conservative_normed", "patch", "nearest_s2d", "nearest_d2s"]`.
+  - **`extrapMethod`** *(string)*: The `extrap_method` argument to `xesmf.frontend.Regridder` that chooses the extrapolation method. See documentation for a description of options. Must be one of: `["inverse_dist", "nearest_s2d", null]`.
+  - **`xname`** *(string, required)*: Name of x axis in output files .
+  - **`xunits`** *(string, required)*: Units of the y axis in output files .
+  - **`xmin`** *(number, required)*: Western boundary of output grid. .
+  - **`xmax`** *(number, required)*: Eastern boundary of output grid. .
+  - **`dx`** *(number, required)*: Spacing between nodes in the x direction .
+  - **`yname`** *(string, required)*: Name of y axis in output files .
+  - **`yunits`** *(string, required)*: Units of the y axis in output files .
+  - **`ymin`** *(number, required)*: Southern boundary of output grid. .
+  - **`ymax`** *(number, required)*: Northern boundary of output grid. .
+  - **`dy`** *(number, required)*: Spacing between nodes in the y direction .
 - **`arealstats`** *(object)*: Cannot contain additional properties.
   - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
 - **`dirs`** *(object)*: Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items. Cannot contain additional properties.
