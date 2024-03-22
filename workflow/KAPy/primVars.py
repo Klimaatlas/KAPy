@@ -44,15 +44,7 @@ def buildPrimVar(config,inFiles,outFile,inpID):
         sys.exit(f"Extra dimensions found in processing '{inpID}' - there should be only " +\
                  f"three dimensions after degenerate dimensions are dropped but "+\
                  f"found {len(ds.dims)} i.e. {ds.dims}.")
-    
-    """
-    #Reapply domain criteria here
-        dsSel = ds.sel(lat=slice(config['domain']['ymin'], 
-                          config['domain']['ymax']), 
-                       lon=slice(config['domain']['xmin'], 
-                          config['domain']['xmax']))
-    """
-
+   
     #Write the dataset object to disk, depending on the configuration
     if config['primVars']['storeAsNetCDF']:
         ds.to_netcdf(outFile[0]) 
