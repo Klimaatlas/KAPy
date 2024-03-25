@@ -28,26 +28,51 @@
                 "type": "string" }}
     },
     "notebooks": { 
-        "description": "List of paths to Jupyter notebooks that should be compiled in the pipeline. Multiple notebooks can be specified using square-braces e.g. ['foo','bar']. If empty, no notebooks will be built.",
+        "description": "Jupyter notebooks that should be compiled in the pipeline. Multiple configuration options are possible.",
       "oneOf": [
         {
-          "type": ["string","null"]
+          "type": "null",
+           "description" : "No notebooks to be built."
+            
+        },
+        {
+          "type": "string",
+           "description": "Path to a single notebook to build."
         },
         {
           "type": "array",
+          "description": "Paths to multiple notebooks, specified as a list using square-braces e.g. ['foo','bar'].", 
           "items": {
             "type": "string"
           },
-          "minitems": 0
+          "minitems": 1
         }
       ]
     },
     "outputGrid": {
-      "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Regridding is currently performed using the xesmf package - see also the [documentation for xesmf](https://xesmf.readthedocs.io/) for a more detailed description of specific configurations.",
+      "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple regridding approaches are available, as described below.",
+      "oneOf": [
+          {
+              "type":"object",
+              "required": ["regriddingEngine"],
+              "additionalProperties": false,
+              "description": "Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid",
+              "properties": {
+        "regriddingEngine": {
+            "type" : "string",
+            "enum": [null,"None"]
+            }
+              }
+          },
+          {  
       "type": "object",
-      "required": ["interpMethod","extrapMethod","xname","xunits","xmin", "xmax", "dx","yname","yunits", "ymin", "ymax","dy"],
+      "required": ["regridding","interpMethod","extrapMethod","xname","xunits","xmin", "xmax", "dx","yname","yunits", "ymin", "ymax","dy"],
       "additionalProperties": false,
+      "description": "Perform regridding using the xesmf package. See also the [documentation for xesmf](https://xesmf.readthedocs.io/) for a more detailed description of specific configurations.",
       "properties": {
+        "regriddingEngine": {
+            "type" : "string",
+            "enum": ["xesmf"]},
         "interpMethod": { 
             "description": "The `method` argument to `xesmf.frontend.Regridder` that chooses the regridding method. See documentation for a description of options.",
             "enum": ["bilinear","conservative","conservative_normed","patch","nearest_s2d","nearest_d2s"],
@@ -90,6 +115,8 @@
             "description": "Spacing between nodes in the y direction ",
             "type": "number"}
       }
+          }
+      ]
     },
     "arealstats": {
       "required": ["calcForMembers"],

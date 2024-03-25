@@ -13,6 +13,7 @@ configurationTables:
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
 outputGrid:
+    regriddingEngine: 'xesmf'
     interpMethod: 'bilinear'
     extrapMethod: 'nearest_s2d'
     xname: 'longitude'

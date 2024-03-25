@@ -10,9 +10,13 @@ inFile=["results/3.indicators/101_CORDEX_rcp26_AFR-22_MOHC-HadGEM2-ESr1i1p1_GERI
 import xarray as xr
 import numpy as np
 import xesmf as xe
-
+import sys
     
 def regrid(config,inFile,outFile):
+    #Currently only works for 'xesmf' regridding. Potentially add CDO in the future
+    if not config['outputGrid']['regriddingEngine']=='xesmf':
+        sys.exit("Regridding options are currently limited to xesmf. See documentation")
+        
     #Get output options
     outOpt=config['outputGrid']
     
