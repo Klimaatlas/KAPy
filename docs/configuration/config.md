@@ -38,7 +38,9 @@
   - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
 - **`dirs`** *(object)*: Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items. Cannot contain additional properties.
   - **`primVars`** *(string, required)*: Directory for storing primary variables.
+  - **`secVars`** *(string)*: Directory for storing secondary variables.
   - **`bc`** *(string, required)*: Directory for storing bias-corrected variables.
+  - **`tertVars`** *(string)*: Directory for storing teriary variables.
   - **`indicators`** *(string, required)*: Directory for storing indicators variables.
   - **`regridded`** *(string, required)*: Directory for storing indicators regridded to a common grid.
   - **`ensstats`** *(string, required)*: Directory for storing enssemble statistics.
@@ -50,3 +52,12 @@
   - **`lowerPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
 - **`primVars`** *(object)*: Configuration options relating to the primary variables. Cannot contain additional properties.
   - **`storeAsNetCDF`** *(boolean, required)*: Should the primary variables be stored as NetCDF files (`true`) or written as pickled versions of the internal xarray objects (`false`). The former work with intermediate tools, the later saves disk space.
+- **`secondaryVars`** *(object)*: Definition of secondary variables. Each variable definition should follow the following structure. Can contain additional properties.
+  - **Additional Properties** *(object)*: Cannot contain additional properties.
+    - **`name`** *(string, required)*: Code by which to refer to the variable e.g. tas, SPI, pr etc.
+    - **`inputVars`** *(array, required)*: List of input variables to be used in generating this new variable.
+    - **`srcType`** *(string, required)*: How do we calculate the new variable. Functions can be taken from an installed python module `module` or a python `script` containing a function. Must be one of: `["module", "script"]`.
+    - **`srcPath`** *(string, required)*: When `srcType` is `module`, the name of the module - otherwise the path to the python `script` containing the function to be used, relative to the working directory.
+    - **`srcName`** *(string, required)*: The name of the function to be used to calculate the new variable.
+    - **`passXarrays`** *(boolean, required)*: Should KAPy pass xArray objects to the function? If no, then then path to the input file is passed as a string instead.
+    - **`additionalArgs`** *(object, required)*: Additional arbitrary arguments to be passed to the function via keyword arguments. Can contain additional properties.

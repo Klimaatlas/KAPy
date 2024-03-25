@@ -137,8 +137,14 @@
             "primVars": { 
                 "description": "Directory for storing primary variables.",
                 "type": "string" },
+            "secVars": { 
+                "description": "Directory for storing secondary variables.",
+                "type": "string" },
             "bc": { 
                 "description": "Directory for storing bias-corrected variables.",
+                "type": "string" },
+            "tertVars": { 
+                "description": "Directory for storing teriary variables.",
                 "type": "string" },
             "indicators": {
                 "description": "Directory for storing indicators variables.",
@@ -186,6 +192,41 @@
             "storeAsNetCDF": {
                 "description": "Should the primary variables be stored as NetCDF files (`true`) or written as pickled versions of the internal xarray objects (`false`). The former work with intermediate tools, the later saves disk space.",
                 "type": "boolean" }
+      }
+    },
+    "secondaryVars": {
+      "type": "object",
+      "description": "Definition of secondary variables. Each variable definition should follow the following structure",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "inputVars", "srcType", "srcPath", "srcName", "passXarrays", "additionalArgs"],
+        "properties": {
+          "name": {
+              "description":"Code by which to refer to the variable e.g. tas, SPI, pr etc",
+              "type": "string"},
+          "inputVars": {
+                "description":"List of input variables to be used in generating this new variable.",
+                "type": "array"},
+          "srcType": {
+              "description":"How do we calculate the new variable. Functions can be taken from an installed python module `module` or a python `script` containing a function",
+              "type": "string", 
+              "enum": ["module","script"]},
+          "srcPath": {
+              "description":"When `srcType` is `module`, the name of the module - otherwise the path to the python `script` containing the function to be used, relative to the working directory",
+              "type": "string"},
+          "srcName": {
+              "description":"The name of the function to be used to calculate the new variable",
+              "type": "string"},
+          "passXarrays": {
+                "description":"Should KAPy pass xArray objects to the function? If no, then then path to the input file is passed as a string instead.",
+                "type": "boolean"},
+          "additionalArgs": {
+            "description":"Additional arbitrary arguments to be passed to the function via keyword arguments.",
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": false
       }
     }
   }
