@@ -5,5 +5,5 @@ from .primVars import *
 from .ensembles import *
 from .regridding import *
 from .indicators import *
-from .workflow import *
+from .workflow import getWorkflow
 from .plots import *

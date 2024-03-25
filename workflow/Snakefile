@@ -39,7 +39,7 @@ def primVar_singular_rule(thisID):
                                      outFile=output,
                                      inpID=thisID)
 
-#Indicator plural rule
+#Plural rule
 def primVar_plural_rule(thisID):
     rule:
         name: f'primVar_{thisID}'
@@ -58,8 +58,86 @@ rule primVars:
 
 # Secondary variables -------------------------
 # "Secondary variables" are calculated as new variables derived from primary variables.  
-# Good examples include FWI and PoteEvap. 
-# TODO
+# Good examples include FWI, PoteEvap and SPI. 
+# Singular rule
+def secVar_singular_rule(thisID):
+    rule:  
+        name: f'secVar_{thisID}_files'
+        output:
+            os.path.join(outDirs['secVars'],"{svFname}")
+        input:
+            lambda wildcards: 
+                wf['secVars'][thisID][ os.path.join(outDirs['secVars'],wildcards.svFname)].values()
+        run:
+            KAPy.buildDerivedVar(config=config,
+                                     inFiles=input,
+                                     outFile=output,
+                                     inpID=config['secondaryVars'][thisID])
+
+#Plural rule
+def secVar_plural_rule(thisID):
+    rule:
+        name: f'secVar_{thisID}'
+        input:
+            list(wf['secVars'][thisID].keys())
+            
+for inpID in wf['secVars'].keys():
+    secVar_singular_rule(inpID)
+    secVar_plural_rule(inpID)
+
+#Run all plurals    
+rule secVars:
+    input:
+        [list(thisVar.keys()) for thisVar in wf['secVars'].values()]
+        
+
+"""
+#Variables---------------------------------
+#Rules for primary and secondary variables can be generated using a generic set of rules
+#Singular rule
+def var_singular_rule(varType,thisID):
+    rule:  
+        name: f'{varType}_{thisID}_files'
+        output:
+            os.path.join(outDirs[varType],"{varFname}")
+        input:
+            lambda wildcards: 
+                wf[varType][thisID][ os.path.join(outDirs[varType],wildcards.varFname)] \
+                if varType=="primVar" else \
+                wf[varType][thisID][ os.path.join(outDirs[varType],wildcards.varFname)].values()
+        run:
+            if varType=="primVar":
+                KAPy.buildPrimVar(config=config,
+                                         inFiles=input,
+                                         outFile=output,
+                                         inpID=thisID)
+            else:
+                KAPy.buildDerivedVar(config=config,
+                                         inFiles=input,
+                                         outFile=output,
+                                         inpID=config[varType][thisID])
+
+#Plural rule
+def var_plural_rule(varType,thisID):
+    rule:
+        name: f'{varType}_{thisID}'
+        input:
+            list(wf[varType][thisID].keys())
+            
+#Lumped rule
+def var_lumped(varType):
+    rule:  
+        name: f'{varType}'
+        input:
+            [list(thisVar.keys()) for thisVar in wf[varType].values()]
+            
+for varType in ['primVars','secVars']:
+    var_lumped(varType)
+    for varID in wf[varType].keys():
+        var_singular_rule(varType,varID)
+        var_plural_rule(varType,varID)
+
+"""
         
 # Bias correction -------------------
 # TODO

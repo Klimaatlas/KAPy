@@ -68,24 +68,48 @@ def getWorkflow(config):
 
         pvDict[thisKey]=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath']),
                                              include_groups=False).to_dict()
-    
+
+    #Secondary Variables---------------------------------------------
+    #Setup the variable palette. As we add each addition variable, we concatentate it onto
+    #the variable palette
+    varList=[k for v in pvDict.values() for k in v.keys() ]
+    svDict={}
+    #Iterate over secondary variables
+    for thisSV in config['secondaryVars'].values():
+        #Convert varList into a workable format
+        varTbl=filelistToDataframe(varList)
+        #Now filter by the input variables needed for this derived variable
+        selThese=[v in thisSV['inputVars'] for v in varTbl['varName'] ]
+        longSVTbl=varTbl[selThese]
+        try:
+            if longSVTbl.size==0:
+                raise ValueError(f"Cannot find any matching input files for {thisSV['name']}. Check the definition again. Also check the order of definition.")
+        except ValueError as e:
+            print("Error:",e)
+        
+        #Pivot and retain only those in common
+        svTbl=longSVTbl.pivot(index=['src','stems'],
+                            columns='varName',
+                            values='path')
+        svTbl=svTbl.dropna().reset_index()
+        #Make output dict
+        svTbl['svFname']=f"{thisSV['name']}_"+svTbl['src']+"_"+svTbl['stems']+".nc"
+        svTbl['svPath']=[os.path.join(outDirs['secVars'],f)
+                         for f in svTbl['svFname']]
+        svTbl=svTbl.set_index('svPath')
+        thisSVdict=svTbl[thisSV['inputVars']].to_dict(orient='index')
+        #Store the dict and add to the variable palette
+        svDict[thisSV['name']]=thisSVdict
+        varList+=thisSVdict.keys()
+        
     #Indicators -----------------------------------------------------
-    #Combine all variable tables (e.g. prim, sec, bc, tert)
-    #Indicators need to check whether a variable requested exists
-    varPalette=[v for v in pvDict.values()]
-    varTbl=pd.DataFrame([thisKey 
-                         for varDict in varPalette 
-                         for thisKey in varDict.keys() ],
-                       columns=["varPath"])
-    varTbl['varFname']=[os.path.basename(p) for p in varTbl['varPath']]
-    varTbl['varName']=varTbl['varFname'].str.extract('^(.*?)_.*$')
-    varTbl['src']=varTbl['varFname'].str.extract('^.*?_(.*?)_.*$')
+    #Get the full variable palette from varList
+    varPal =filelistToDataframe(varList)
     #Loop over indicators and get required files
     #Currently only matching one variable. TODO: Add multiple
     for indKey, indVal in ind.items():
-        #useThis=varTbl['varName'].isin([indVal['variables']])
-        useThese=varTbl['varName'] == indVal['variables']
-        ind[indKey]['varPath']=varTbl['varPath'][useThese]
+        useThese=varPal['varName'] == indVal['variables']
+        ind[indKey]['varPath']=varPal['path'][useThese]
     #Now extract the dict
     indTbl=pd.DataFrame.from_dict(ind,orient='index').explode('varPath')
     indTbl['varFname']=[os.path.basename(f) for f in indTbl['varPath']]
@@ -158,6 +182,7 @@ def getWorkflow(config):
     
     #Collate and round off--------------------------------------------------------
     rtn={'primVars':pvDict,
+         'secVars': svDict,
          'indicators':indDict,
          "regridded": rgDict,
         'ensstats':ensDict,
@@ -175,5 +200,15 @@ def getWorkflow(config):
     
     #Fin-----------------------------------
     return(rtn)
+
+
+def filelistToDataframe(flist):
+        #Converts a list of file paths to a dataframe, with metadata extract
+        thisTbl=pd.DataFrame(flist,columns=['path'])
+        thisTbl['fname']=[os.path.basename(p) for p in thisTbl['path']]
+        thisTbl['varName']=thisTbl['fname'].str.extract('^(.*?)_.*$')
+        thisTbl['src']=thisTbl['fname'].str.extract('^.*?_(.*?)_.*$')
+        thisTbl['stems']=thisTbl['fname'].str.extract('^.*?_.*?_(.*).nc$')
+        return(thisTbl)
 
 
