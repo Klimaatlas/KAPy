@@ -191,7 +191,7 @@ def getWorkflow(config):
     #Need to create an "all" dict as well containing all targets in the workflow
     allList=[]
     for k,v in rtn.items():
-        if k in ['primVars','indicators']:  #Requires special handling, as it is a nested list
+        if k in ['primVars','secVars','indicators']:  #Requires special handling, as these are nested lists
             for x in v.values():
                 allList+=x.keys()
         else:
