@@ -70,9 +70,9 @@ def secVar_singular_rule(thisID):
                 wf['secVars'][thisID][ os.path.join(outDirs['secVars'],wildcards.svFname)].values()
         run:
             KAPy.buildDerivedVar(config=config,
-                                     inFiles=input,
+                                     inFiles=wf['secVars'][thisID][output[0]], 
                                      outFile=output,
-                                     inpID=config['secondaryVars'][thisID])
+                                     thisVar=config['secondaryVars'][thisID])
 
 #Plural rule
 def secVar_plural_rule(thisID):
