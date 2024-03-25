@@ -50,7 +50,7 @@
       ]
     },
     "outputGrid": {
-      "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple regridding approaches are available, as described below.",
+      "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple approaches to regridding can be configured, as described below.",
       "oneOf": [
           {
               "type":"object",
@@ -60,13 +60,13 @@
               "properties": {
         "regriddingEngine": {
             "type" : "string",
-            "enum": [null,"None"]
+            "enum": ["None"]
             }
               }
           },
           {  
       "type": "object",
-      "required": ["regridding","interpMethod","extrapMethod","xname","xunits","xmin", "xmax", "dx","yname","yunits", "ymin", "ymax","dy"],
+      "required": ["regriddingEngine","interpMethod","extrapMethod","xname","xunits","xmin", "xmax", "dx","yname","yunits", "ymin", "ymax","dy"],
       "additionalProperties": false,
       "description": "Perform regridding using the xesmf package. See also the [documentation for xesmf](https://xesmf.readthedocs.io/) for a more detailed description of specific configurations.",
       "properties": {
@@ -74,11 +74,11 @@
             "type" : "string",
             "enum": ["xesmf"]},
         "interpMethod": { 
-            "description": "The `method` argument to `xesmf.frontend.Regridder` that chooses the regridding method. See documentation for a description of options.",
+            "description": "The `method` argument to `xesmf.frontend.Regridder` that chooses the regridding method. See xesmf documentation for a description of options.",
             "enum": ["bilinear","conservative","conservative_normed","patch","nearest_s2d","nearest_d2s"],
             "type": "string"},
         "extrapMethod": { 
-            "description": "The `extrap_method` argument to `xesmf.frontend.Regridder` that chooses the extrapolation method. See documentation for a description of options.",
+            "description": "The `extrap_method` argument to `xesmf.frontend.Regridder` that chooses the extrapolation method. See xesmf documentation for a description of options.",
             "enum": ["inverse_dist","nearest_s2d",null],
             "type": "string"},
         "xname": { 

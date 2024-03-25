@@ -16,14 +16,14 @@
     - *string*: Path to a single notebook to build.
     - *array*: Paths to multiple notebooks, specified as a list using square-braces e.g. ['foo','bar'].
       - **Items** *(string)*
-- **`outputGrid`**: Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple regridding approaches are available, as described below.
+- **`outputGrid`**: Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple approaches to regridding can be configured, as described below.
   - **One of**
     - *object*: Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid. Cannot contain additional properties.
-      - **`regriddingEngine`** *(string, required)*: Must be one of: `[null, "None"]`.
+      - **`regriddingEngine`** *(string, required)*: Must be one of: `["None"]`.
     - *object*: Perform regridding using the xesmf package. See also the [documentation for xesmf](https://xesmf.readthedocs.io/) for a more detailed description of specific configurations. Cannot contain additional properties.
-      - **`regriddingEngine`** *(string)*: Must be one of: `["xesmf"]`.
-      - **`interpMethod`** *(string, required)*: The `method` argument to `xesmf.frontend.Regridder` that chooses the regridding method. See documentation for a description of options. Must be one of: `["bilinear", "conservative", "conservative_normed", "patch", "nearest_s2d", "nearest_d2s"]`.
-      - **`extrapMethod`** *(string, required)*: The `extrap_method` argument to `xesmf.frontend.Regridder` that chooses the extrapolation method. See documentation for a description of options. Must be one of: `["inverse_dist", "nearest_s2d", null]`.
+      - **`regriddingEngine`** *(string, required)*: Must be one of: `["xesmf"]`.
+      - **`interpMethod`** *(string, required)*: The `method` argument to `xesmf.frontend.Regridder` that chooses the regridding method. See xesmf documentation for a description of options. Must be one of: `["bilinear", "conservative", "conservative_normed", "patch", "nearest_s2d", "nearest_d2s"]`.
+      - **`extrapMethod`** *(string, required)*: The `extrap_method` argument to `xesmf.frontend.Regridder` that chooses the extrapolation method. See xesmf documentation for a description of options. Must be one of: `["inverse_dist", "nearest_s2d", null]`.
       - **`xname`** *(string, required)*: Name of x axis in output files .
       - **`xunits`** *(string, required)*: Units of the y axis in output files .
       - **`xmin`** *(number, required)*: Western boundary of output grid. .

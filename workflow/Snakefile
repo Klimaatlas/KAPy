@@ -101,25 +101,22 @@ rule indicators:
     input:
         [list(thisInd.keys()) for thisInd in wf['indicators'].values()]
 
-'''           
-                                               
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
-# This is not always the case, and so we add a regridding step prior to ensemble calculation
-rule regrid:
-    input:
-        expand(KAPy.buildPath(config,'gridded','{stem}.nc'),
-               stem=glob_wildcards(KAPy.buildPath(config,'indicators','{stem}.nc')).stem)
+# This step is optional but if the models are not on a common grid, this will cause failure 
+# when we come to the ensstats generation
+if config['outputGrid']['regriddingEngine']!='None':
+    rule regrid:
+        input:
+            list(wf['regridded'].keys())
 
-rule regrid_file:
-    output:
-        KAPy.buildPath(config,'gridded','{stem}.nc')
-    input:
-        KAPy.buildPath(config,'indicators','{stem}.nc')
-    run:
-        KAPy.regrid(config,input,output)
-
-'''
+    rule regrid_file:
+        output:
+            os.path.join(outDirs['regridded'],"{rg}")
+        input:
+            lambda wildcards: wf['regridded'][os.path.join(outDirs['regridded'],wildcards.rg)]
+        run:
+            KAPy.regrid(config,input,output)
 
 # Enssemble Statistics ---------------------------------
 # Now we can combine them into ensembles

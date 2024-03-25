@@ -71,6 +71,7 @@ def getWorkflow(config):
     
     #Indicators -----------------------------------------------------
     #Combine all variable tables (e.g. prim, sec, bc, tert)
+    #Indicators need to check whether a variable requested exists
     varPalette=[v for v in pvDict.values()]
     varTbl=pd.DataFrame([thisKey 
                          for varDict in varPalette 
@@ -97,16 +98,34 @@ def getWorkflow(config):
         indDict[key]=indDict[key][0].groupby("indPath").apply(lambda x:list(x['varPath']),
                                                               include_groups=False).to_dict()
     
-    #Ensembles-------------------------------------
-    #Build ensemble membership
-    ensTbl=pd.DataFrame([i for this in indDict.values() for i in this.keys() ],
-                        columns=["indPath"])
-    ensTbl['indFname']=[os.path.basename(p) for p in ensTbl['indPath']]
-    ensTbl['ens']=ensTbl['indFname'].str.extract("(.*?_.*?_.*?)_.*$")
+    #Regridding-----------------------------------------------------------------------
+    #We only regrid if it is requested in the configuration
+    doRegridding= (config['outputGrid']['regriddingEngine']!='None')
+    rgDict={}
+    if doRegridding:
+        #Remap directory
+        rgTbl=pd.DataFrame([i for this in indDict.values() for i in this.keys() ],
+                            columns=["indPath"])
+        rgTbl['indFname']=[os.path.basename(p) for p in rgTbl['indPath']]
+        rgTbl['rgPath']=[os.path.join(outDirs["regridded"],f) for f in rgTbl['indFname']]
+        #Extract the dict
+        rgDict=rgTbl.groupby("rgPath").apply(lambda x:list(x['indPath']),
+                                                include_groups=False).to_dict()
+    
+    #Ensembles----------------------------------------------------------------------------
+    #Build ensemble membership - the exact source here depends on whether
+    #we are doing regridding or not
+    if doRegridding:
+        ensTbl=pd.DataFrame(rgDict.keys(),columns=["srcPath"])
+    else:
+        ensTbl=pd.DataFrame([i for this in indDict.values() for i in this.keys() ],
+                            columns=["srcPath"])
+    ensTbl['srcFname']=[os.path.basename(p) for p in ensTbl['srcPath']]
+    ensTbl['ens']=ensTbl['srcFname'].str.extract("(.*?_.*?_.*?)_.*$")
     ensTbl['ensPath']=[os.path.join(outDirs["ensstats"],f+"_ensstats.nc")
                         for f in ensTbl['ens']]
     #Extract the dict
-    ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['indPath']),
+    ensDict=ensTbl.groupby("ensPath").apply(lambda x:list(x['srcPath']),
                                             include_groups=False).to_dict()
     
     #Arealstatistics----------------------------------------------
@@ -140,6 +159,7 @@ def getWorkflow(config):
     #Collate and round off--------------------------------------------------------
     rtn={'primVars':pvDict,
          'indicators':indDict,
+         "regridded": rgDict,
         'ensstats':ensDict,
         'arealstats':asDict,
         'notebooks':nbDict}
