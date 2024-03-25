@@ -208,7 +208,7 @@ def filelistToDataframe(flist):
         thisTbl['fname']=[os.path.basename(p) for p in thisTbl['path']]
         thisTbl['varName']=thisTbl['fname'].str.extract('^(.*?)_.*$')
         thisTbl['src']=thisTbl['fname'].str.extract('^.*?_(.*?)_.*$')
-        thisTbl['stems']=thisTbl['fname'].str.extract('^.*?_.*?_(.*).nc$')
+        thisTbl['stems']=thisTbl['fname'].str.extract('^.*?_.*?_(.*).(?:nc|pkl)$')
         return(thisTbl)
 
 
