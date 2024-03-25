@@ -12,19 +12,19 @@
          "additionalProperties": false,
         "properties": {
             "inputs": { 
-                "description": "Path to input configuration table, relative to working directory. See (inputs.md) for more detail.",
+                "description": "Path to input configuration table, relative to working directory. See [inputs.md] for more detail.",
                 "type": "string"},
             "indicators": {
-                "description": "Path to indicator configuration table, relative to working directory. See (indicators.md) for more detail.",
+                "description": "Path to indicator configuration table, relative to working directory. See [indicators.md] for more detail.",
                 "type": "string" },
             "scenarios": {
-                "description": "Path to scenario configuration table, relative to working directory. See (scenarios.md) for more detail.",
+                "description": "Path to scenario configuration table, relative to working directory. See [scenarios.md] for more detail.",
                 "type": "string" },
             "periods": { 
-                "description": "Path to period configuration table, relative to working directory. See (periods.md) for more detail.",
+                "description": "Path to period configuration table, relative to working directory. See [periods.md] for more detail.",
                 "type": "string" },
             "seasons": { 
-                "description": "Path to season configuration table, relative to working directory. See (seasons.md) for more detail.",
+                "description": "Path to season configuration table, relative to working directory. See [seasons.md] for more detail.",
                 "type": "string" }}
     },
     "notebooks": { 

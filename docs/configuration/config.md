@@ -5,11 +5,11 @@
 ## Properties
 
 - **`configurationTables`**: Paths to configuration tables. See the documentation for each table separately. Cannot contain additional properties.
-  - **`inputs`** *(string, required)*: Path to input configuration table, relative to working directory. See (inputs.md) for more detail.
-  - **`indicators`** *(string, required)*: Path to indicator configuration table, relative to working directory. See (indicators.md) for more detail.
-  - **`scenarios`** *(string, required)*: Path to scenario configuration table, relative to working directory. See (scenarios.md) for more detail.
-  - **`periods`** *(string, required)*: Path to period configuration table, relative to working directory. See (periods.md) for more detail.
-  - **`seasons`** *(string, required)*: Path to season configuration table, relative to working directory. See (seasons.md) for more detail.
+  - **`inputs`** *(string, required)*: Path to input configuration table, relative to working directory. See [inputs.md] for more detail.
+  - **`indicators`** *(string, required)*: Path to indicator configuration table, relative to working directory. See [indicators.md] for more detail.
+  - **`scenarios`** *(string, required)*: Path to scenario configuration table, relative to working directory. See [scenarios.md] for more detail.
+  - **`periods`** *(string, required)*: Path to period configuration table, relative to working directory. See [periods.md] for more detail.
+  - **`seasons`** *(string, required)*: Path to season configuration table, relative to working directory. See [seasons.md] for more detail.
 - **`notebooks`**: Jupyter notebooks that should be compiled in the pipeline. Multiple configuration options are possible.
   - **One of**
     - *null*: No notebooks to be built.
