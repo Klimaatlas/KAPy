@@ -11,12 +11,13 @@ thisVar=config['secondaryVars']['SPI3']
 
 import xarray as xr
 import importlib
+from .helpers import readFile
 
 def buildDerivedVar(config,inFiles,outFile,thisVar):
     
     #Load input files
     if thisVar['passXarrays']:  #Then load the paths into xarrays. Otherwise just pass the path.
-        inFiles={thisKey : xr.open_dataarray(thisPath) for thisKey,thisPath in inFiles.items()}
+        inFiles={thisKey : readFile(thisPath) for thisKey,thisPath in inFiles.items()}
     
     #Now get the function to call
     if thisVar['srcType']=='module':

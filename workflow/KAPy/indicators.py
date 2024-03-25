@@ -9,11 +9,11 @@ inFile=['results/1.primVars/tas_CORDEX_rcp85_AFR-22_MPI-M-MPI-ESM-LRr1i1p1_GERIC
 indID=101
 """
 
-import pickle
 import xarray as xr
 import os
 import numpy as np
 import sys
+from .helpers import readFile
 
 def calculateIndicators(config,inFile,outFile,indID):
     
@@ -21,14 +21,7 @@ def calculateIndicators(config,inFile,outFile,indID):
     thisInd=config['indicators'][indID]
     
     #Read the dataset object back from disk, depending on the configuration
-    inExt=os.path.splitext(os.path.basename(inFile[0]))[1] 
-    if inExt == '.nc':
-        thisDat=xr.open_dataarray(inFile[0])
-    elif inExt == '.pkl': #Read pickle
-        with open(inFile[0],'rb') as f:
-            thisDat=pickle.load(f)
-    else:
-        sys.exit(f'Unknown file format, {inExt} in {inFile[0]}')
+    thisDat=readFile(inFile[0])
 
     #Filter by season first (should always work)
     theseMonths=config['seasons'][thisInd['season']]['months']
