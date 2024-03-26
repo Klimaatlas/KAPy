@@ -3,7 +3,7 @@
     "title": "KAPy input configuration",
     "description": "The configuration of inputs in KAPy is set through a tab-separated table, with one row per input variable. The available configuration options are described here. All options are required",
     "type": "object",
-    "required": ["id","srcName", "varName", "path", "regex", "internalVarName","hasScenarios"],
+    "required": ["id","srcName", "varName", "path", "regex", "internalVarName","hasScenarios","applyPreprocessor"],
     "additionalProperties": false,    
     "properties": {
         "id": {
@@ -34,6 +34,19 @@
      "hasScenarios": {
         "description": "Indicates whether the input source has emissions scenarios associated with it. If so, the [scenario configuration table](scenarios.md) will used to further group input files together for this input source.",
         "type": "boolean"
+      },
+     "applyPreprocessor": {
+        "description": "Allows application of a preprocessing script to tidy inputs before they are written to disk as primVars. Different preprocessors can be used for different applications",
+        "type": "boolean"
+      },     
+     "preprocessorPath": {
+        "description": "Path to the script containing the preprocessor",
+        "type": ["null","string"]
+      },      
+     "preprocessorFunction": {
+        "description": "Name of the preprocessor function to apply.",
+        "type": ["null","string"]
       }      
+        
     }
 }

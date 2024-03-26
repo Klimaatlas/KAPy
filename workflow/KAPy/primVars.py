@@ -5,16 +5,18 @@ os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.loadConfig()  
-inFiles=['resources/ERA5_monthly/t2m_ERA5_monthly.nc']
-inpID='ERA5-tas'
+wf=KAPy.getWorkflow(config)
+inpID=next(iter(wf['primVars'].keys()))
+outFiles=next(iter(wf['primVars'][inpID]))
+inFiles=wf['primVars'][inpID][outFiles]
+
 """
 
 #Given a set of input files, create objects that can be worked with
 import xarray as xr
 import pickle
 import sys
-
-#config=KAPy.loadConfig()  
+import importlib
 
 
 def buildPrimVar(config,inFiles,outFile,inpID):
@@ -44,6 +46,14 @@ def buildPrimVar(config,inFiles,outFile,inpID):
         sys.exit(f"Extra dimensions found in processing '{inpID}' - there should be only " +\
                  f"three dimensions after degenerate dimensions are dropped but "+\
                  f"found {len(ds.dims)} i.e. {ds.dims}.")
+        
+    #Apply additional preprocessing scripts
+    if thisInp['applyPreprocessor']:
+        thisSpec=importlib.util.spec_from_file_location('customScript',thisInp['preprocessorPath'])
+        thisModule=importlib.util.module_from_spec(thisSpec)
+        thisSpec.loader.exec_module(thisModule)
+        ppFn=getattr(thisModule,thisInp['preprocessorFunction'])
+        ds2=ppFn(ds)  #Assume no input arguments
    
     #Write the dataset object to disk, depending on the configuration
     if config['primVars']['storeAsNetCDF']:
