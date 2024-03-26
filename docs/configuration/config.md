@@ -6,6 +6,7 @@
 
 - **`configurationTables`**: Paths to configuration tables. See the documentation for each table separately. Cannot contain additional properties.
   - **`inputs`** *(string, required)*: Path to input configuration table, relative to working directory. See [inputs.md](inputs.md) for more detail.
+  - **`secondaryVars`** *(string)*: Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if omitted, no secondary variables will be generated.
   - **`indicators`** *(string, required)*: Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail.
   - **`scenarios`** *(string, required)*: Path to scenario configuration table, relative to working directory. See [scenarios.md](scenarios.md) for more detail.
   - **`periods`** *(string, required)*: Path to period configuration table, relative to working directory. See [periods.md](periods.md) for more detail.
@@ -52,12 +53,3 @@
   - **`lowerPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
 - **`primVars`** *(object)*: Configuration options relating to the primary variables. Cannot contain additional properties.
   - **`storeAsNetCDF`** *(boolean, required)*: Should the primary variables be stored as NetCDF files (`true`) or written as pickled versions of the internal xarray objects (`false`). The former work with intermediate tools, the later saves disk space.
-- **`secondaryVars`** *(object)*: Definition of secondary variables. Each variable definition should follow the following structure. Can contain additional properties.
-  - **Additional Properties** *(object)*: Cannot contain additional properties.
-    - **`name`** *(string, required)*: Code by which to refer to the variable e.g. tas, SPI, pr etc.
-    - **`inputVars`** *(array, required)*: List of input variables to be used in generating this new variable.
-    - **`srcType`** *(string, required)*: How do we calculate the new variable. Functions can be taken from an installed python module `module` or a python `script` containing a function. Must be one of: `["module", "script"]`.
-    - **`srcPath`** *(string, required)*: When `srcType` is `module`, the name of the module - otherwise the path to the python `script` containing the function to be used, relative to the working directory.
-    - **`srcName`** *(string, required)*: The name of the function to be used to calculate the new variable.
-    - **`passXarrays`** *(boolean, required)*: Should KAPy pass xArray objects to the function? If no, then then path to the input file is passed as a string instead.
-    - **`additionalArgs`** *(object, required)*: Additional arbitrary arguments to be passed to the function via keyword arguments. Can contain additional properties.

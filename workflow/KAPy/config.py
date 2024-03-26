@@ -9,6 +9,7 @@ import pandas as pd
 from snakemake.utils import validate
 import os
 import sys
+import ast
 
 
 def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
@@ -32,6 +33,7 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
      
     #Setup location of validation schemas
     #schemaDir="./workflow/schemas/"
+    #schemaDir="./KAPy/workflow/schemas/"
     schemaDir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","schemas")
 
     #Validate configuration file
@@ -52,19 +54,24 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
             sys.exit(f"Cannot find notebook '{thisPath}'.")
             
     #Validate each table in turn
-    listCols={'indicators':[],
-         'inputs':[],
-         'scenarios':[],
-         'periods':[],
-         'seasons':['months']}
-    for thisTblKey,theseCols in listCols.items():
+    tabularCfg={'indicators':{'lists':[],'dicts':[],'schema':'indicators'},
+         'inputs':{'lists':[],'dicts':[],'schema':'inputs'},
+         'scenarios':{'lists':[],'dicts':[],'schema':'scenarios'},
+         'periods':{'lists':[],'dicts':[],'schema':'periods'},
+         'seasons':{'lists':['months'],
+                     'dicts':[],
+                     'schema':'seasons'},
+         'secondaryVars':{'lists':['inputVars','outputVars'],
+                     'dicts':['additionalArgs'],
+                     'schema':'derivedVars'}}
+    for thisTblKey,theseVals in tabularCfg.items():
         #Load the variables that are defined as tabular configurations
-        thisTbl=pd.read_csv(cfg['configurationTables'][thisTblKey],sep="\t",comment="#")
+        thisCfgFile=cfg['configurationTables'][thisTblKey]
+        thisTbl=pd.read_csv(thisCfgFile,sep="\t",comment="#")
         #We allow some columns to be defined here as lists, but these need to be
         #parsed before we can actually use them for something
-        for col in theseCols:
+        for col in theseVals['lists']:
             thisTbl[col]=thisTbl[col].str.split(",")
-        #Validate against the appropriate schema.
         #Note that Snakemake doesn't validate arrays in tabular configurations at the moment
         # https://github.com/snakemake/snakemake/issues/2601
         #Drop months from the validation scheme
@@ -72,7 +79,15 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
             valThis=thisTbl.drop(columns=['months'])
         else:
             valThis=thisTbl
-        validate(valThis, os.path.join(schemaDir,f"{thisTblKey}.schema.json"))
+        #Validate against the appropriate schema.
+        validate(valThis, os.path.join(schemaDir,f"{theseVals['schema']}.schema.json"))
+        #Dict columns also need to be parsed
+        for col in theseVals['dicts']:
+            try:
+                thisTbl[col]=[ast.literal_eval(x) for x in thisTbl[col]]
+            except (SyntaxError, ValueError) as e:
+                print(f"Error occurred in parsing column '{col}' in '{thisCfgFile}' : {e}")
+                sys.exit()
         #Set id column as the index so it can be used as the key
         thisTbl=thisTbl.set_index('id',drop=False)
         #Make dict

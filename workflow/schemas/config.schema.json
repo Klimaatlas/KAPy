@@ -14,6 +14,9 @@
             "inputs": { 
                 "description": "Path to input configuration table, relative to working directory. See [inputs.md](inputs.md) for more detail.",
                 "type": "string"},
+            "secondaryVars": {
+                "description": "Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if omitted, no secondary variables will be generated",
+                "type": "string" },
             "indicators": {
                 "description": "Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail.",
                 "type": "string" },
@@ -192,41 +195,6 @@
             "storeAsNetCDF": {
                 "description": "Should the primary variables be stored as NetCDF files (`true`) or written as pickled versions of the internal xarray objects (`false`). The former work with intermediate tools, the later saves disk space.",
                 "type": "boolean" }
-      }
-    },
-    "secondaryVars": {
-      "type": "object",
-      "description": "Definition of secondary variables. Each variable definition should follow the following structure",
-      "additionalProperties": {
-        "type": "object",
-        "required": ["name", "inputVars", "srcType", "srcPath", "srcName", "passXarrays", "additionalArgs"],
-        "properties": {
-          "name": {
-              "description":"Code by which to refer to the variable e.g. tas, SPI, pr etc",
-              "type": "string"},
-          "inputVars": {
-                "description":"List of input variables to be used in generating this new variable.",
-                "type": "array"},
-          "srcType": {
-              "description":"How do we calculate the new variable. Functions can be taken from an installed python module `module` or a python `script` containing a function",
-              "type": "string", 
-              "enum": ["module","script"]},
-          "srcPath": {
-              "description":"When `srcType` is `module`, the name of the module - otherwise the path to the python `script` containing the function to be used, relative to the working directory",
-              "type": "string"},
-          "srcName": {
-              "description":"The name of the function to be used to calculate the new variable",
-              "type": "string"},
-          "passXarrays": {
-                "description":"Should KAPy pass xArray objects to the function? If no, then then path to the input file is passed as a string instead.",
-                "type": "boolean"},
-          "additionalArgs": {
-            "description":"Additional arbitrary arguments to be passed to the function via keyword arguments.",
-            "type": "object",
-            "additionalProperties": true
-          }
-        },
-        "additionalProperties": false
       }
     }
   }

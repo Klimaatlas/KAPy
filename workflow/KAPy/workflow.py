@@ -15,6 +15,14 @@ import sys
 import glob
 import re
 
+def filelistToDataframe(flist):
+        #Converts a list of file paths to a dataframe, with metadata extract
+        thisTbl=pd.DataFrame(flist,columns=['path'])
+        thisTbl['fname']=[os.path.basename(p) for p in thisTbl['path']]
+        thisTbl['varName']=thisTbl['fname'].str.extract('^(.*?)_.*$')
+        thisTbl['src']=thisTbl['fname'].str.extract('^.*?_(.*?)_.*$')
+        thisTbl['stems']=thisTbl['fname'].str.extract('^.*?_.*?_(.*).(?:nc|pkl)$')
+        return(thisTbl)
 
 def getWorkflow(config):
     '''
@@ -93,13 +101,13 @@ def getWorkflow(config):
                             values='path')
         svTbl=svTbl.dropna().reset_index()
         #Make output dict
-        svTbl['svFname']=f"{thisSV['name']}_"+svTbl['src']+"_"+svTbl['stems']+".nc"
+        svTbl['svFname']=f"{thisSV['id']}_"+svTbl['src']+"_"+svTbl['stems']+".nc"
         svTbl['svPath']=[os.path.join(outDirs['secVars'],f)
                          for f in svTbl['svFname']]
         svTbl=svTbl.set_index('svPath')
         thisSVdict=svTbl[thisSV['inputVars']].to_dict(orient='index')
         #Store the dict and add to the variable palette
-        svDict[thisSV['name']]=thisSVdict
+        svDict[thisSV['id']]=thisSVdict
         varList+=thisSVdict.keys()
         
     #Indicators -----------------------------------------------------
@@ -200,15 +208,5 @@ def getWorkflow(config):
     
     #Fin-----------------------------------
     return(rtn)
-
-
-def filelistToDataframe(flist):
-        #Converts a list of file paths to a dataframe, with metadata extract
-        thisTbl=pd.DataFrame(flist,columns=['path'])
-        thisTbl['fname']=[os.path.basename(p) for p in thisTbl['path']]
-        thisTbl['varName']=thisTbl['fname'].str.extract('^(.*?)_.*$')
-        thisTbl['src']=thisTbl['fname'].str.extract('^.*?_(.*?)_.*$')
-        thisTbl['stems']=thisTbl['fname'].str.extract('^.*?_.*?_(.*).(?:nc|pkl)$')
-        return(thisTbl)
 
 
