@@ -5,19 +5,28 @@ os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.loadConfig()  
-inFiles={'pr':'results/1.primVars/pr_CORDEX_rcp26_AFR-22_NCC-NorESM1-Mr1i1p1_GERICS-REMO2015_v1_mon.nc'}
-thisVar=config['secondaryVars']['SPI3']
+wf=KAPy.getWorkflow(config)
+thisID='SPI3'
+thisVar=config['secondaryVars'][thisID]
+inFiles=['./outputs/1.variables/pr/pr_KAba_rcp26_EUR-11_CCCma-CanESM2r1i1p1_CLMcom-CCLM4-8-17_v1_day.nc']
+import sys
+sys.path.append("KAPy/workflow/KAPy/")
+from helpers import readFile
 """
 
 import xarray as xr
 import importlib
 from .helpers import readFile
+import os
 
 def buildDerivedVar(config,inFiles,outFile,thisVar):
     
+    #Build the input list into a dict
+    inDict={os.path.basename(os.path.dirname(f)):f for f in inFiles}
+
     #Load input files
     if thisVar['passXarrays']:  #Then load the paths into xarrays. Otherwise just pass the path.
-        inFiles={thisKey : readFile(thisPath) for thisKey,thisPath in inFiles.items()}
+        inDict={thisKey : readFile(thisPath) for thisKey,thisPath in inDict.items()}
     
     #Now get the function to call
     if thisVar['processorType']=='module':
@@ -32,7 +41,7 @@ def buildDerivedVar(config,inFiles,outFile,thisVar):
         sys.exit("Shouldn't be here")
     
     #Call function
-    theseArgs={**inFiles,**thisVar['additionalArgs']}
+    theseArgs={**inDict,**thisVar['additionalArgs']}
     out=thisFn(**theseArgs)
     
     #Write the results to disk

@@ -26,18 +26,22 @@ wf=KAPy.getWorkflow(config)
 # Primary Variables---------------------------------
 #Primary variable singular rule
 def primVar_singular_rule(thisID):
+    thisVarName=config['inputs'][thisID]['varName']
     rule:  
         name: f'primVar_{thisID}_files'
         output:
-            os.path.join(outDirs['primVars'],"{pvFname}")
+            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
+                   varName=thisVarName)
         input:
             lambda wildcards: 
-                wf['primVars'][thisID][ os.path.join(outDirs['primVars'],wildcards.pvFname)]
+                wf['primVars'][thisID][ os.path.join(outDirs['variables'],
+                                                     thisVarName,
+                                                     f"{thisVarName}_{wildcards.stem}.nc")]
         run:
             KAPy.buildPrimVar(config=config,
-                                     inFiles=input,
-                                     outFile=output,
-                                     inpID=thisID)
+                              inFiles=input,
+                              outFile=output,
+                              inpID=thisID)
 
 #Plural rule
 def primVar_plural_rule(thisID):
@@ -61,34 +65,36 @@ rule primVars:
 # Good examples include FWI, PoteEvap and SPI. 
 # Singular rule
 def secVar_singular_rule(thisID):
+    thisVar=config['secondaryVars'][thisID]
     rule:  
-        name: f'secVar_{thisID}_files'
+        name: f'secondaryVar_{thisID}_files'
         output:
-            os.path.join(outDirs['secVars'],"{svFname}")
+            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
+                   varName=thisVar['outputVars'])
         input:
-            lambda wildcards: 
-                wf['secVars'][thisID][ os.path.join(outDirs['secVars'],wildcards.svFname)].values()
+            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
+                   varName=thisVar['inputVars'])
         run:
             KAPy.buildDerivedVar(config=config,
-                                     inFiles=wf['secVars'][thisID][output[0]], 
+                                     inFiles=input, 
                                      outFile=output,
-                                     thisVar=config['secondaryVars'][thisID])
-
+                                     thisVar=thisVar)
+            
 #Plural rule
 def secVar_plural_rule(thisID):
     rule:
-        name: f'secVar_{thisID}'
+        name: f'secondaryVar_{thisID}'
         input:
-            list(wf['secVars'][thisID].keys())
+            wf['secondaryVars'][thisID]['files']
             
-for inpID in wf['secVars'].keys():
+for inpID in wf['secondaryVars'].keys():
     secVar_singular_rule(inpID)
     secVar_plural_rule(inpID)
 
 #Run all plurals    
-rule secVars:
+rule secondaryVars:
     input:
-        [list(thisVar.keys()) for thisVar in wf['secVars'].values()]
+        [item for thisVar in wf['secondaryVars'].values() for item in thisVar['files'] ]
         
 
 """
@@ -149,19 +155,22 @@ for varType in ['primVars','secVars']:
 
 #Indicator singular rule
 def ind_singular_rule(thisID):
+    thisInd=config['indicators'][thisID]
     rule:  
         name: f'indicator_{thisID}_files'
         output:
-            os.path.join(outDirs['indicators'],"{indFname}")
+            os.path.join(outDirs['indicators'],
+                         f"{thisID}",f"{thisID}_{{stem}}.nc")
         input:
-            lambda wildcards: 
-                wf['indicators'][thisID][ os.path.join(outDirs['indicators'],wildcards.indFname)]
+            expand(os.path.join(outDirs['variables'],
+                                "{varName}",
+                                "{varName}_{{stem}}.nc"),
+                   varName=thisInd['variables'])
         run:
             KAPy.calculateIndicators(config=config,
                                      inFile=input,
                                      outFile=output,
                                      indID=thisID)
-                                     
 
 #Indicator plural rule
 def ind_plural_rule(thisID):
@@ -177,7 +186,7 @@ for indID in config['indicators'].keys():
 #Run all indicators    
 rule indicators:
     input:
-        [list(thisInd.keys()) for thisInd in wf['indicators'].values()]
+        [item for thisInd in wf['indicators'].values() for item in thisInd ]
 
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
@@ -186,13 +195,13 @@ rule indicators:
 if config['outputGrid']['regriddingEngine']!='None':
     rule regrid:
         input:
-            list(wf['regridded'].keys())
+            wf['regridded']['files']
 
     rule regrid_file:
         output:
-            os.path.join(outDirs['regridded'],"{rg}")
+            os.path.join(outDirs['regridded'],"{varName}_{stem}.nc")
         input:
-            lambda wildcards: wf['regridded'][os.path.join(outDirs['regridded'],wildcards.rg)]
+            os.path.join(outDirs['indicators'],"{varName}","{varName}_{stem}.nc")
         run:
             KAPy.regrid(config,input,output)
 

@@ -134,20 +134,11 @@
     "dirs": {
         "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items",
         "type": "object",
-      "required": ["primVars", "bc", "indicators", "regridded", "ensstats", "arealstats", "notebooks"],
+      "required": ["variables","indicators", "regridded", "ensstats", "arealstats", "notebooks"],
       "additionalProperties": false,
         "properties": {
-            "primVars": { 
-                "description": "Directory for storing primary variables.",
-                "type": "string" },
-            "secVars": { 
-                "description": "Directory for storing secondary variables.",
-                "type": "string" },
-            "bc": { 
-                "description": "Directory for storing bias-corrected variables.",
-                "type": "string" },
-            "tertVars": { 
-                "description": "Directory for storing teriary variables.",
+            "variables": { 
+                "description": "Directory for storing variables.",
                 "type": "string" },
             "indicators": {
                 "description": "Directory for storing indicators variables.",

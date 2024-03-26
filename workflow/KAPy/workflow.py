@@ -67,7 +67,7 @@ def getWorkflow(config):
         
         #Build the full filename and tidy up the output into a dict
         pvTbl=pd.concat(pvList) 
-        pvTbl['pvPath']=[os.path.join(outDirs['primVars'],f)
+        pvTbl['pvPath']=[os.path.join(outDirs['variables'],thisInp['varName'],f)
                          for f in pvTbl['pvFname']]
         if config['primVars']['storeAsNetCDF']:
             pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
@@ -100,35 +100,30 @@ def getWorkflow(config):
                             columns='varName',
                             values='path')
         svTbl=svTbl.dropna().reset_index()
-        #Make output dict
-        svTbl['svFname']=f"{thisSV['id']}_"+svTbl['src']+"_"+svTbl['stems']+".nc"
-        svTbl['svPath']=[os.path.join(outDirs['secVars'],f)
-                         for f in svTbl['svFname']]
-        svTbl=svTbl.set_index('svPath')
-        thisSVdict=svTbl[thisSV['inputVars']].to_dict(orient='index')
-        #Store the dict and add to the variable palette
-        svDict[thisSV['id']]=thisSVdict
-        varList+=thisSVdict.keys()
+        #Now we have a list of valid files that can be made. Store the results
+        validPaths=[os.path.join(outDirs['variables'],
+                                 var,fName)
+                     for var in thisSV['outputVars']
+                     for fName in f"{var}_"+svTbl['src']+"_"+svTbl['stems']+".nc"] 
+        
+        svDict[thisSV['id']]=thisSV
+        svDict[thisSV['id']]['files']=validPaths
+        varList+=validPaths
         
     #Indicators -----------------------------------------------------
     #Get the full variable palette from varList
     varPal =filelistToDataframe(varList)
     #Loop over indicators and get required files
     #Currently only matching one variable. TODO: Add multiple
-    for indKey, indVal in ind.items():
-        useThese=varPal['varName'] == indVal['variables']
-        ind[indKey]['varPath']=varPal['path'][useThese]
-    #Now extract the dict
-    indTbl=pd.DataFrame.from_dict(ind,orient='index').explode('varPath')
-    indTbl['varFname']=[os.path.basename(f) for f in indTbl['varPath']]
-    indTbl['indFname']= indTbl.apply(lambda x: f'{x["id"]}_'+re.sub("^(.*?)_","",x['varFname']),
-                                    axis=1)
-    indTbl['indPath']= [os.path.join(outDirs['indicators'],f) 
-                          for f in indTbl['indFname']]
-    indDict=indTbl.groupby("id").apply(lambda x: [x],include_groups=False).to_dict() 
-    for key in indDict.keys():
-        indDict[key]=indDict[key][0].groupby("indPath").apply(lambda x:list(x['varPath']),
-                                                              include_groups=False).to_dict()
+    indDict={}
+    for indKey, thisInd in ind.items():
+        useThese=varPal['varName'] == thisInd['variables']
+        selVars=varPal[useThese]
+        validPaths=[os.path.join(outDirs['indicators'],
+                                str(thisInd['id']),fName)
+                     for fName in f"{thisInd['id']}_"+selVars['src']+"_"+selVars['stems']+".nc"] 
+        indDict[indKey]=indVal
+        indDict[indKey]['files']=validPaths
     
     #Regridding-----------------------------------------------------------------------
     #We only regrid if it is requested in the configuration
@@ -136,21 +131,20 @@ def getWorkflow(config):
     rgDict={}
     if doRegridding:
         #Remap directory
-        rgTbl=pd.DataFrame([i for this in indDict.values() for i in this.keys() ],
+        rgTbl=pd.DataFrame([i for this in indDict.values() for i in this['files']],
                             columns=["indPath"])
         rgTbl['indFname']=[os.path.basename(p) for p in rgTbl['indPath']]
         rgTbl['rgPath']=[os.path.join(outDirs["regridded"],f) for f in rgTbl['indFname']]
         #Extract the dict
-        rgDict=rgTbl.groupby("rgPath").apply(lambda x:list(x['indPath']),
-                                                include_groups=False).to_dict()
-    
+        rgDict={'files' : rgTbl['rgPath'].to_list()}
+        
     #Ensembles----------------------------------------------------------------------------
     #Build ensemble membership - the exact source here depends on whether
     #we are doing regridding or not
     if doRegridding:
-        ensTbl=pd.DataFrame(rgDict.keys(),columns=["srcPath"])
+        ensTbl=pd.DataFrame(rgDict['files'],columns=["srcPath"])
     else:
-        ensTbl=pd.DataFrame([i for this in indDict.values() for i in this.keys() ],
+        ensTbl=pd.DataFrame([i for this in indDict.values() for i in this['files'] ],
                             columns=["srcPath"])
     ensTbl['srcFname']=[os.path.basename(p) for p in ensTbl['srcPath']]
     ensTbl['ens']=ensTbl['srcFname'].str.extract("(.*?_.*?_.*?)_.*$")
@@ -190,7 +184,7 @@ def getWorkflow(config):
     
     #Collate and round off--------------------------------------------------------
     rtn={'primVars':pvDict,
-         'secVars': svDict,
+         'secondaryVars': svDict,
          'indicators':indDict,
          "regridded": rgDict,
         'ensstats':ensDict,
@@ -199,7 +193,7 @@ def getWorkflow(config):
     #Need to create an "all" dict as well containing all targets in the workflow
     allList=[]
     for k,v in rtn.items():
-        if k in ['primVars','secVars','indicators']:  #Requires special handling, as these are nested lists
+        if k in ['primVars','secondaryVars','indicators']:  #Requires special handling, as these are nested lists
             for x in v.values():
                 allList+=x.keys()
         else:

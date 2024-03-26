@@ -38,10 +38,7 @@
 - **`arealstats`** *(object)*: Cannot contain additional properties.
   - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
 - **`dirs`** *(object)*: Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items. Cannot contain additional properties.
-  - **`primVars`** *(string, required)*: Directory for storing primary variables.
-  - **`secVars`** *(string)*: Directory for storing secondary variables.
-  - **`bc`** *(string, required)*: Directory for storing bias-corrected variables.
-  - **`tertVars`** *(string)*: Directory for storing teriary variables.
+  - **`variables`** *(string, required)*: Directory for storing variables.
   - **`indicators`** *(string, required)*: Directory for storing indicators variables.
   - **`regridded`** *(string, required)*: Directory for storing indicators regridded to a common grid.
   - **`ensstats`** *(string, required)*: Directory for storing enssemble statistics.
