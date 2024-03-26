@@ -65,7 +65,9 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
                      'dicts':['additionalArgs'],
                      'schema':'derivedVars'}}
     for thisTblKey,theseVals in tabularCfg.items():
-        #Load the variables that are defined as tabular configurations
+        #Load the variables that are defined as tabular configurations (if they exist)
+        if not thisTblKey in cfg['configurationTables']:
+            break
         thisCfgFile=cfg['configurationTables'][thisTblKey]
         thisTbl=pd.read_csv(thisCfgFile,sep="\t",comment="#")
         #We allow some columns to be defined here as lists, but these need to be

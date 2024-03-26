@@ -199,9 +199,9 @@ if config['outputGrid']['regriddingEngine']!='None':
 
     rule regrid_file:
         output:
-            os.path.join(outDirs['regridded'],"{varName}_{stem}.nc")
+            os.path.join(outDirs['regridded'],"{indID}","{stem}.nc")
         input:
-            os.path.join(outDirs['indicators'],"{varName}","{varName}_{stem}.nc")
+            os.path.join(outDirs['indicators'],"{indID}","{stem}.nc")
         run:
             KAPy.regrid(config,input,output)
 

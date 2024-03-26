@@ -46,9 +46,6 @@ def regrid(config,inFile,outFile):
     dsout=regridder(dsIn)
     
     #Write out
-    dname=os.path.dirname(outFile[0])
-    if not os.path.exists(dname):
-        os.makedirs(dname)
     dsout.to_netcdf(outFile[0])
     
 

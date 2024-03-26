@@ -13,38 +13,34 @@ configurationTables:
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
 outputGrid:
-    regriddingEngine: 'xesmf'
-    interpMethod: 'bilinear'
-    extrapMethod: 'nearest_s2d'
-    xname: 'longitude'
-    xunits: 'degrees_east'
-    xmin: -4
-    xmax: 2
-    dx: 0.1
-    yname: 'latitude'
-    yunits: 'degrees_north'
-    ymin: 4
-    ymax: 12
-    dy: 0.1
+    regriddingEngine: 'None'
+#    interpMethod: 'bilinear'
+#    extrapMethod: 'nearest_s2d'
+#    xname: 'longitude'
+#    xunits: 'degrees_east'
+#    xmin: -4
+#    xmax: 2
+#    dx: 0.1
+#    yname: 'latitude'
+#    yunits: 'degrees_north'
+#    ymin: 4
+#    ymax: 12
+#    dy: 0.1
 notebooks: 'workflow/notebooks/Output_overview.py.ipynb'
 
 # Configuration options------------------------------------
 arealstats:
     calcForMembers: False
 dirs:
-    primVars: 'results/1.primVars'
-    secVars: 'results/2.secVars'
-    bc: 'results/3.biascorrected_variables'
-    tertVars: 'results/4.tertVars'
-    indicators: 'results/5.indicators'
-    regridded: 'results/6.commmon_grid'
-    ensstats: 'results/7.ensstats'
-    arealstats: 'results/8.areal_statistics'
-    notebooks: 'results/9.notebooks'
+    variables: 'results/1.variables'
+    indicators: 'results/2.indicators'
+    regridded: 'results/3.commmon_grid'
+    ensstats: 'results/4.ensstats'
+    arealstats: 'results/5.areal_statistics'
+    notebooks: 'results/6.notebooks'
 ensembles:
     upperPercentile: 90
     centralPercentile: 50
     lowerPercentile: 10
 primVars:  #Otherwise store as pickled Xarray objects
     storeAsNetCDF: True
-secondaryVars:

@@ -82,33 +82,34 @@ def getWorkflow(config):
     #the variable palette
     varList=[k for v in pvDict.values() for k in v.keys() ]
     svDict={}
-    #Iterate over secondary variables
-    for thisSV in config['secondaryVars'].values():
-        #Convert varList into a workable format
-        varTbl=filelistToDataframe(varList)
-        #Now filter by the input variables needed for this derived variable
-        selThese=[v in thisSV['inputVars'] for v in varTbl['varName'] ]
-        longSVTbl=varTbl[selThese]
-        try:
-            if longSVTbl.size==0:
-                raise ValueError(f"Cannot find any matching input files for {thisSV['name']}. Check the definition again. Also check the order of definition.")
-        except ValueError as e:
-            print("Error:",e)
-        
-        #Pivot and retain only those in common
-        svTbl=longSVTbl.pivot(index=['src','stems'],
-                            columns='varName',
-                            values='path')
-        svTbl=svTbl.dropna().reset_index()
-        #Now we have a list of valid files that can be made. Store the results
-        validPaths=[os.path.join(outDirs['variables'],
-                                 var,fName)
-                     for var in thisSV['outputVars']
-                     for fName in f"{var}_"+svTbl['src']+"_"+svTbl['stems']+".nc"] 
-        
-        svDict[thisSV['id']]=thisSV
-        svDict[thisSV['id']]['files']=validPaths
-        varList+=validPaths
+    #Iterate over secondary variables if they are request
+    if 'secondaryVars' in config:
+        for thisSV in config['secondaryVars'].values():
+            #Convert varList into a workable format
+            varTbl=filelistToDataframe(varList)
+            #Now filter by the input variables needed for this derived variable
+            selThese=[v in thisSV['inputVars'] for v in varTbl['varName'] ]
+            longSVTbl=varTbl[selThese]
+            try:
+                if longSVTbl.size==0:
+                    raise ValueError(f"Cannot find any matching input files for {thisSV['name']}. Check the definition again. Also check the order of definition.")
+            except ValueError as e:
+                print("Error:",e)
+
+            #Pivot and retain only those in common
+            svTbl=longSVTbl.pivot(index=['src','stems'],
+                                columns='varName',
+                                values='path')
+            svTbl=svTbl.dropna().reset_index()
+            #Now we have a list of valid files that can be made. Store the results
+            validPaths=[os.path.join(outDirs['variables'],
+                                     var,fName)
+                         for var in thisSV['outputVars']
+                         for fName in f"{var}_"+svTbl['src']+"_"+svTbl['stems']+".nc"] 
+
+            svDict[thisSV['id']]=thisSV
+            svDict[thisSV['id']]['files']=validPaths
+            varList+=validPaths
         
     #Indicators -----------------------------------------------------
     #Get the full variable palette from varList
@@ -122,21 +123,27 @@ def getWorkflow(config):
         validPaths=[os.path.join(outDirs['indicators'],
                                 str(thisInd['id']),fName)
                      for fName in f"{thisInd['id']}_"+selVars['src']+"_"+selVars['stems']+".nc"] 
-        indDict[indKey]=indVal
+        indDict[indKey]=thisInd
         indDict[indKey]['files']=validPaths
     
     #Regridding-----------------------------------------------------------------------
     #We only regrid if it is requested in the configuration
     doRegridding= (config['outputGrid']['regriddingEngine']!='None')
-    rgDict={}
     if doRegridding:
         #Remap directory
         rgTbl=pd.DataFrame([i for this in indDict.values() for i in this['files']],
                             columns=["indPath"])
+        rgTbl['indID']=[os.path.basename(os.path.dirname(f)) for f in rgTbl['indPath']]
         rgTbl['indFname']=[os.path.basename(p) for p in rgTbl['indPath']]
         rgTbl['rgPath']=[os.path.join(outDirs["regridded"],f) for f in rgTbl['indFname']]
+        validPaths=[os.path.join(outDirs['regridded'],
+                                rw['indID'],rw['indFname'])
+                     for idx,rw in rgTbl.iterrows()] 
         #Extract the dict
-        rgDict={'files' : rgTbl['rgPath'].to_list()}
+        rgDict={'files' : validPaths}
+    else:
+        rgDict={'files': []}
+
         
     #Ensembles----------------------------------------------------------------------------
     #Build ensemble membership - the exact source here depends on whether
@@ -193,9 +200,14 @@ def getWorkflow(config):
     #Need to create an "all" dict as well containing all targets in the workflow
     allList=[]
     for k,v in rtn.items():
-        if k in ['primVars','secondaryVars','indicators']:  #Requires special handling, as these are nested lists
+        if k in ['primVars']:  #Requires special handling, as these are nested lists
             for x in v.values():
                 allList+=x.keys()
+        elif k in ['secondaryVars','indicators']:  #Requires special handling, as these are nested lists
+            for x in v.values():
+                allList+=x['files']
+        elif k in ['regridded']:  #Requires special handling, as these are nested lists
+                allList+=v['files']
         else:
             allList+=v.keys()
     rtn['all']=allList
