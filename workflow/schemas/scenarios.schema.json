@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "KAPy emission scenarios configuration",
   "description": "Emissions scenarios in KAPy are declared through a tab-separated table, with one row per scenario. The available options are described here. All options are required",
-  "required": ["id", "description", "regex", "colour"],
+  "required": ["id", "description", "colour"],
   "additionalProperties": false,
   "type": "object",
   "properties": {
@@ -15,9 +15,9 @@
       "description": "A longer description of the scenario. This is typically used in the legends of plots, so shouldn't be TOO long!",
       "type": "string"
     },
-    "regex": {
-      "description": "A regular expression used to group input files together according to their scenarios. Files that match the regex will be associated with the individual scenario. Failure to match any regexs will throw an error if the input is marked as having scenarios (see the `hasScenarios` option in the [input configuation table](inputs.md)). e.g. '`.*_(historical|rcp26)_.*`' ",
-      "type": "string"
+    "scenarioStrings": {
+      "description": "A comma-separated list of strings used to group input files together to form the primary variable inputs. e.g. '`_historical_,_rcp26_`'. The string is removed from the stem once it's found, so be sure to include all delimiters i.e. '_' symbols. All elements in the list need to be found before the grouping of files takes place. ",
+      "type": "array"
     },
     "colour": {
       "type": "string",

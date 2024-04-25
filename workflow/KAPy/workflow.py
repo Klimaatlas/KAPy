@@ -52,15 +52,26 @@ def getWorkflow(config):
         pvList=[]
         if thisInp['hasScenarios']:
             for thisSc in sc.values():
-                #Get files that match experiments
-                inSc=inpTbl['stems'].str.contains(thisSc['regex'])
-                theseFiles=inpTbl[inSc].copy() #Explicit copy to avoid SettingWithCopyWarning
+                #Get files that match experiments first
+                scenarioRegex="|".join(thisSc['scenarioStrings'])
+                inThisScenario=inpTbl['stems'].str.contains(scenarioRegex)
+                theseFiles=inpTbl[inThisScenario].copy() #Explicit copy to avoid SettingWithCopyWarning
+                #Iterate over scenario Strings and test for presence. 
+                for s in thisSc['scenarioStrings']:
+                    theseFiles[s]=theseFiles['stems'].str.contains(s)
+                #Strip the scenario string out of the stem
+                theseFiles['stemsNoScen']=theseFiles['stems'].str.replace(scenarioRegex,"_",regex=True)
+                #We aggregate over the scenario-free stems, and drop rows where we we 
+                #don't have all scenarios represented
+                aggDict={s: lambda x: True if any(x) else None for s in thisSc['scenarioStrings']}
+                aggDict['inpPath'] = lambda x : list(x)
+                validStems=theseFiles.groupby('stemsNoScen').agg(aggDict)
+                validStems=validStems.dropna()
                 #Generate the primary variable filename
-                theseFiles['pvFname']=[re.sub(thisSc['regex'],'',os.path.basename(x))
-                                       for x in theseFiles['stems']]
-                theseFiles['pvFname']=f"{thisInp['varName']}_{thisInp['srcName']}_{thisSc['id']}_" + \
-                                    theseFiles['pvFname']
-                pvList+=[theseFiles]
+                pvFnames=validStems.reset_index()[['stemsNoScen','inpPath']].explode('inpPath')
+                pvFnames['pvFname']=f"{thisInp['varName']}_{thisInp['srcName']}_{thisSc['id']}_" + \
+                                    pvFnames['stemsNoScen']
+                pvList+=[pvFnames]
         else:
             inpTbl['pvFname']=f"{thisInp['varName']}_{thisInp['srcName']}_"+ inpTbl['stems']
             pvList+=[inpTbl]

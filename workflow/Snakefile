@@ -25,10 +25,10 @@ wf=KAPy.getWorkflow(config)
 
 # Primary Variables---------------------------------
 #Primary variable singular rule
-def primVar_singular_rule(thisID):
+def primaryVar_singular_rule(thisID):
     thisVarName=config['inputs'][thisID]['varName']
     rule:  
-        name: f'primVar_{thisID}_files'
+        name: f'primaryVar_{thisID}_files'
         output:
             expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
                    varName=thisVarName)
@@ -44,18 +44,18 @@ def primVar_singular_rule(thisID):
                               inpID=thisID)
 
 #Plural rule
-def primVar_plural_rule(thisID):
+def primaryVar_plural_rule(thisID):
     rule:
-        name: f'primVar_{thisID}'
+        name: f'primaryVar_{thisID}'
         input:
             list(wf['primVars'][thisID].keys())
             
 for inpID in wf['primVars'].keys():
-    primVar_singular_rule(inpID)
-    primVar_plural_rule(inpID)
+    primaryVar_singular_rule(inpID)
+    primaryVar_plural_rule(inpID)
 
 #Run all indicators    
-rule primVars:
+rule primaryVars:
     input:
         [list(thisInp.keys()) for thisInp in wf['primVars'].values()]
         

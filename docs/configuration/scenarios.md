@@ -6,5 +6,5 @@
 
 - **`id`** *(string)*: Unique identifier for the scenario. This can be numeric, but as it will be used in e.g. filenames, it is recommended to use a short descriptive string e.g `rcp26`.
 - **`description`** *(string)*: A longer description of the scenario. This is typically used in the legends of plots, so shouldn't be TOO long!
-- **`regex`** *(string)*: A regular expression used to group input files together according to their scenarios. Files that match the regex will be associated with the individual scenario. Failure to match any regexs will throw an error if the input is marked as having scenarios (see the `hasScenarios` option in the [input configuation table](inputs.md)). e.g. '`.*_(historical|rcp26)_.*`' .
+- **`scenarioStrings`** *(array)*: A comma-separated list of strings used to group input files together to form the primary variable inputs. e.g. '`_historical_,_rcp26_`'. The string is removed from the stem once it's found, so be sure to include all delimiters i.e. '_' symbols. All elements in the list need to be found before the grouping of files takes place. .
 - **`colour`** *(string)*: Colour to be used for this scenario when generating plots.

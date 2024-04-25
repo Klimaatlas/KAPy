@@ -53,15 +53,24 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
         if not os.path.exists(thisPath):
             sys.exit(f"Cannot find notebook '{thisPath}'.")
             
-    #Validate each table in turn
-    tabularCfg={'indicators':{'lists':[],'dicts':[],'schema':'indicators'},
-         'inputs':{'lists':[],'dicts':[],'schema':'inputs'},
-         'scenarios':{'lists':[],'dicts':[],'schema':'scenarios'},
-         'periods':{'lists':[],'dicts':[],'schema':'periods'},
-         'seasons':{'lists':['months'],
+    #Validate each table in turn. The validation approach used
+    #is defined in the following table
+    tabularCfg={'indicators':{'listCols':[],
+                              'dicts':[],
+                              'schema':'indicators'},
+         'inputs':{'listCols':[],
+                   'dicts':[],
+                   'schema':'inputs'},
+         'scenarios':{'listCols':['scenarioStrings'],
+                      'dicts':[],
+                      'schema':'scenarios'},
+         'periods':{'listCols':[],
+                    'dicts':[],
+                    'schema':'periods'},
+         'seasons':{'listCols':['months'],
                      'dicts':[],
                      'schema':'seasons'},
-         'secondaryVars':{'lists':['inputVars','outputVars'],
+         'secondaryVars':{'listCols':['inputVars','outputVars'],
                      'dicts':['additionalArgs'],
                      'schema':'derivedVars'}}
     for thisTblKey,theseVals in tabularCfg.items():
@@ -72,15 +81,12 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
         thisTbl=pd.read_csv(thisCfgFile,sep="\t",comment="#")
         #We allow some columns to be defined here as lists, but these need to be
         #parsed before we can actually use them for something
-        for col in theseVals['lists']:
+        for col in theseVals['listCols']:
             thisTbl[col]=thisTbl[col].str.split(",")
         #Note that Snakemake doesn't validate arrays in tabular configurations at the moment
         # https://github.com/snakemake/snakemake/issues/2601
-        #Drop months from the validation scheme
-        if thisTblKey=="seasons":
-            valThis=thisTbl.drop(columns=['months'])
-        else:
-            valThis=thisTbl
+        #We therefore need to drop the list columns from the validation scheme
+        valThis=thisTbl.drop(columns=theseVals['listCols'])
         #Validate against the appropriate schema.
         validate(valThis, os.path.join(schemaDir,f"{theseVals['schema']}.schema.json"))
         #Dict columns also need to be parsed
