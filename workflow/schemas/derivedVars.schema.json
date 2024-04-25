@@ -3,7 +3,7 @@
   "title": "KAPy derived variables configuration",
   "description": "Configuration of derived variables is set through a tab-separated table, with one row per variable. Note that the same schema is used for secondary and tertiary varibles - the main difference is the order in which they processed (primary, secondary, bias-adjustment, tertiary). Note also new variables declared here can refer to other derived variables, as along as they have already been declared higher up in the configuration table. All options are required",
     "type": "object",
-    "required": ["id", "inputVars", "processorType", "processorPath", "processorFunction", "passXarrays", "additionalArgs"],
+    "required": ["id", "processorType", "processorPath", "processorFunction", "passXarrays", "additionalArgs"],
   "additionalProperties": false,
   "properties": {
           "id": {
@@ -31,7 +31,7 @@
                 "description":"Should KAPy pass xArray objects to the function? If no, then then path to the input file is passed as a string instead.",
                 "type": "boolean"},
           "additionalArgs": {
-            "description":"Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'param1':10,'doSim':true,'name':'myname'} `",
+            "description":"Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'param1':10,'doSim':true,'name':'myname'}. Can be an empty dict if no there are no additional parameters. e.g. `{}` `",
             "type": "string"}
     }
 }
