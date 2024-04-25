@@ -1,9 +1,3 @@
-#Scenario configuration table
-#------------------------------
-#For more details on configuration options, please see the configuration documentation here:
-#https://github.com/Klimaatlas/KAPy/blob/main/docs/Configuration.md
-#Lines starting with a "#" are ignored when loading the configuration
-#
 id	description	regex	colour
 rcp26	Low emissions scenario (RCP2.6)	_historical_|_rcp26_	darkblue
 rcp85	High emissions scenario (RCP8.5)	_historical_|_rcp85_	maroon
