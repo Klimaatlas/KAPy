@@ -46,7 +46,7 @@ def getWorkflow(config):
         #Get file list
         inpTbl=pd.DataFrame(glob.glob(thisInp['path']),columns=['inpPath'])
         #Make into table and extract stems 
-        inpTbl['stems']=[re.search(thisInp['regex'],os.path.basename(x)).group(1)
+        inpTbl['stems']=[re.search(thisInp['stemRegex'],os.path.basename(x)).group(1)
                           for x in inpTbl['inpPath']] 
         #Process inputs that have scenarios first
         pvList=[]

@@ -3,7 +3,7 @@
     "title": "KAPy input configuration",
     "description": "The configuration of inputs in KAPy is set through a tab-separated table, with one row per input variable. The available configuration options are described here. All options are required",
     "type": "object",
-    "required": ["id","srcName", "varName", "path", "regex", "internalVarName","hasScenarios","applyPreprocessor"],
+    "required": ["id","srcName", "varName", "path", "stemRegex", "internalVarName","hasScenarios","applyPreprocessor"],
     "additionalProperties": false,    
     "properties": {
         "id": {
@@ -23,8 +23,8 @@
         "description": "Path to input files, relative to the working directory. Glob-matching (e.g. `./resources/CORDEX/tas_*`) can be used when then input covers multiple files  and/or there are multiple variable types in the same directory.",
         "type": "string"
       },
-      "regex": {
-        "description": "A regular expression used to group files together. Climate models outputs are often split into timeslices that need to be joined back together before use. This regular expression can be used to identify the parts of a filename (the 'stem' in KAPy language) that act as unique identifiers for the data source, and can therefore be used as a basis for grouping. Stems are identified as matching group, in brackets. e.g. `^tas_(.*)_.*?.nc$`",
+      "stemRegex": {
+        "description": "A regular expression used to identify how files should be together. Climate models outputs are often split into timeslices that need to be joined back together before use. This regular expression can be used to identify the parts of a filename (the 'stem' in KAPy language) that act as unique identifiers for the data source, and can therefore be used as a basis for grouping. Stems are identified as matching group, in brackets. e.g. `^tas_(.*)_.*?.nc$`. Note that scenario (or 'experiment') identifiers are handled separately, and should be included as part of the regex. Dates and timestamps, on the other hand, should be excluded.",
         "type": "string"
       },
       "internalVarName": {
