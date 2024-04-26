@@ -186,7 +186,7 @@ for indID in config['indicators'].keys():
 #Run all indicators    
 rule indicators:
     input:
-        [item for thisInd in wf['indicators'].values() for item in thisInd ]
+        [f for thisInd in wf['indicators'].values() for f in thisInd['files']]
 
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
@@ -268,7 +268,7 @@ rule plots_lineplots:
         lambda wildcards: wf['plots'][os.path.join(outDirs['plots'],
                                                    f"{wildcards.indID}_lineplot.png")]
     run:
-        KAPy.makeLineplot(config,indID,input,output)
+        KAPy.makeLineplot(config,wildcards.indID,input,output)
 
 rule plots_boxplots:
     output:
@@ -277,7 +277,7 @@ rule plots_boxplots:
         lambda wildcards: wf['plots'][os.path.join(outDirs['plots'],
                                                    f"{wildcards.indID}_boxplot.png")]
     run:
-        KAPy.makeBoxplot(config,indID,input,output)
+        KAPy.makeBoxplot(config,wildcards.indID,input,output)
 
 rule plots_spatial:
     output:
@@ -286,7 +286,7 @@ rule plots_spatial:
         lambda wildcards: wf['plots'][os.path.join(outDirs['plots'],
                                                    f"{wildcards.indID}_spatial.png")]
     run:
-        KAPy.makeSpatialplot(config,indID,input,output)
+        KAPy.makeSpatialplot(config,wildcards.indID,input,output)
         
 
 #All-------------------
