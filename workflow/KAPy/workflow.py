@@ -103,7 +103,8 @@ def getWorkflow(config):
             longSVTbl=varTbl[selThese]
             try:
                 if longSVTbl.size==0:
-                    raise ValueError(f"Cannot find any matching input files for {thisSV['name']}. Check the definition again. Also check the order of definition.")
+                    raise ValueError(f"Cannot find any matching input files for {thisSV['name']}. " + \
+                                     "Check the definition again. Also check the order of definition.")
             except ValueError as e:
                 print("Error:",e)
 
@@ -200,6 +201,40 @@ def getWorkflow(config):
                        for f in nbTbl['htmlFname']]
     nbDict={r['htmlPath']: [r['nbPath']] + nbInps for i,r in nbTbl.iterrows()}
     
+    #Plots----------------------------------------------------
+    pltDict ={}
+    def makeInputDict(d):
+        inpTbl=pd.DataFrame(list(d.keys()),columns=['path'])
+        inpTbl['fname']=[os.path.basename(f) for f in inpTbl['path']]
+        inpTbl['indId']=inpTbl['fname'].str.extract("^(.*?)_.*$")
+        inpTbl['indSrc']=inpTbl['fname'].str.extract("^.*?_(.*?)_.*$")
+        inpTbl['indScen']=inpTbl['fname'].str.extract("^.*?_.*?_(.*?)_.*$")
+        inpDict=inpTbl.groupby('indId').apply(lambda x:list(x['path']),include_groups=False).to_dict()
+        return(inpDict)
+
+    asList=makeInputDict(asDict)
+    ensList=makeInputDict(ensDict)
+    
+    #Loop over available indicators to make plots
+    for thisInd in config['indicators'].values():
+        #But what should we plot? It depends on the nature of the indicator
+        # * Period-based indicators should plot the spatial map and the plots
+        # * Yearly (or monthly) based indicators show a time series
+        if thisInd['time_binning']=="periods":
+            #Box plot
+            bxpFname=os.path.join(outDirs['plots'],f"{thisInd['id']}_boxplot.png")
+            pltDict[bxpFname]=asList[str(thisInd['id'])]
+
+            #Spatial plot
+            spFname=os.path.join(outDirs['plots'],f"{thisInd['id']}_spatial.png")
+            pltDict[spFname]=ensList[str(thisInd['id'])]
+
+        elif thisInd['time_binning'] in ["years",'months']:
+            #Time series plot
+            lpFname=os.path.join(outDirs['plots'],f"{thisInd['id']}_lineplot.png")
+            pltDict[lpFname]=asList[str(thisInd['id'])]
+
+    
     #Collate and round off--------------------------------------------------------
     rtn={'primVars':pvDict,
          'secondaryVars': svDict,
@@ -207,7 +242,8 @@ def getWorkflow(config):
          "regridded": rgDict,
         'ensstats':ensDict,
         'arealstats':asDict,
-        'notebooks':nbDict}
+        'notebooks':nbDict,
+        "plots":pltDict}
     #Need to create an "all" dict as well containing all targets in the workflow
     allList=[]
     for k,v in rtn.items():
