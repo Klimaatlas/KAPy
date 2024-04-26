@@ -6,8 +6,24 @@ import re
 import os
 import xarray as xr
 
+"""
+#Debugging setup for Jupyter-lab
+import os
+os.chdir("..")
+import KAPy
+os.chdir("..")
+config=KAPy.loadConfig() 
+wf=KAPy.getWorkflow(config)
+"""
+
 # Boxplot---------------------------------------------------------------------------
-def makeBoxplot(config,indID,srcFiles,outFile):
+"""
+indID=103
+srcFiles=list(wf['plots'].values())[0]
+srcFiles=['intermediates/5.areal_statistics/103_KAba_RCP26_ensstats.csv', 'intermediates/5.areal_statistics/103_KAba_RCP45_ensstats.csv', 'intermediates/5.areal_statistics/103_KAba_RCP85_ensstats.csv']
+"""
+
+def makeBoxplot(config,indID,srcFiles,outFile=None):
     #Extract indicator info
     thisInd=config['indicators'][indID]
     
@@ -43,7 +59,8 @@ def makeBoxplot(config,indID,srcFiles,outFile):
                               upper='upperPercentile'),
                               stat="identity")+
      labs(x='Period',
-         y=f"{thisInd['name']} ({thisInd['units']})",
+         y=f"Value ({thisInd['units']})",
+         title=f"{thisInd['name']} ",
          fill="Scenario")+
      #scale_x_continuous(breaks=periodTbl['period'],labels=periodTbl['periodLbl'])+
      scale_x_continuous(labels=periodLblDict)+
@@ -52,11 +69,19 @@ def makeBoxplot(config,indID,srcFiles,outFile):
      theme(legend_position='bottom')
     )
     
-    p.save(outFile[0])
+    #Output
+    if outFile is not None:
+        p.save(outFile[0])
+    return(p)
+        
 
 
 # Spatialplot -----------------------------------------------------------
-def makeSpatialplot(config,indID,srcFiles,outFile):
+"""
+indID=101
+srcFiles=list(wf['plots'].values())[1]
+"""
+def makeSpatialplot(config,indID,srcFiles,outFile=None):
     #Extract indicator info
     thisInd=config['indicators'][indID]
     
@@ -79,6 +104,7 @@ def makeSpatialplot(config,indID,srcFiles,outFile):
      facet_wrap("~scenario")+
      theme_bw()+
      labs(x="",y="",fill=f"Change\n({thisInd['units']})",
+        title=f"{thisInd['name']} ",
          caption="Change in indicator from first period to last period")+
      scale_x_continuous(expand=[0,0])+
      scale_y_continuous(expand=[0,0])+
@@ -86,10 +112,17 @@ def makeSpatialplot(config,indID,srcFiles,outFile):
      coord_fixed()
     )
 
-    p.save(outFile[0])
+    #Output
+    if outFile is not None:
+        p.save(outFile[0])
+    return(p)
     
 # Lineplot------------------------------------------------------------------    
-def makeLineplot(config,indID,srcFiles,outFile):    
+"""
+indID=101
+srcFiles=list(wf['plots'].values())[0]
+"""
+def makeLineplot(config,indID,srcFiles,outFile=None):    
     #Extract indicator info
     thisInd=config['indicators'][indID]
     
@@ -115,10 +148,15 @@ def makeLineplot(config,indID,srcFiles,outFile):
     p=(ggplot(pltDat,aes(x='datetime',y='indicator',colour='scenario'))+
        geom_line()+
      labs(x='',
-         y=f"{thisInd['name']} ({thisInd['units']})",
+         y=f"Value ({thisInd['units']})",
+        title=f"{thisInd['name']} ",
+          
          colour="Scenario")+
      scale_colour_manual(values=scColourDict)+
      theme_bw()+
      theme(legend_position='bottom')
     )
-    p.save(outFile[0])
+    #Output
+    if outFile is not None:
+        p.save(outFile[0])
+    return(p)
