@@ -256,6 +256,38 @@ rule notebook_file:
     shell:
         "jupyter nbconvert --execute --to html --TemplateExporter.exclude_input=True --output-dir=. --output='{output}' {input[0]}"
 
+#Plots
+rule plots:
+    input:
+        list(wf['plots'].keys())
+        
+rule plots_lineplots:
+    output:
+        os.path.join(outDirs['plots'],'{indID}_lineplot.png')
+    input:
+        lambda wildcards: wf['plots'][os.path.join(outDirs['plots'],
+                                                   f"{wildcards.indID}_lineplot.png")]
+    run:
+        KAPy.makeLineplot(config,indID,input,output)
+
+rule plots_boxplots:
+    output:
+        os.path.join(outDirs['plots'],'{indID}_boxplot.png')
+    input:
+        lambda wildcards: wf['plots'][os.path.join(outDirs['plots'],
+                                                   f"{wildcards.indID}_boxplot.png")]
+    run:
+        KAPy.makeBoxplot(config,indID,input,output)
+
+rule plots_spatial:
+    output:
+        os.path.join(outDirs['plots'],'{indID}_spatial.png')
+    input:
+        lambda wildcards: wf['plots'][os.path.join(outDirs['plots'],
+                                                   f"{wildcards.indID}_spatial.png")]
+    run:
+        KAPy.makeSpatialplot(config,indID,input,output)
+        
 
 #All-------------------
 rule all:

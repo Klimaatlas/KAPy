@@ -14,6 +14,7 @@ configurationTables:
     seasons: 'config/seasons.tsv'
 outputGrid:
     regriddingEngine: 'None'
+#    regriddingEngine: 'xesmf'
 #    interpMethod: 'bilinear'
 #    extrapMethod: 'nearest_s2d'
 #    xname: 'longitude'
@@ -38,6 +39,7 @@ dirs:
     ensstats: 'results/4.ensstats'
     arealstats: 'results/5.areal_statistics'
     notebooks: 'results/6.notebooks'
+    plots: 'results/6.plots'
 ensembles:
     upperPercentile: 90
     centralPercentile: 50

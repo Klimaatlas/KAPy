@@ -7,7 +7,10 @@ import os
 import xarray as xr
 
 # Boxplot---------------------------------------------------------------------------
-def makeBoxplot(config,thisInd,srcFiles):
+def makeBoxplot(config,indID,srcFiles,outFile):
+    #Extract indicator info
+    thisInd=config['indicators'][indID]
+    
     #Load csv files as panadas dataframes
     dat=[]
     for f in srcFiles:
@@ -48,10 +51,15 @@ def makeBoxplot(config,thisInd,srcFiles):
      theme_bw()+
      theme(legend_position='bottom')
     )
-    return(p)    
+    
+    p.save(outFile[0])
+
 
 # Spatialplot -----------------------------------------------------------
-def makeSpatialplot(config,thisInd,srcFiles):
+def makeSpatialplot(config,indID,srcFiles,outFile):
+    #Extract indicator info
+    thisInd=config['indicators'][indID]
+    
     #Read netcdf files using xarray and calculate difference
     datdf=[]
     for d in srcFiles:
@@ -77,10 +85,14 @@ def makeSpatialplot(config,thisInd,srcFiles):
      theme(legend_position='bottom')+
      coord_fixed()
     )
-    return(p)    
+
+    p.save(outFile[0])
     
 # Lineplot------------------------------------------------------------------    
-def makeLineplot(config,thisInd,srcFiles):    
+def makeLineplot(config,indID,srcFiles,outFile):    
+    #Extract indicator info
+    thisInd=config['indicators'][indID]
+    
     #Load csv files as panadas dataframes
     dat=[]
     for f in srcFiles:
@@ -109,4 +121,4 @@ def makeLineplot(config,thisInd,srcFiles):
      theme_bw()+
      theme(legend_position='bottom')
     )
-    return(p)    
+    p.save(outFile[0])

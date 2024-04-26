@@ -44,6 +44,7 @@
   - **`ensstats`** *(string, required)*: Directory for storing enssemble statistics.
   - **`arealstats`** *(string, required)*: Directory for storing statistics calculated over areas.
   - **`notebooks`** *(string, required)*: Directory for storing compiled Jupyter notebooks.
+  - **`plots`** *(string, required)*: Directory for storing output plots.
 - **`ensembles`** *(object)*: Specify the percentiles [0-100] calculated from the ensemble. We allow three values, corresponding to the upper and lower confidence limits, and the central value. Cannot contain additional properties.
   - **`upperPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
   - **`centralPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
