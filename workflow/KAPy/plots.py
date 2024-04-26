@@ -38,7 +38,9 @@ def makeBoxplot(config,indID,srcFiles,outFile=None):
 
     #Get metafra data from configuration
     ptileTbl=pd.DataFrame.from_dict(config['ensembles'],orient='index',columns= ['percentiles']).reset_index().rename(columns={'index':'ptileLbl'})
-    periodTbl=pd.DataFrame.from_dict(config['periods'],orient='index').rename(columns={'id':'period','name':'periodLbl'})
+    periodTbl=pd.DataFrame.from_dict(config['periods'],
+                                     orient='index').rename(columns={'id':'period',
+                                                                     'name':'periodLbl'})
     periodTbl['periodLbl']=periodTbl['periodLbl'].str.replace('\\n','\n')
     periodLblDict={x['period'] : x['periodLbl'] for i,x in periodTbl.iterrows()}
     scTbl=pd.DataFrame.from_dict(config['scenarios'],orient='index')
@@ -46,7 +48,9 @@ def makeBoxplot(config,indID,srcFiles,outFile=None):
 
     #Now merge into dataframe and pivot for plotting
     pltLong=pd.merge(datdf, ptileTbl, on='percentiles', how='left')
-    pltDatWide=pltLong.pivot_table(index=['scenario','period'],columns='ptileLbl',values='indicator').reset_index()
+    pltDatWide=pltLong.pivot_table(index=['scenario','period'],
+                                   columns='ptileLbl',
+                                   values='indicator').reset_index()
 
     #Now plot
     p=(ggplot(pltDatWide)+ 

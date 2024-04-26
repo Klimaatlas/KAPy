@@ -29,7 +29,8 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
             foundCfg=True
             break
     if not foundCfg:
-        sys.exit(f"Cannot find a configuration file in: {configfiles}. Working directory: '{os.getcwd()}'")
+        sys.exit(f"Cannot find a configuration file in: {configfiles}. " + \
+                 "Working directory: '{os.getcwd()}'")
      
     #Setup location of validation schemas
     #schemaDir="./workflow/schemas/"
@@ -96,7 +97,8 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
             except (SyntaxError, ValueError) as e:
                 print(f"Error occurred in parsing column '{col}' in '{thisCfgFile}' : {e}")
                 sys.exit()
-        #Set id column as the index so it can be used as the key
+        #Force id column to be a string. Set to as the index so it can be used as the key
+        thisTbl['id']=[str(x) for x in thisTbl['id']]
         thisTbl=thisTbl.set_index('id',drop=False)
         #Make dict
         cfg[thisTblKey]=thisTbl.to_dict(orient='index')
