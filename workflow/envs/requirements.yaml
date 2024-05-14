@@ -1,0 +1,29 @@
+# This YAML file defines the basic requirements needed by KAPy. Note that it is
+# specified without version numbers, so that the very latested versions of each
+# package can be used. It's counterpart file is env.yaml, which has the exact
+# version numbers used in a specific installation of KAPy.
+#
+# This file can be used to generate a fresh conda environment like so:
+#
+# conda env create -f requirements.yaml
+#
+# The resulting environment with all dependencies and version numbers can then 
+# exported back to env.yaml like so:
+#
+# conda env export > env.yaml
+#
+name: KAPy
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - pandas
+  - snakemake
+  - xarray
+  - xclim
+  - xesmf
+  - cdo
+  - plotnine
+  - yaml

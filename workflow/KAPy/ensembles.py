@@ -6,7 +6,6 @@ import xclim.ensembles as xcEns
 import xesmf as xe
 import pickle
 import numpy as np
-import tqdm
 import sys
 import glob
 import re
