@@ -49,16 +49,7 @@ def validateConfig(config):
     for thisKey,thisPath in config['configurationTables'].items():
         if not os.path.exists(thisPath):
             sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
-
-    #Now check that notebooks exist
-    if isinstance(config['notebooks'],str):
-        notebookPaths=[config['notebooks']]
-    else:
-        notebookPaths=config['notebooks']
-    for thisPath in notebookPaths:
-        if not os.path.exists(thisPath):
-            sys.exit(f"Cannot find notebook '{thisPath}'.")
-            
+           
     #Validate each table in turn. The validation approach used
     #is defined in the following table
     tabularCfg={'indicators':{'listCols':[],

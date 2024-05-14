@@ -187,20 +187,7 @@ def getWorkflow(config):
     #Make the dict
     asDict=asTbl.groupby("asPath").apply(lambda x:list(x['srcPath']),
                                          include_groups=False).to_dict()
-    
-    #Notebooks----------------------------------------------------
-    #This is easy - notebooks need everything in ensstats and arealstats
-    nbInps=list(ensDict.keys())+list(asDict.keys())
-    if isinstance(config['notebooks'],str):
-        nbTbl=pd.DataFrame([config['notebooks']],columns=['nbPath'])
-    else:
-        nbTbl=pd.DataFrame(config['notebooks'],columns=['nbPath'])
-    nbTbl['nbFname']=[os.path.basename(f) for f in nbTbl['nbPath']]
-    nbTbl['htmlFname']=nbTbl['nbFname'].str.replace(".ipynb",".html")
-    nbTbl['htmlPath']=[os.path.join(outDirs['notebooks'],f)
-                       for f in nbTbl['htmlFname']]
-    nbDict={r['htmlPath']: [r['nbPath']] + nbInps for i,r in nbTbl.iterrows()}
-    
+   
     #Plots----------------------------------------------------
     pltDict ={}
     def makeInputDict(d):
@@ -242,7 +229,6 @@ def getWorkflow(config):
          "regridded": rgDict,
         'ensstats':ensDict,
         'arealstats':asDict,
-        'notebooks':nbDict,
         "plots":pltDict}
     #Need to create an "all" dict as well containing all targets in the workflow
     allList=[]

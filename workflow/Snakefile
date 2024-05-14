@@ -242,20 +242,7 @@ rule arealstats_file:
         KAPy.generateArealstats(config,input,output)
 
 # Outputs ---------------------------------
-# Notebooks, amongst other things
-#Plural rule
-rule notebooks:
-    input:
-        list(wf['notebooks'].keys())
-
-#Singular rule
-rule notebook_file:
-    output:
-        os.path.join(outDirs['notebooks'],'{notebook}')
-    input:
-        lambda wildcards: wf['notebooks'][os.path.join(outDirs['notebooks'],wildcards.notebook)]
-    shell:
-        "jupyter nbconvert --execute --to html --TemplateExporter.exclude_input=True --output-dir=. --output='{output}' {input[0]}"
+# Plots, amongst other things
 
 #Plots
 rule plots:

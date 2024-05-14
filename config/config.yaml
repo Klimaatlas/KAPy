@@ -27,7 +27,6 @@ outputGrid:
 #    ymin: 4
 #    ymax: 12
 #    dy: 0.1
-notebooks: 'workflow/notebooks/Output_overview.py.ipynb'
 
 # Configuration options------------------------------------
 arealstats:
