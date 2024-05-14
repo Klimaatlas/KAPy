@@ -22,6 +22,8 @@ dependencies:
   - pandas
   - snakemake
   - xarray
+  - netcdf4
+  - zarr
   - xclim
   - xesmf
   - cdo
