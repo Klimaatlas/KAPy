@@ -1,17 +1,17 @@
 #Given a set of input files, create datachunk objects that can be worked with
 
 """
-#Setup for debugging with a Jupyterlab console
+#Setup for debugging with VS Code 
 import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.getConfig("./config/config.yaml")  
+config=KAPy.getConfig("./config/config.yaml")
 """
 
-import pandas as pd
-import os
 import sys
+import os
+import pandas as pd
 import glob
 import re
 
@@ -189,20 +189,20 @@ def getWorkflow(config):
                                          include_groups=False).to_dict()
    
     #Plots----------------------------------------------------
-    pltDict ={}
+    #Collate and process sources for plots
     def makeInputDict(d):
         inpTbl=pd.DataFrame(list(d.keys()),columns=['path'])
         inpTbl['fname']=[os.path.basename(f) for f in inpTbl['path']]
         inpTbl['indId']=inpTbl['fname'].str.extract("^(.*?)_.*$")
         inpTbl['indSrc']=inpTbl['fname'].str.extract("^.*?_(.*?)_.*$")
-        inpTbl['indScen']=inpTbl['fname'].str.extract("^.*?_.*?_(.*?)_.*$")
         inpDict=inpTbl.groupby('indId').apply(lambda x:list(x['path']),include_groups=False).to_dict()
         return(inpDict)
 
     asList=makeInputDict(asDict)
     ensList=makeInputDict(ensDict)
-    
+   
     #Loop over available indicators to make plots
+    pltDict ={}
     for thisInd in config['indicators'].values():
         #But what should we plot? It depends on the nature of the indicator
         # * Period-based indicators should plot the spatial map and the plots
