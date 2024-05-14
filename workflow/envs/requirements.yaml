@@ -12,6 +12,8 @@
 #
 # conda env export > env.yaml
 #
+# A third yaml file, dev.yaml, contains an environment used for development purposes
+#
 name: KAPy
 channels:
   - bioconda
