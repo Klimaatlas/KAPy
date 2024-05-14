@@ -17,7 +17,8 @@ import os
 
 #Setup-----------------------
 #Load configuration 
-config=KAPy.loadConfig()
+configfile: "./config/config.yaml"  #Defined relative to execution directory
+config=KAPy.validateConfig(config)
 outDirs=config['dirs']
 
 #Generate filename dicts

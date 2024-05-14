@@ -12,44 +12,49 @@ import sys
 import ast
 
 
-def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
+def readConfig(configfile):
     '''
-    Load config file
+    Read config file
     
-    Loads the KAPy config file specified in the yaml format. The script loops
-    through the list of files until a file is found
+    Reads the KAPy config master file specified in the yaml format. 
     '''
+    #Load file
+    if os.path.exists(configfile):
+        with open(configfile, 'r') as f:
+            cfg=yaml.safe_load(f)
+    else:
+        sys.exit(f"Cannot find configuration file: {configfile}. " + \
+             "Working directory: '{os.getcwd()}'")
+    return(cfg)
+            
+            
+
+def validateConfig(config):
+    '''
+    Inflate and validate config file
     
-    #Find existing files
-    foundCfg=False
-    for cfgFile in configfiles:
-        if os.path.exists(cfgFile):
-            with open(cfgFile, 'r') as f:
-                cfg=yaml.safe_load(f)
-            foundCfg=True
-            break
-    if not foundCfg:
-        sys.exit(f"Cannot find a configuration file in: {configfiles}. " + \
-                 "Working directory: '{os.getcwd()}'")
-     
+    Validates a loaded configuration (i.e. read directly from the KAPy config master
+    file), inflates it by loading the configuration tables, and validates all elements
+    against the appropriate validation schema. Returns the inflated validated config.
+    '''
     #Setup location of validation schemas
     #schemaDir="./workflow/schemas/"
     #schemaDir="./KAPy/workflow/schemas/"
     schemaDir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","schemas")
 
     #Validate configuration file
-    validate(cfg,os.path.join(schemaDir,"config.schema.json"))
+    validate(config,os.path.join(schemaDir,"config.schema.json"))
 
     #Now check that the other configuration tables exist
-    for thisKey,thisPath in cfg['configurationTables'].items():
+    for thisKey,thisPath in config['configurationTables'].items():
         if not os.path.exists(thisPath):
             sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
 
     #Now check that notebooks exist
-    if isinstance(cfg['notebooks'],str):
-        notebookPaths=[cfg['notebooks']]
+    if isinstance(config['notebooks'],str):
+        notebookPaths=[config['notebooks']]
     else:
-        notebookPaths=cfg['notebooks']
+        notebookPaths=config['notebooks']
     for thisPath in notebookPaths:
         if not os.path.exists(thisPath):
             sys.exit(f"Cannot find notebook '{thisPath}'.")
@@ -76,9 +81,9 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
                      'schema':'derivedVars'}}
     for thisTblKey,theseVals in tabularCfg.items():
         #Load the variables that are defined as tabular configurations (if they exist)
-        if not thisTblKey in cfg['configurationTables']:
+        if not thisTblKey in config['configurationTables']:
             break
-        thisCfgFile=cfg['configurationTables'][thisTblKey]
+        thisCfgFile=config['configurationTables'][thisTblKey]
         thisTbl=pd.read_csv(thisCfgFile,sep="\t",comment="#")
         #We allow some columns to be defined here as lists, but these need to be
         #parsed before we can actually use them for something
@@ -101,14 +106,14 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
         thisTbl['id']=[str(x) for x in thisTbl['id']]
         thisTbl=thisTbl.set_index('id',drop=False)
         #Make dict
-        cfg[thisTblKey]=thisTbl.to_dict(orient='index')
+        config[thisTblKey]=thisTbl.to_dict(orient='index')
     
     #Manual validation -----------------
     #Some things are a bit tricky to validate with JSON schemas alone, particular where
     #we have validations that cross schemes. The following checks are therefore done
     #manually.
     #Firstly, We need to validate the months part of the seasons table manually.
-    for thisKey,theseValues in cfg['seasons'].items():
+    for thisKey,theseValues in config['seasons'].items():
         theseMnths=theseValues['months']
         if len(theseMnths) > 12:
             sys.exit("Between 1 and 12 months should be selected")
@@ -119,15 +124,25 @@ def loadConfig(configfiles=['./config.yaml','./config/config.yaml']):
         if max(theseMnths)>12 | min(theseMnths)<1:
             sys.exit("Month specification must be between 1 and 12 inclusive")
         #Write the integers back to finish
-        cfg['seasons'][thisKey]['months']=theseMnths
+        config['seasons'][thisKey]['months']=theseMnths
 
     #Season selected in the indicator table must be valid
     #Currently allow only one season per indicator. This needs to be fixed in the future
-    indTbl=pd.DataFrame.from_dict(cfg['indicators'],orient='index')
-    validSeasons=list(cfg['seasons'].keys()) + ['all']
+    indTbl=pd.DataFrame.from_dict(config['indicators'],orient='index')
+    validSeasons=list(config['seasons'].keys()) + ['all']
     for seasonRequest in indTbl['season']:
         if not(all([this in validSeasons for this in [seasonRequest]])):
             sys.exit(f"Unknown season specified in: {seasonRequest}")
             
-    return(cfg)
+    return(config)
 
+def getConfig(configfile):
+    '''
+    Load and validate config file
+    
+    Reads the KAPy config master file specified in the yaml format using readConfig()
+    and then validates it using validateConfig()
+    '''
+    cfg=readConfig(configfile)
+    cfg=validateConfig(cfg)
+    return(cfg)

@@ -4,7 +4,7 @@ import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.loadConfig()  
+config=KAPy.getConfig("./config/config.yaml")  
 inFile=['results/1.primVars/tas_CORDEX_rcp85_AFR-22_MPI-M-MPI-ESM-LRr1i1p1_GERICS-REMO2015_v1_mon.nc']
 indID=101
 """

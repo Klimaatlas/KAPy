@@ -17,7 +17,7 @@ import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.loadConfig()  
+config=KAPy.getConfig("./config/config.yaml")  
 inFile=["results/5.ensstats/i101_ensstat_rcp85.nc"]
 """
 

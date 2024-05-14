@@ -4,7 +4,7 @@ import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.loadConfig()  
+config=KAPy.getConfig("./config/config.yaml")  
 wf=KAPy.getWorkflow(config)
 thisID='SPI3'
 thisVar=config['secondaryVars'][thisID]

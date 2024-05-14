@@ -4,7 +4,7 @@ import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.loadConfig()  
+config=KAPy.getConfig("./config/config.yaml")  
 inFile=["results/3.indicators/101_CORDEX_rcp26_AFR-22_MOHC-HadGEM2-ESr1i1p1_GERICS-REMO2015_v1_mon.nc"]
 """
 import xarray as xr
@@ -44,8 +44,8 @@ def regrid(config,inFile,outFile):
                              extrap_method=outOpt['extrapMethod'],
                              unmapped_to_nan=True)
     dsout=regridder(dsIn)
-    
+
     #Write out
-    dsout.to_netcdf(outFile[0])
-    
+    dsIn.to_netcdf(outFile[0])
+    print("Done") 
 
