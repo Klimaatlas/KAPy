@@ -1,5 +1,5 @@
 id	name	start	end
-1	Historical\n(1981-2010)	1981	2010
-2	Start of century\n(2011-2040)	2011	2040
-3	Mid-century\n(2041-2070)	2041	2070
-4	End-of-century\n(2071-2100)	2071	2100
+1	Historical	1981	2010
+2	Start-of-century	2011	2040
+3	Mid-century	2041	2070
+4	End-of-century	2071	2100

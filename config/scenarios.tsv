@@ -1,3 +1,3 @@
-id	description	scenarioStrings	colour
-rcp26	Low emissions scenario (RCP2.6)	_historical_,_rcp26_	darkblue
-rcp85	High emissions scenario (RCP8.5)	_historical_,_rcp85_	maroon
+id	description	scenarioStrings	hexcolour
+rcp26	Low emissions scenario (RCP2.6)	_historical_,_rcp26_	1C3A6D
+rcp85	High emissions scenario (RCP8.5)	_historical_,_rcp85_	9F261F

@@ -1,13 +1,6 @@
 # Plotting functions to be used in notebooks
-
-from plotnine import *
-import pandas as pd
-import re
-import os
-import xarray as xr
-
 """
-#Debugging setup for Jupyter-lab
+#Debugging setup for VS Code
 import os
 os.chdir("..")
 import KAPy
@@ -16,11 +9,19 @@ config=KAPy.getConfig("./config/config.yaml")
 wf=KAPy.getWorkflow(config)
 """
 
+from plotnine import *
+import pandas as pd
+import re
+import os
+import xarray as xr
+
+
 # Boxplot---------------------------------------------------------------------------
 """
-indID=103
+indID="101"
 srcFiles=list(wf['plots'].values())[0]
-srcFiles=['intermediates/5.areal_statistics/103_KAba_RCP26_ensstats.csv', 'intermediates/5.areal_statistics/103_KAba_RCP45_ensstats.csv', 'intermediates/5.areal_statistics/103_KAba_RCP85_ensstats.csv']
+srcFiles=['results/5.areal_statistics/101_CORDEX_rcp26_ensstats.csv',
+          'results/5.areal_statistics/101_CORDEX_rcp85_ensstats.csv']
 """
 
 def makeBoxplot(config,indID,srcFiles,outFile=None):
@@ -28,23 +29,23 @@ def makeBoxplot(config,indID,srcFiles,outFile=None):
     thisInd=config['indicators'][indID]
     
     #Load csv files as panadas dataframes
+    #Note that we need to make sure that we read the ID's as strings
     dat=[]
     for f in srcFiles:
         datIn=pd.read_csv(f)
         datIn['fname']=os.path.basename(f)
+        datIn['period']=[str(x) for x in datIn['period']]
         datIn['scenario']=datIn['fname'].str.extract("^.*?_.*?_(.*?)_.*$")
         dat+=[datIn]
     datdf=pd.concat(dat)
 
     #Get metafra data from configuration
     ptileTbl=pd.DataFrame.from_dict(config['ensembles'],orient='index',columns= ['percentiles']).reset_index().rename(columns={'index':'ptileLbl'})
-    periodTbl=pd.DataFrame.from_dict(config['periods'],
-                                     orient='index').rename(columns={'id':'period',
-                                                                     'name':'periodLbl'})
-    periodTbl['periodLbl']=periodTbl['periodLbl'].str.replace('\\n','\n')
-    periodLblDict={x['period'] : x['periodLbl'] for i,x in periodTbl.iterrows()}
+    periodTbl=pd.DataFrame.from_dict(config['periods'],orient='index')
+    periodLblDict={x['id'] : f"{x['name']}\n({x['start']}-{x['end']})" \
+                    for i,x in periodTbl.iterrows()}
     scTbl=pd.DataFrame.from_dict(config['scenarios'],orient='index')
-    scColourDict={ x['id'] : x['colour'] for i,x in scTbl.iterrows()}
+    scColourDict={ x['id'] : "#"+x['hexcolour'] for i,x in scTbl.iterrows()}
 
     #Now merge into dataframe and pivot for plotting
     pltLong=pd.merge(datdf, ptileTbl, on='percentiles', how='left')
@@ -53,25 +54,26 @@ def makeBoxplot(config,indID,srcFiles,outFile=None):
                                    values='indicator').reset_index()
 
     #Now plot
-    p=(ggplot(pltDatWide)+ 
-     geom_boxplot(mapping=aes(x='period',
-                              fill='scenario',
-                              middle='centralPercentile',
-                              ymin='lowerPercentile',
-                              ymax='upperPercentile',
-                              lower='lowerPercentile',
-                              upper='upperPercentile'),
-                              stat="identity")+
-     labs(x='Period',
-         y=f"Value ({thisInd['units']})",
-         title=f"{thisInd['name']} ",
-         fill="Scenario")+
-     #scale_x_continuous(breaks=periodTbl['period'],labels=periodTbl['periodLbl'])+
-     scale_x_continuous(labels=periodLblDict)+
-     scale_fill_manual(values=scColourDict)+
-     theme_bw()+
-     theme(legend_position='bottom')
-    )
+    p=(ggplot(pltDatWide)+
+       geom_boxplot(mapping=aes(x='period',
+                                fill='scenario',
+                                middle='centralPercentile',
+                                ymin='lowerPercentile',
+                                ymax='upperPercentile',
+                                lower='lowerPercentile',
+                                upper='upperPercentile'),
+                    width=0.5,
+                    stat="identity")+
+       labs(x='Period',
+            y=f"Value ({thisInd['units']})",
+            title=f"{thisInd['name']} ",
+            fill="Scenario")+
+       scale_x_discrete(labels=periodLblDict)+
+       scale_fill_manual(values=scColourDict)+
+       theme_bw()+
+       theme(legend_position='bottom',
+             panel_grid_major_x=element_blank())
+       )
     
     #Output
     if outFile is not None:
