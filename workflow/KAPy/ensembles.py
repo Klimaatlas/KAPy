@@ -3,7 +3,6 @@ import os
 import xarray as xr
 import xclim
 import xclim.ensembles as xcEns
-import xesmf as xe
 import pickle
 import numpy as np
 import sys
