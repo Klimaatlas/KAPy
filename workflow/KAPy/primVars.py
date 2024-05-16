@@ -54,10 +54,7 @@ def buildPrimVar(config,inFiles,outFile,inpID):
         da=ppFn(da)  #Assume no input arguments
    
     #Write the dataset object to disk, depending on the configuration
-    if config['primVars']['storeAsNetCDF']:
-        da.to_netcdf(outFile[0]) 
-    else:
-        with open(outFile[0],'wb') as f:
-            pickle.dump(da,f,protocol=-1)
+    #Currently write the whole lot. Could potentially pickle in the future
+    da.to_netcdf(outFile[0]) 
 
     

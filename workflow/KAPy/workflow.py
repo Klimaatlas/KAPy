@@ -80,10 +80,7 @@ def getWorkflow(config):
         pvTbl=pd.concat(pvList) 
         pvTbl['pvPath']=[os.path.join(outDirs['variables'],thisInp['varName'],f)
                          for f in pvTbl['pvFname']]
-        if config['primVars']['storeAsNetCDF']:
-            pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF
-        else:
-            pvTbl['pvPath']=pvTbl['pvPath']+'.pkl' #Pickle
+        pvTbl['pvPath']=pvTbl['pvPath']+'.nc'  #Store as NetCDF - alt. pkl in the future.
 
         pvDict[thisKey]=pvTbl.groupby("pvPath").apply(lambda x:list(x['inpPath']),
                                              include_groups=False).to_dict()

@@ -30,5 +30,3 @@ ensembles:
     upperPercentile: 90
     centralPercentile: 50
     lowerPercentile: 10
-primVars:  #Otherwise store as pickled Xarray objects
-    storeAsNetCDF: True
