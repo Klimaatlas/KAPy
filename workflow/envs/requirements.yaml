@@ -27,7 +27,6 @@ dependencies:
   - netcdf4
   - zarr
   - xclim
-  - xesmf
   - cdo
   - plotnine
   - yaml

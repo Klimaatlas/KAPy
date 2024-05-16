@@ -44,58 +44,6 @@
             "enum": ["None"]
             }
               }
-          },
-          {  
-      "type": "object",
-      "required": ["regriddingEngine","interpMethod","extrapMethod","xname","xunits","xmin", "xmax", "dx","yname","yunits", "ymin", "ymax","dy"],
-      "additionalProperties": false,
-      "description": "Perform regridding using the xesmf package. See also the [documentation for xesmf](https://xesmf.readthedocs.io/) for a more detailed description of specific configurations.",
-      "properties": {
-        "regriddingEngine": {
-            "type" : "string",
-            "enum": ["xesmf"]},
-        "interpMethod": { 
-            "description": "The `method` argument to `xesmf.frontend.Regridder` that chooses the regridding method. See xesmf documentation for a description of options.",
-            "enum": ["bilinear","conservative","conservative_normed","patch","nearest_s2d","nearest_d2s"],
-            "type": "string"},
-        "extrapMethod": { 
-            "description": "The `extrap_method` argument to `xesmf.frontend.Regridder` that chooses the extrapolation method. See xesmf documentation for a description of options.",
-            "enum": ["inverse_dist","nearest_s2d",null],
-            "type": "string"},
-        "xname": { 
-            "description": "Name of x axis in output files ",
-            "type": "string"},
-        "xunits": { 
-            "description": "Units of the y axis in output files ",
-            "type": "string"},
-        "xmin": { 
-            "description": "Western boundary of output grid. ",
-            "type": "number"},
-        "xmin": { 
-            "description": "Western boundary of output grid. ",
-            "type": "number"},
-        "xmax": { 
-            "description": "Eastern boundary of output grid. ",
-            "type": "number"},
-        "dx": { 
-            "description": "Spacing between nodes in the x direction ",
-            "type": "number"},
-        "yname": { 
-            "description": "Name of y axis in output files ",
-            "type": "string"},
-        "yunits": { 
-            "description": "Units of the y axis in output files ",
-            "type": "string"},
-        "ymin": { 
-            "description": "Southern boundary of output grid. ",
-            "type": "number" },
-        "ymax": { 
-            "description": "Northern boundary of output grid. ",
-            "type": "number" },
-        "dy": { 
-            "description": "Spacing between nodes in the y direction ",
-            "type": "number"}
-      }
           }
       ]
     },

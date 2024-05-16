@@ -9,43 +9,18 @@ inFile=["results/3.indicators/101_CORDEX_rcp26_AFR-22_MOHC-HadGEM2-ESr1i1p1_GERI
 """
 import xarray as xr
 import numpy as np
-import xesmf as xe
 import sys
     
 def regrid(config,inFile,outFile):
-    #Currently only works for 'xesmf' regridding. Potentially add CDO in the future
-    if not config['outputGrid']['regriddingEngine']=='xesmf':
-        sys.exit("Regridding options are currently limited to xesmf. See documentation")
+    # #Currently only works for 'xesmf' regridding. Potentially add CDO in the future
+    # if not config['outputGrid']['regriddingEngine']=='xesmf':
+    #     sys.exit("Regridding options are currently limited to xesmf. See documentation")
         
-    #Get output options
-    outOpt=config['outputGrid']
-    
-    #Setup grid onto which regridding takes place
-    outGrd = xr.Dataset(
-    {
-        outOpt['yname']: ([outOpt['yname']], 
-                          np.arange(outOpt['ymin'],
-                                   outOpt['ymax'],
-                                   outOpt['dy']),
-                {"units": outOpt['yunits']}),
-        outOpt['xname']: ([outOpt['xname']], 
-                          np.arange(outOpt['xmin'],
-                                   outOpt['xmax'],
-                                   outOpt['dx']),
-                {"units": outOpt['xunits']})
-    })
-    
-    #Setup xarray object
+    #Load xarray object
     dsIn= xr.open_dataarray(inFile[0])
     
-    #Do the regridding
-    regridder = xe.Regridder(dsIn, outGrd, 
-                             method=outOpt['interpMethod'],
-                             extrap_method=outOpt['extrapMethod'],
-                             unmapped_to_nan=True)
-    dsout=regridder(dsIn)
+    #... and then some magic happens....
+    dsOut=dsIn
 
     #Write out
-    dsIn.to_netcdf(outFile[0])
-    print("Done") 
-
+    dsOut.to_netcdf(outFile[0])

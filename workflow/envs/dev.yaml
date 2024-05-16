@@ -360,7 +360,6 @@ dependencies:
   - wrapt=1.16.0=py312h98912ed_0
   - xarray=2024.5.0=pyhd8ed1ab_0
   - xclim=0.49.0=pyhd8ed1ab_0
-  - xesmf=0.8.5=pyhd8ed1ab_0
   - xorg-fixesproto=5.0=h7f98852_1002
   - xorg-inputproto=2.3.2=h7f98852_1002
   - xorg-kbproto=1.0.7=h7f98852_1002
@@ -387,4 +386,4 @@ dependencies:
   - zipp=3.17.0=pyhd8ed1ab_0
   - zlib=1.2.13=hd590300_5
   - zstd=1.5.6=ha6fb4c9_0
-prefix: /home/mapa/NETHOME/Software/miniconda3/envs/KAPy-devel
+prefix: /home/mapa/NETHOME/Software/miniconda3/envs/KAPy-dev
