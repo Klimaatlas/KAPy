@@ -26,6 +26,12 @@ dirs:
     arealstats: 'results/5.areal_statistics'
     notebooks: 'results/6.notebooks'
     plots: 'results/6.plots'
+cutouts:
+    method: 'lonlatbox'
+    xmin: -4
+    xmax: 2
+    ymin: 4
+    ymax: 7
 ensembles:
     upperPercentile: 90
     centralPercentile: 50

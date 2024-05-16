@@ -17,7 +17,7 @@ import xarray as xr
 import pickle
 import sys
 import importlib
-
+from cdo import Cdo
 
 def buildPrimVar(config,inFiles,outFile,inpID):
     """
@@ -31,13 +31,33 @@ def buildPrimVar(config,inFiles,outFile,inpID):
     
     #Make dataset object. We do this manually, so as to explictly avoid
     #dask getting involved. This may change in the future
-    dsList=[xr.open_dataset(f) for f in inFiles]
+    #We also do the cutouts at this point, so as to minimise the amount of
+    #data that is actually loaded into memory
+    dsList=[]
+    for f in inFiles:
+        if config['cutouts']['method']=="lonlatbox":
+            #Do cutouts using cdo sellonlatbox
+            cdo=Cdo()
+            thisDs=cdo.sellonlatbox(config['cutouts']['xmin'],
+                                config['cutouts']['xmax'],
+                                config['cutouts']['ymin'],
+                                config['cutouts']['ymax'],
+                                input=f,
+                                returnXDataset=True)
+            dsList+=[thisDs]
+        elif config['cutouts']['method']=="none":
+            #Load everything using xarray
+            dsList+=[xr.open_dataset(f)]
+        else:
+            sys.exit(f"Unsupported cutout option '{config['cutouts']['method']}'.")
+
+    #Now combine into one object
     dsIn=xr.combine_by_coords(dsList,combine_attrs="drop_conflicts")
 
     #Select the desired variable and rename it
     ds=dsIn.rename({thisInp['internalVarName']:thisInp['varName']})
     da=ds[thisInp['varName']] #Convert to dataarray
-    
+   
     #Drop degenerate dimensions. If any remain, throw an error
     da=da.squeeze()
     if len(da.dims)!=3:

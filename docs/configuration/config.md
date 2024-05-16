@@ -25,6 +25,16 @@
   - **`arealstats`** *(string, required)*: Directory for storing statistics calculated over areas.
   - **`notebooks`** *(string, required)*: Directory for storing compiled Jupyter notebooks.
   - **`plots`** *(string, required)*: Directory for storing output plots.
+- **`cutouts`**: Configures spatial-subsetting (cutting-out) of the input data.
+  - **One of**
+    - *object*: `None`. Omit the cutout step. All available data in the input files is processed. Cannot contain additional properties.
+      - **`regriddingEngine`** *(string)*: Must be one of: `["None"]`.
+    - *object*: `lonlatbox`. Use the `sellonlatbox`operator from cdo to do the subsetting. Details of this operator can be found in the CDO documentation. Cannot contain additional properties.
+      - **`method`** *(string, required)*: Must be one of: `["lonlatbox"]`.
+      - **`xmin`** *(number, required)*: Western boundary of cutout box.
+      - **`xmax`** *(number, required)*: Eastern boundary of cutout box.
+      - **`ymin`** *(number, required)*: Southern boundary of cutout box.
+      - **`ymax`** *(number, required)*: Northern boundary of cutout box.
 - **`ensembles`** *(object)*: Specify the percentiles [0-100] calculated from the ensemble. We allow three values, corresponding to the upper and lower confidence limits, and the central value. Cannot contain additional properties.
   - **`upperPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
   - **`centralPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
