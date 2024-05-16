@@ -12,12 +12,6 @@ configurationTables:
     scenarios:  'config/scenarios.tsv'
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
-outputGrid:
-    regriddingEngine: 'None'
-
-# Configuration options------------------------------------
-arealstats:
-    calcForMembers: False
 dirs:
     variables: 'results/1.variables'
     indicators: 'results/2.indicators'
@@ -26,13 +20,20 @@ dirs:
     arealstats: 'results/5.areal_statistics'
     notebooks: 'results/6.notebooks'
     plots: 'results/6.plots'
+
+# Configuration options------------------------------------
+arealstats:
+    calcForMembers: False
 cutouts:
     method: 'lonlatbox'
     xmin: -4
     xmax: 2
     ymin: 4
-    ymax: 7
+    ymax: 12
 ensembles:
     upperPercentile: 90
     centralPercentile: 50
     lowerPercentile: 10
+outputGrid:
+    regriddingEngine: 'cdo'
+    cdoGriddes: './config/griddes.txt'

@@ -5,22 +5,23 @@ os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
-inFile=["results/3.indicators/101_CORDEX_rcp26_AFR-22_MOHC-HadGEM2-ESr1i1p1_GERICS-REMO2015_v1_mon.nc"]
+inFile=["results/2.indicators/101/101_CORDEX_rcp85_AFR-22_MPI-M-MPI-ESM-LR_r1i1p1_GERICS-REMO2015_v1_mon.nc"]
+inFile=["resources/CORDEX/tas_AFR-22_MPI-M-MPI-ESM-LR_rcp85_r1i1p1_GERICS-REMO2015_v1_mon_200601-201012.nc"]
+outFile=["results/3.common_grid/101/101_CORDEX_rcp85_AFR-22_MPI-M-MPI-ESM-LR_r1i1p1_GERICS-REMO2015_v1_mon.nc"]
 """
-import xarray as xr
-import numpy as np
+
+from cdo import Cdo
 import sys
     
 def regrid(config,inFile,outFile):
-    # #Currently only works for 'xesmf' regridding. Potentially add CDO in the future
-    # if not config['outputGrid']['regriddingEngine']=='xesmf':
-    #     sys.exit("Regridding options are currently limited to xesmf. See documentation")
+    #Currently only works for 'cdo' regridding. Other engines such as xesmf could be supported in the future
+    if not config['outputGrid']['regriddingEngine']=='cdo':
+        sys.exit("Regridding options are currently limited to cdo. See documentation")
         
-    #Load xarray object
-    dsIn= xr.open_dataarray(inFile[0])
-    
-    #... and then some magic happens....
-    dsOut=dsIn
+    #Setup CDO object
+    cdo=Cdo()
 
-    #Write out
-    dsOut.to_netcdf(outFile[0])
+    #Apply regridding
+    cdo.remapbil(config['outputGrid']['cdoGriddes'],
+                 input=inFile[0],
+                 output=outFile[0])

@@ -11,12 +11,6 @@
   - **`scenarios`** *(string, required)*: Path to scenario configuration table, relative to working directory. See [scenarios.md](scenarios.md) for more detail.
   - **`periods`** *(string, required)*: Path to period configuration table, relative to working directory. See [periods.md](periods.md) for more detail.
   - **`seasons`** *(string, required)*: Path to season configuration table, relative to working directory. See [seasons.md](seasons.md) for more detail.
-- **`outputGrid`**: Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple approaches to regridding can be configured, as described below.
-  - **One of**
-    - *object*: Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid. Cannot contain additional properties.
-      - **`regriddingEngine`** *(string, required)*: Must be one of: `["None"]`.
-- **`arealstats`** *(object)*: Cannot contain additional properties.
-  - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
 - **`dirs`** *(object)*: Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items. Cannot contain additional properties.
   - **`variables`** *(string, required)*: Directory for storing variables.
   - **`indicators`** *(string, required)*: Directory for storing indicators variables.
@@ -25,6 +19,8 @@
   - **`arealstats`** *(string, required)*: Directory for storing statistics calculated over areas.
   - **`notebooks`** *(string, required)*: Directory for storing compiled Jupyter notebooks.
   - **`plots`** *(string, required)*: Directory for storing output plots.
+- **`arealstats`** *(object)*: Cannot contain additional properties.
+  - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
 - **`cutouts`**: Configures spatial-subsetting (cutting-out) of the input data.
   - **One of**
     - *object*: `None`. Omit the cutout step. All available data in the input files is processed. Cannot contain additional properties.
@@ -39,3 +35,10 @@
   - **`upperPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
   - **`centralPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
   - **`lowerPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
+- **`outputGrid`**: Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple approaches to regridding can be configured, as described below.
+  - **One of**
+    - *object*: `None`. Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid. Cannot contain additional properties.
+      - **`regriddingEngine`** *(string, required)*: Must be one of: `["None"]`.
+    - *object*: `cdo`. Use the Climate Data Operators to do the regridding. For more information, see the CDO website, https://code.mpimet.mpg.de/projects/cdo. Installation of CDO is handled behind the scenes by conda as part of the KAPy environment setup - be aware that this may result in a different version of CDO being used to what you have by default. In the current configuration we default to bilinear interpolation (`remapbil`). If other operators are required, please file a feature request in GitHub. More information about CDO interpolation, can be found in section 2.12 of the documention. Cannot contain additional properties.
+      - **`regriddingEngine`** *(string, required)*: Must be one of: `["cdo"]`.
+      - **`cdoGriddes`** *(string, required)*: Path to CDO grid descriptor, specifying the output grid. For more information see the CDO document, especially Appendix D and section 2.12 on interpolation.
