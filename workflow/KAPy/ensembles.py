@@ -32,20 +32,4 @@ def generateEnsstats(config,infiles,outfile):
     #Write results
     ensOut.to_netcdf(outfile[0])
 
-    
-def generateArealstats(config,inFile,outFile):
-    #Generate statistics over an area by applying a polygon mask and averaging
-    #Setup xarray
-    thisDat = xr.open_dataset(inFile[0])
-    
-    #Perform masking
-    #TODO
-    
-    #Average spatially
-    spMean=thisDat.indicator.mean(dim=["rlon","rlat"])
-    
-    #Save files pandas
-    dfOut=spMean.to_dataframe()
-    dfOut['area']='All'          # Currently place holder. Implement masking in future.
-    dfOut.to_csv(outFile[0])
 
