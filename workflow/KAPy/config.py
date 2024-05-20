@@ -37,6 +37,9 @@ def validateConfig(config):
     file), inflates it by loading the configuration tables, and validates all elements
     against the appropriate validation schema. Returns the inflated validated config.
     '''
+    #Setup debugging
+    #config=readConfig("./config/config.yaml")
+
     #Setup location of validation schemas
     #schemaDir="./workflow/schemas/"
     #schemaDir="./KAPy/workflow/schemas/"
@@ -53,22 +56,22 @@ def validateConfig(config):
     #Validate each table in turn. The validation approach used
     #is defined in the following table
     tabularCfg={'indicators':{'listCols':[],
-                              'dicts':[],
+                              'dictCols':[],
                               'schema':'indicators'},
          'inputs':{'listCols':[],
-                   'dicts':[],
+                   'dictCols':[],
                    'schema':'inputs'},
          'scenarios':{'listCols':['scenarioStrings'],
-                      'dicts':[],
+                      'dictCols':[],
                       'schema':'scenarios'},
          'periods':{'listCols':[],
-                    'dicts':[],
+                    'dictCols':[],
                     'schema':'periods'},
          'seasons':{'listCols':['months'],
-                     'dicts':[],
+                     'dictCols':[],
                      'schema':'seasons'},
          'secondaryVars':{'listCols':['inputVars','outputVars'],
-                     'dicts':['additionalArgs'],
+                     'dictCols':['additionalArgs'],
                      'schema':'derivedVars'}}
     for thisTblKey,theseVals in tabularCfg.items():
         #Load the variables that are defined as tabular configurations (if they exist)
@@ -87,7 +90,7 @@ def validateConfig(config):
         #Validate against the appropriate schema.
         validate(valThis, os.path.join(schemaDir,f"{theseVals['schema']}.schema.json"))
         #Dict columns also need to be parsed
-        for col in theseVals['dicts']:
+        for col in theseVals['dictCols']:
             try:
                 thisTbl[col]=[ast.literal_eval(x) for x in thisTbl[col]]
             except (SyntaxError, ValueError) as e:

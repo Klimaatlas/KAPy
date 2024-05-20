@@ -11,7 +11,6 @@ wf=KAPy.getWorkflow(config)
 
 from plotnine import *
 import pandas as pd
-import re
 import os
 import xarray as xr
 
@@ -34,7 +33,7 @@ def makeBoxplot(config,indID,srcFiles,outFile=None):
     for f in srcFiles:
         datIn=pd.read_csv(f)
         datIn['fname']=os.path.basename(f)
-        datIn['period']=[str(x) for x in datIn['period']]
+        datIn['periodID']=[str(x) for x in datIn['periodID']]
         datIn['scenario']=datIn['fname'].str.extract("^.*?_.*?_(.*?)_.*$")
         dat+=[datIn]
     datdf=pd.concat(dat)
@@ -49,13 +48,13 @@ def makeBoxplot(config,indID,srcFiles,outFile=None):
 
     #Now merge into dataframe and pivot for plotting
     pltLong=pd.merge(datdf, ptileTbl, on='percentiles', how='left')
-    pltDatWide=pltLong.pivot_table(index=['scenario','period'],
+    pltDatWide=pltLong.pivot_table(index=['scenario','periodID'],
                                    columns='ptileLbl',
                                    values='indicator').reset_index()
 
     #Now plot
     p=(ggplot(pltDatWide)+
-       geom_boxplot(mapping=aes(x='period',
+       geom_boxplot(mapping=aes(x='periodID',
                                 fill='scenario',
                                 middle='centralPercentile',
                                 ymin='lowerPercentile',
@@ -84,7 +83,7 @@ def makeBoxplot(config,indID,srcFiles,outFile=None):
 
 # Spatialplot -----------------------------------------------------------
 """
-indID=101
+indID='101'
 srcFiles=list(wf['plots'].values())[1]
 """
 def makeSpatialplot(config,indID,srcFiles,outFile=None):
@@ -97,7 +96,7 @@ def makeSpatialplot(config,indID,srcFiles,outFile=None):
         #Import object
         thisdat=xr.open_dataset(d)
         #We want to plot a spatial map of the change from start to finish
-        change=thisdat.isel(period=-1)-thisdat.isel(period=0)
+        change=thisdat.isel(periodID=-1)-thisdat.isel(periodID=0)
         changedf=change.indicator_mean.to_dataframe().reset_index()
         changedf['fname']=os.path.basename(d)
         changedf['scenario']=changedf['fname'].str.extract("^.*?_.*?_(.*?)_.*$")
@@ -105,7 +104,7 @@ def makeSpatialplot(config,indID,srcFiles,outFile=None):
     pltDat=pd.concat(datdf)
 
     #Make plot
-    p=(ggplot(pltDat,aes(x='rlon',y='rlat',fill='indicator_mean'))+
+    p=(ggplot(pltDat,aes(x='longitude',y='latitude',fill='indicator_mean'))+
      geom_raster()+
      facet_wrap("~scenario")+
      theme_bw()+

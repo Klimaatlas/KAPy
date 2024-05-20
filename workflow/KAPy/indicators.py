@@ -1,17 +1,17 @@
 """
-#Setup for debugging with a Jupyterlab console
+#Setup for debugging with VS code
 import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
-inFile=['results/1.primVars/tas_CORDEX_rcp85_AFR-22_MPI-M-MPI-ESM-LRr1i1p1_GERICS-REMO2015_v1_mon.nc']
-indID=101
+inFile=['./results/1.variables/tas/tas_CORDEX_rcp85_AFR-44_MPI-M-MPI-ESM-LR_r1i1p1_SMHI-RCA4_v1_mon.nc']
+indID='101'
 """
 
 import xarray as xr
-import os
 import numpy as np
+import pandas as pd
 import sys
 from .helpers import readFile
 
@@ -30,27 +30,31 @@ def calculateIndicators(config,inFile,outFile,indID):
     #Time binning over periods
     if thisInd['time_binning']=='periods':
         slices=[]
-        periodIds=[]
         for thisPeriod in config['periods'].values():
                 #Slice dataset
                 timemin=datSeason.time.dt.year >=thisPeriod['start']
                 timemax=datSeason.time.dt.year <=thisPeriod['end']
                 datPeriodSeason=datSeason.sel(time=timemin & timemax)
+                timebounds=pd.to_datetime([f"{thisPeriod['start']}-01-01",
+                                           f"{thisPeriod['end']}-12-31"])
+                timestamp=timebounds.mean()
                 #If there is nothing left, we want a result all the same so that we
                 #can put it in the outputs
                 if datPeriodSeason.time.size==0:
                     res=datPeriodSeason.drop_dims('time')
                 #Apply the operator
                 elif thisInd['statistic']=='mean':
-                    res=datPeriodSeason.mean(['time'],keep_attrs=True)
+                    res=datPeriodSeason.mean('time',keep_attrs=True)
                 else:
                     sys.exit('Unknown indicator statistic, "' + ind['statistic'] +'"')
+                #Tidy output
+                res['periodID']=thisPeriod['id']
                 slices.append(res)
-                periodIds.append(thisPeriod['id'])
 
         #Convert list back into dataset 
-        dout=xr.concat(slices,dim='period')
-        dout=dout.assign_coords(period=periodIds)
+        dout=xr.concat(slices,dim='periodID')
+        dout.periodID.attrs['name']='periodID'
+        dout.periodID.attrs['description']=f'For period definitions see {config['configurationTables']['periods']}'
 
     #Time binning by defined units
     elif thisInd['time_binning'] in ['years','months']:
@@ -68,11 +72,23 @@ def calculateIndicators(config,inFile,outFile,indID):
         else:
             sys.exit('Unknown indicator statistic, "' + thisInd['statistic'] +'"')
 
+        #Round time to the middle of the month. This ensures that everything
+        #has an identical datetime, regardless of the calendar being used.
+        #Kudpos to ChatGPT for this little work around
+        dout['time']=pd.to_datetime(dout.time.dt.strftime('%Y-%m-15'))
+
     else:
         sys.exit("Unknown time_binning method, '" + thisInd['time_binning']+ "'")
 
-    #Polish final product and write
+
+    #Polish final product 
     dout.name='indicator'
+    dout.attrs={}
+    for thiskey in thisInd.keys():
+        if thiskey!="files":
+            dout.attrs[thiskey]=thisInd[thiskey]
+
+    #Write out
     dout.to_netcdf(outFile[0])
 
 

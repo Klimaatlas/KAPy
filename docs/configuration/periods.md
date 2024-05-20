@@ -4,7 +4,7 @@
 
 ## Properties
 
-- **`id`** *(['integer', 'string'])*: Unique identifier for the period. This can be numeric, but as it will be used in e.g. output files, it is recommended to use a short descriptive string e.g `hist`.
-- **`name`** *(string)*: A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long! Remember that you can include linebreaks using the `\n` character. e.g. `Historical\n(1981-2010)` .
+- **`id`** *(['integer', 'string'])*: Unique identifier for the period. This can be numeric, but will be treated as a string.
+- **`name`** *(string)*: A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long! .
 - **`start`** *(integer)*: The start year of the period. The full year is included in the calculation.
 - **`end`** *(integer)*: The end year of the period. The full year is included in the calculation.
