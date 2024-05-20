@@ -1,35 +1,33 @@
-import pandas as pd
-import os
-import xarray as xr
-import xclim
-import xclim.ensembles as xcEns
-import pickle
-import numpy as np
-import sys
-import glob
-import re
-
 """
-#Setup for debugging with a Jupyterlab console
+#Setup for debugging with VS code 
 import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
-inFile=["results/5.ensstats/i101_ensstat_rcp85.nc"]
+wf=KAPy.getWorkflow(config)
+ensID=next(iter(wf['ensstats'].keys()))
+inFiles=wf['ensstats'][ensID]
 """
 
-def generateEnsstats(config,infiles,outfile):
-    #Setup the ensemble
-    #Enforce a join='override' to handle differences between grids close to
-    #numerical precision
-    thisEns = xcEns.create_ensemble(infiles,multifile=True,join='override')  
-    #Calculate the statistics
-    ens_mean_std = xcEns.ensemble_mean_std_max_min(thisEns)
-    ens_percs = xcEns.ensemble_percentiles(thisEns, split=False, 
-                                           values=[x for x in config['ensembles'].values()])
-    ensOut=xr.merge([ens_mean_std,ens_percs])
-    #Write results
-    ensOut.to_netcdf(outfile[0])
+import xarray as xr
+import xclim.ensembles as xcEns
 
+def generateEnsstats(config, inFiles, outFile):
+    # Setup the ensemble
+    # Given that all input files have been regridded onto a common grid,
+    # they can then be concatenated into a single object. There are 
+    # two approachs. Previously we have used the create_ensemble from xclim.ensembles
+    # However, this is quite fancy, and does a lot of logic about calendars that
+    # create further problems. Instead, given that everything is on the same grid,
+    # we can just open it all using open_mfdataset
+    thisEns=xr.open_mfdataset(inFiles,concat_dim="realization",combine='nested')
+    # Calculate the statistics
+    ens_mean_std = xcEns.ensemble_mean_std_max_min(thisEns)
+    ens_percs = xcEns.ensemble_percentiles(thisEns, 
+                                           split=False, 
+                                           values=[x for x in config["ensembles"].values()])
+    ensOut = xr.merge([ens_mean_std, ens_percs])
+    # Write results
+    ensOut.to_netcdf(outFile[0])
 
