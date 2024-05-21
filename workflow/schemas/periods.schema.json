@@ -12,7 +12,7 @@
       "uniqueItems": true
     },
     "name": {
-      "description": "A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long! ",
+      "description": "A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long!",
       "type": "string"
     },
     "start": { 

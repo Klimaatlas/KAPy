@@ -18,7 +18,6 @@ dirs:
     regridded: 'results/3.commmon_grid'
     ensstats: 'results/4.ensstats'
     arealstats: 'results/5.areal_statistics'
-    notebooks: 'results/6.notebooks'
     plots: 'results/6.plots'
 
 # Configuration options------------------------------------
