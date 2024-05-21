@@ -6,6 +6,7 @@ import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
 inFile=['./results/1.variables/tas/tas_CORDEX_rcp85_AFR-44_MPI-M-MPI-ESM-LR_r1i1p1_SMHI-RCA4_v1_mon.nc']
+inFile=["./results/1.variables/tas/tas_ERA5_t2m_ERA5_monthly.nc"]
 indID='101'
 """
 
@@ -41,9 +42,11 @@ def calculateIndicators(config, inFile, outFile, indID):
             )
             timestamp = timebounds.mean()
             # If there is nothing left, we want a result all the same so that we
-            # can put it in the outputs
+            # can put it in the outputs. We copy the structure and populate
+            # it with NaNs
             if datPeriodSeason.time.size == 0:
-                res = datPeriodSeason.drop_dims("time")
+                res = datSeason.isel(time=0)
+                res.data[:] = np.nan
             # Apply the operator
             elif thisInd["statistic"] == "mean":
                 res = datPeriodSeason.mean("time", keep_attrs=True)
