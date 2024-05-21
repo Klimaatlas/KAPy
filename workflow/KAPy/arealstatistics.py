@@ -13,6 +13,7 @@ inFiles=wf['ensstats'][ensID]
 import xarray as xr
 import pandas as pd
 
+
 def generateArealstats(config, inFile, outFile):
     # Generate statistics over an area by applying a polygon mask and averaging
     # Setup xarray

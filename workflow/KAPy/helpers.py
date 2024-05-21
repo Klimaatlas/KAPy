@@ -9,15 +9,16 @@ import pickle
 import xarray as xr
 import os
 
+
 def readFile(thisPath):
-    #Reads a dataset from disk, determining dynmaically whether it is 
-    #pickled or NetCDF based on the file extension
-    inExt=os.path.splitext(os.path.basename(thisPath))[1] 
-    if inExt == '.nc':
-        thisDat=xr.open_dataarray(thisPath)
-    elif inExt == '.pkl': #Read pickle
-        with open(thisPath,'rb') as f:
-            thisDat=pickle.load(f)
+    # Reads a dataset from disk, determining dynmaically whether it is
+    # pickled or NetCDF based on the file extension
+    inExt = os.path.splitext(os.path.basename(thisPath))[1]
+    if inExt == ".nc":
+        thisDat = xr.open_dataarray(thisPath)
+    elif inExt == ".pkl":  # Read pickle
+        with open(thisPath, "rb") as f:
+            thisDat = pickle.load(f)
     else:
-        raise IOError(f'Unknown file format, {inExt} in {thisPath}')
-    return(thisDat)
+        raise IOError(f"Unknown file format, {inExt} in {thisPath}")
+    return thisDat

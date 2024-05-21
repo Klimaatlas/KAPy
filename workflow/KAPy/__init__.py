@@ -1,4 +1,4 @@
-#Top level init.py for KAPy package
+# Top level init.py for KAPy package
 
 from .arealstatistics import *
 from .config import *
