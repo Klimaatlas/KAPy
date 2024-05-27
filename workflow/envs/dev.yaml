@@ -1,8 +1,14 @@
+# This YAML file defines the optional requirements used in the development of KAPy, including version numbers and hash tags.
+#
+# This file can be used to generate a fresh conda environment like so:
+#
+# conda env create -f dev.yaml
+#
 name: KAPy-dev
 channels:
   - bioconda
   - conda-forge
-  - defaults
+  - nodefaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
