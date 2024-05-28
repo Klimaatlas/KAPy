@@ -1,6 +1,6 @@
 # KAPy - *Klimaatlases* in Python
 
-KAPy is an open-source and flexible framework that can be used to generate climate indicators anywhere in the world, working from datasets such as CMIP and CORDEX together with observations. KAPy is a ground-up python-based rethink of the pipeline originally developed to power the Danish Meteorological Institute's *Klimaatlas* climate service, but is intended to be used more widely.
+KAPy is an open-source and flexible framework that can be used to generate climate indicators anywhere in the world, working from datasets such as CMIP and CORDEX together with observations. KAPy is a ground-up python-based rethink of the pipeline originally developed to power the Danish Meteorological Institute's *Klimaatlas* climate service.
 
 ## Getting started
 
@@ -68,9 +68,9 @@ The development of KAPy is financed via a grant from the Danish Central Governme
     
 ## Why KAPy?
 
-KAPy takes its name from joining the `KA` from DMI's *Klimaatlas* with the `Py` from Python, in the style of many Python libraries. 
+KAPy takes its name from joining the KA from DMI's *Klimaatlas* with the Py from Python, in the style of many Python libraries. 
 
-More importantly, the name is also a homonym for the phrase *ka pai* from *Te Reo Māori*, the language of the Māori people, the *tangata whenua* (indigenous people) of Aotearoa New Zealand. The phrase means simply "good", but can also be used as praise, as in "well done". e.g.
+More importantly, the name is also a homonym for the phrase *ka pai* from the *Te Reo Māori* language of the Māori people, the *tangata whenua* (indigenous people) of Aotearoa New Zealand. The phrase means simply "good", but can also be used as praise, as in "well done". e.g.
 
 ```
 Son: Look Dad! I made a Klimaatlas in Python!

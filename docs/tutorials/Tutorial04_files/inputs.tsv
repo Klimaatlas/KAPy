@@ -1,5 +1,5 @@
-id	srcName	varName	path	stemRegex	internalVarName	hasScenarios	applyPreprocessor	preprocessorPath	preprocessorFunction
-CORDEX-tas	CORDEX	tas	resources/CORDEX/tas_*	^tas_(.*)_.*?.nc$	tas	TRUE	FALSE		
-ERA5-tas	ERA5	tas	resources/ERA5_monthly/t2m_ERA5_monthly.nc	^tas_(.*).nc$	t2m	FALSE	FALSE		
-CORDEX-pr	CORDEX	pr	resources/CORDEX/pr_*	^pr_(.*)_.*?.nc$	pr	TRUE	FALSE		
-ERA5-pr	ERA5	pr	resources/ERA5_monthly/pr_ERA5_monthly.nc	^pr_(.*).nc$	tp	FALSE	FALSE		
+id	srcName	varName	path	regex	internalVarName	hasScenarios
+CORDEX-tas	CORDEX	tas	resources/CORDEX/tas_*	^tas_(.*)_.*?.nc$	tas	TRUE
+ERA5-tas	ERA5	tas	resources/ERA5_monthly/t2m_ERA5_monthly.nc	^tas_(.*).nc$	t2m	FALSE
+CORDEX-pr	CORDEX	pr	resources/CORDEX/pr_*	^pr_(.*)_.*?.nc$	pr	TRUE
+ERA5-pr	ERA5	pr	resources/ERA5_monthly/pr_ERA5_monthly.nc	^pr_(.*).nc$	tp	FALSE

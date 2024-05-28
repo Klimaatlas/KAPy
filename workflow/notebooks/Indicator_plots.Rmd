@@ -1,0 +1,178 @@
+---
+title: "KAPy Indicator Plots"
+date: " `r Sys.time() `"
+output: 
+  html_notebook:
+    code_folding: hide
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, warning=FALSE,message=FALSE}
+#Load packages 
+library(tidyverse)
+library(yaml)
+library(here)
+library(knitr)
+library(tidync)
+
+#Set defaults
+knitr::opts_chunk$set(echo = FALSE)
+
+#Import config file
+#Need to handle the defaults as well
+config <- read_yaml(here("config.yaml"))
+dft <- read_yaml(here("configs/defaults.yaml"))
+cfg <- modifyList(dft,config)
+
+#Get ensstat file lists
+spPaths <- 
+  tibble(spPath=dir(here(cfg$dirs$outputDir,cfg$dirs$ensstats),
+                    pattern=".nc$",full.names = TRUE),
+         fname=basename(spPath)) %>% 
+  separate_wider_regex(fname,c("^i",ind=".+","_ensstat_",scenario=".+",".nc") ) 
+arealPaths <- 
+  tibble(arealPath=dir(here(cfg$dirs$outputDir,cfg$dirs$arealstats),
+                    pattern="^.*ensstat.*.csv$",full.names = TRUE),
+         fname=basename(arealPath)) %>% 
+  separate_wider_regex(fname,c("^i",ind=".+","_ensstat_",scenario=".+",".csv") ) 
+allPaths <-
+  full_join(spPaths,arealPaths,by=c("ind","scenario")) %>% 
+  nest(srcs=-ind)
+
+```
+
+
+```{r results='asis',warning=FALSE}
+#Loop over  available indicators to make plots
+#But what should we plot? It depends on the nature of the indicator
+# * Period-based indicators should plot the spatial map and the plots
+# * Yearly (or monthly) based indicators show a time series
+for(i in 1:nrow(allPaths)) {
+  #Extract indicator data
+  thisIndID <- allPaths[i,"ind"]$ind
+  indSrcs <- allPaths[i,"srcs"]$srcs[[1]]
+  thisInd <- config$indicators[[as.character(thisIndID)]]
+  
+  #Make the title
+  cat(sprintf("# i%s - %s ",thisIndID,thisInd$name))
+  
+  if(tolower(thisInd$time_binning)=="periods") {
+    #Period plots----------------------------
+    #Extract period metadat
+    periodMeta <- 
+      map_df(cfg$periods,as_tibble) %>% 
+      mutate(name=gsub("\\\\n","\n",name))
+    
+    #Import areal data and merge with periods
+    arealDat <- 
+      indSrcs %>% 
+      mutate(dat=map(arealPath,read_csv,show_col_types=FALSE)) %>% 
+      unnest(dat) %>% 
+      select(scenario,period,percentiles, indicator) 
+    
+    #Express in terms of changes
+    refDat <-
+      arealDat %>% 
+      filter(period==min(period),
+             percentiles==median(unique(percentiles)))   %>% #Take the lowerst numbered period as the reference. For now.
+      select(scenario,indicator)
+    anomDat <-
+      left_join(arealDat,y=refDat,by=c("scenario"),suffix=c("",".ref")) %>% 
+      mutate(anom=indicator-indicator.ref,
+             percentiles=paste0("p",percentiles)) %>% 
+      select(-indicator,-indicator.ref) %>% 
+      pivot_wider(names_from="percentiles",values_from="anom")
+    
+    #Make a plot
+    g <- ggplot(anomDat) +
+      geom_boxplot(mapping=aes(x=factor(period),ymin=p10,lower=p10,middle=p50,ymax=p90,upper=p90,
+                               fill=scenario,group=paste(scenario,period)),
+                   width=0.5,
+                   stat="identity")+
+      theme_bw()+
+      theme(legend.position = "bottom")+
+      labs(x="",y=sprintf("%s anomaly (%s)",thisInd$name,thisInd$units),
+           fill="Scenario" )+
+      scale_fill_manual(values=c(rcp85=rgb(150,34, 36,255,maxColorValue = 255),
+                                 rcp45=rgb(235,143, 55,255,maxColorValue = 255),
+                                 rcp26=rgb(33,61, 108,255,maxColorValue = 255)))+
+      scale_x_discrete(breaks = 1:4,
+                       drop=FALSE,
+                       labels = periodMeta$name)
+    print(g)
+    
+    #Spatial plots--------------------------
+    #Retrieve spatial data
+    spDat <- 
+      indSrcs %>% 
+      mutate(dat=map(spPath,~ tidync(.x) %>% activate("indicator") %>% hyper_tibble())) %>% 
+      unnest(dat) %>% 
+      select(scenario,period,percentiles, indicator,rlon,rlat) 
+    
+    #Express in terms of changes
+    refDatSp <-
+      spDat %>% 
+      filter(period==min(period),
+             percentiles==median(unique(percentiles)))   %>% #Take the lowerst numbered period as the reference. For now.
+      select(scenario,rlon,rlat,indicator)
+    anomDatSp <-
+      spDat %>% 
+      filter(percentiles==median(unique(percentiles)))   %>% 
+      left_join(y=refDatSp,by=c("scenario","rlon","rlat"),suffix=c("",".ref")) %>% 
+      mutate(anom=indicator-indicator.ref) %>% 
+      select(-indicator,-indicator.ref,-percentiles) 
+    pltDatSp <-
+      anomDatSp %>% 
+      filter(period == max(period))   #Plot the last period
+    
+    #Plot
+    g <- 
+      ggplot(pltDatSp,aes(rlon,rlat,fill=anom))+
+      facet_wrap(~ scenario)+
+      geom_raster()+
+      theme_bw()+
+      scale_fill_viridis_b(n.breaks=8)+
+      annotation_map(map_data("world"),fill=NA,colour="black")+
+      labs(x="",y="",
+           fill=sprintf("Anomaly\n(%s)",thisInd$units))+
+      coord_equal()+
+      scale_x_continuous(expand=c(0,0))+
+      scale_y_continuous(expand=c(0,0))
+    print(g)
+    
+  } else if(tolower(thisInd$time_binning)=="year") {
+    # Time series plots-------------------
+    #Import data
+    tsDat <-
+      indSrcs %>% 
+      mutate(dat=map(arealPath,read_csv,show_col_types=FALSE)) %>% 
+      unnest(dat) %>% 
+      mutate(date=as.Date(time)) %>% 
+      filter(percentiles==median(unique(percentiles)))
+    
+    if(grepl("temp",thisInd$name)) {
+      tsDat <- mutate(tsDat,
+                      indicator=indicator-273.15)
+    }
+    
+    #Correct for time
+    g <- ggplot(tsDat,aes(x=date,y=indicator,col=scenario))+
+      geom_line()+
+      theme_bw()+
+      labs(x="",y=sprintf("%s (%s)",thisInd$name,thisInd$units),
+           colour="Scenario")
+    print(g)
+    
+  } else {
+    stop("Unknown time-binning ")
+    
+  }
+   
+} 
+
+```
+
+

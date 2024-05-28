@@ -7,12 +7,12 @@
   "type": "object",
   "properties": {
     "id": {
-      "description": "Unique identifier for the period. This can be numeric, but will be treated as a string",
+      "description": "Unique identifier for the period. This can be numeric, but as it will be used in e.g. output files, it is recommended to use a short descriptive string e.g `hist`",
       "type": ["integer","string"],
       "uniqueItems": true
     },
     "name": {
-      "description": "A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long!",
+      "description": "A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long! Remember that you can include linebreaks using the `\\n` character. e.g. `Historical\\n(1981-2010)` ",
       "type": "string"
     },
     "start": { 
