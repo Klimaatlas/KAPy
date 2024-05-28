@@ -20,18 +20,9 @@ ls resources/CORDEX/*
 
 3. Input data sources are defined via the input configuration table `./config/inputs.tsv`. Open this file in a text editor (e.g. `vi`). Each row corresponds to an input file type. You should be able to identify one row for CORDEX tas inputs and one for ERA5 inputs.
 
-4. Next, we need to modify this file to incorporate the new data inputs using a spreadsheet. Make the following changes, and save the file. Alternatively you can download a correctly formatted version of this file from [here](Tutorial04_files).
+4. Next, we need to modify this file to incorporate the new data inputs using a spreadsheet.  A correctly formatted version of this file can be found [here](Tutorial04_files) - download and save it over the top of the existing `./config/inputs.tsv`. 
 
-```
-id      srcName varName path    regex   internalVarName hasScenarios
-CORDEX-tas      CORDEX  tas     resources/CORDEX/tas_*  ^tas_(.*)_.*?.nc$       tas     TRUE
-ERA5-tas        ERA5    tas     resources/ERA5_monthly/t2m_ERA5_monthly.nc      ^tas_(.*).nc$   t2m     FALSE
-CORDEX-pr       CORDEX  pr      resources/CORDEX/pr_*   ^pr_(.*)_.*?.nc$        pr      TRUE
-ERA5-pr ERA5    pr      resources/ERA5_monthly/pr_ERA5_monthly.nc       ^pr_(.*).nc$    tp      FALSE
-
-```
-
-5. Note the addition of the new `pr` tags to the `CORDEX` and `ERA5` inputs. `path` is the path to the files, including a `*` glob to allow for general pattern matching. `regex` is a regular expression used to describe the structure of the filenames - the bracketed section are the common elements in the filename. `internalVarName` is the internal representation of the variable - in this case, ERA5 calls precipitation `tp` rather than `pr` in CORDEX.
+5. Open the new file in a text viewer - you will see that two more lines have been added for precipitation data at the bottom. Note also the addition of the new `pr` tags to the `CORDEX` and `ERA5` inputs. `path` is the path to the files, including a `*` glob to allow for general pattern matching. `stemRegex` is a regular expression used to describe the structure of the filenames - the bracketed section are the common elements in the filename. `internalVarName` is the internal representation of the variable - in this case, ERA5 calls precipitation `tp` rather than `pr` in CORDEX.
 
 6. We also want to do something with this input dataset, so we need to define some indicators that can use it as well. Modify the indicator section of `config.yaml` to look like the following and save the file, maintaining indenting. Here we have added two parallel indicators to `101` and `102` that work with `pr` rather than `tas`. Alternatively you can download a correctly formatted version of this file from [here](Tutorial04_files).
 
@@ -62,10 +53,10 @@ snakemake --cores 1
 
 ```
 
-9.  The difference will be most apparent in the output notebook. Try opening it in a browser e.g. Firefox.
+9.  The difference will be most apparent in the output files. Try browsing through them now in a graphics viewer e.g.
 
 ```
-firefox results/7.notebooks/Output_overview.py.html 
+eog ./results/6.plots/
 ```
 
 10. That concludes this tutorial. KAPy is designed to handle multiple different data sources within the same framework. For example, applying the same processing chains to data from ERA5, CMIP5, and CMIP6 will all be possible within the same workflow in the future.

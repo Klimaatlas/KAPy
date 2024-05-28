@@ -1,0 +1,25 @@
+# This YAML file defines the optional requirements used in the development of KAPy.
+#
+# To setup the KAPy-dev environment, first create the base KAPy environemnt - see 
+# instructions in requirements.yaml. Once this is complete, clone the KAPy environment:
+#
+# conda create --name KAPy-dev --clone KAPy
+#
+# Next, install the additional elements required by KAPy-dev
+#
+# conda env update -f dev_requirements.yaml
+#
+# The resulting environment with all dependencies and version numbers can then 
+# exported back to dev.yaml like so:
+#
+# conda env export > dev.yaml
+#
+name: KAPy-dev
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - black   #Linting
+  - ipykernel  #Used by vscode to enable interactive debugging
+  - jsonschema2md #Convert jsonschema to markdown documentation

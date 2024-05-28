@@ -6,33 +6,33 @@
 # can be downloaded from https://download.dmi.dk/Research_Projects/KAPy/
 # For instructions, see 
 
-domain:
-    xmin: -4
-    xmax: 2
-    ymin: 4
-    ymax: 12
 configurationTables:
     inputs:  'config/inputs.tsv'
     indicators: 'config/indicators.tsv'
     scenarios:  'config/scenarios.tsv'
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
-notebooks: 'workflow/notebooks/Output_overview.py.ipynb'
+dirs:
+    variables: 'results/1.variables'
+    indicators: 'results/2.indicators'
+    regridded: 'results/3.commmon_grid'
+    ensstats: 'results/4.ensstats'
+    arealstats: 'results/5.areal_statistics'
+    plots: 'results/6.plots'
 
 # Configuration options------------------------------------
 arealstats:
     calcForMembers: False
-dirs:
-    primVars: 'results/1.primVars'
-    bc: 'results/2.biascorrected_variables'
-    indicators: 'results/3.indicators'
-    regridded: 'results/4.commmon_grid'
-    ensstats: 'results/5.ensstats'
-    arealstats: 'results/6.areal_statistics'
-    notebooks: 'results/7.notebooks'
+cutouts:
+    method: 'lonlatbox'
+    xmin: -4
+    xmax: 2
+    ymin: 4
+    ymax: 12
 ensembles:
     upperPercentile: 90
     centralPercentile: 50
     lowerPercentile: 10
-primVars:  #Otherwise store as pickled Xarray objects
-    storeAsNetCDF: True
+outputGrid:
+    regriddingEngine: 'cdo'
+    cdoGriddes: './config/griddes.txt'
