@@ -13,7 +13,13 @@ from plotnine import *
 import pandas as pd
 import os
 import xarray as xr
+import matplotlib
 
+# Set default backend to workaround problems caused by the
+# default not being uniform across systems - in particular, we 
+# hit a problem with micromamba vs conda having different defaults.
+# This lead to a crashes when running in a non-Gui environment
+matplotlib.use('Agg')
 
 # Boxplot---------------------------------------------------------------------------
 """
@@ -22,7 +28,6 @@ srcFiles=list(wf['plots'].values())[0]
 srcFiles=['results/5.areal_statistics/101_CORDEX_rcp26_ensstats.csv',
           'results/5.areal_statistics/101_CORDEX_rcp85_ensstats.csv']
 """
-
 
 def makeBoxplot(config, indID, srcFiles, outFile=None):
     # Extract indicator info
@@ -91,7 +96,8 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
 
     # Output
     if outFile is not None:
-        p.save(outFile[0])
+        p.save(outFile[0],
+               verbose=False)
     return p
 
 
@@ -140,7 +146,8 @@ def makeSpatialplot(config, indID, srcFiles, outFile=None):
 
     # Output
     if outFile is not None:
-        p.save(outFile[0])
+        p.save(outFile[0],
+               verbose=False)
     return p
 
 
@@ -188,5 +195,6 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
     )
     # Output
     if outFile is not None:
-        p.save(outFile[0])
+        p.save(outFile[0],
+               verbose=False)
     return p
