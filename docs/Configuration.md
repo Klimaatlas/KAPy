@@ -1,14 +1,10 @@
 # Configuration of KAPy
 
-Configuration of KAPy is based around a series of YAML and TSV files that specify all of the necessary options. KAPy is built with the fundamental design philosophy that as much as possible should be configurable via configuration files, and with a minimal (preferably no) degree of hard-coding.
+ KAPy is built upon the fundamental design philosophy that as much as possible should be configurable via configuration files, and with a minimal (preferably no) degree of hard-coding. Configuration of KAPy takes place via a collection  of YAML and TSV files that specify all of the necessary options.
 
-The primary configuration file in KAPy is the `config.yaml`file. KAPy looks for this file in two locations and uses the first file found:
-* `./config.yaml`
-* `./config/config.yaml` 
+The primary configuration file in KAPy is the `config.yaml`file, found in `./config/config.yaml`. This choice of naming structure follows common conventions used in the Snakemake community. `config.yaml` also draws in configuration tables defining other configuration options, including inputs, indicators and variables. In practice, the user will work with all sets of configuration files. 
 
-`config.yaml` also draws in configuration tables defining other configuration options, including inputs, indicators and variables. In practice, the user will work with all sets of configuration files. 
-
-Configuration options are validated using JSON schemas, which can be found in the directory `./workflow/schemas/`. These files specify the allowed configuration options and also  contain the corresponding documentation. Markdown versions of these schema, including description of what each option does, can be found in the following files:
+Configuration options are validated using JSON schemas, which can be found in the directory `./workflow/schemas/`. These files specify the allowed configuration options and also  contain the corresponding documentation. Human-readbile versions of these schema, including description of what each option does, can be found in the following files:
 
 * [config.md](./configuration/config.md) Options for the primary configuration file, `config.yaml`
 * [indicators.md](./configuration/indicators.md) Indicator configuration table
