@@ -6,7 +6,6 @@ KAPy is based on a small set of fundamental technologies that form the core of t
 * snakemake - for workflow control
 * xarray - for storing and working with datasets. dask is use closely in conjunction with xarray
 * xclim - for generating climate indicies
-* cdo - the Climate Data Operators, for regridding and selecting data, amongst other functions.
 
 It is not necessary to be familar with all of these tools in order to be able to use KAPy - in principle it should be possible to simply configure it and run it. In reality, most users will anyway want to dive deeper into the code, and therefore require a working knowledge of many of these libraries. The following tutorials are suggested as good learning resources if you are not already familar with them - a basic familiarity with Python is also assumed.
 
@@ -33,9 +32,13 @@ Xclim provides a series of "pre-packaged" functions to calculate climate indicat
 
 * Xclim documentation - https://xclim.readthedocs.io/en/stable/
 
-## CDO
+## Additional tools
 
-The Climate Data Operators (CDO) is a large collection of tools for use in working with the outputs of climate models. KAPy uses a relatively limited set of functionality from what is available, with the major focus at the moment on cutting out and regridding data. More features may be incorporated in the future. The key resource for learning about CDO is the online documentation:
+The following tools also make an important contribution to the KAPy pipeline, but a detailed understanding of their mechanics is not necessary in most cases. 
 
-* CDO documentaiton - https://code.mpimet.mpg.de/projects/cdo/embedded/index.html
+* esgf-pyclient - for searching ESGF repositories. 
+* pydap for interfaceing with ESGF via the OpenDAP protocol
+* dask - helps spread the work across multiple processors, when available
+* R - a subset of KAPy components are coded in R, but the intention that these should be used as standalone tools
+
 

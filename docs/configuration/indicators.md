@@ -12,6 +12,6 @@
     - *string*
     - *array*
       - **Items** *(string)*
-- **`season`** *(string)*: Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons. Currently, only one season is supported - this will be modified in the future - see issue #36 https://github.com/Klimaatlas/KAPy/issues/36.
+- **`season`** *(string)*: Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons. Currently, only one season is supported - this will be modified in the future.
 - **`statistic`** *(string)*: Metric to be used to calculate the indicator. Must be one of: `["mean"]`.
 - **`time_binning`** *(string)*: Time bins over which indicators are calculated. In the case of choosing `periods`, the indicator will be calculated for all periods defined in the [periods configuration](periods.md) table. Must be one of: `["periods", "years", "months"]`.
