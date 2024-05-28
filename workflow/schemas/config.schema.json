@@ -1,136 +1,231 @@
 {
-  "title": "KAPy configuration options",
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Configuration schema for KAPy configuration objects. These configurations are usually stored in the `config.yaml` file in the root directory of the project.",
-  "type": "object",
-  "required": ["domain","configurationTables","arealstats","dirs","ensembles",    "primVars"],
-  "additionalProperties": false,
-  "properties": {
-    "domain": {
-      "description": "Defines the spatial region-of-interest that KAPy should perform the analysis over.",
-      "type": "object",
-      "required": ["xmin", "xmax",  "ymin", "ymax"],
-      "additionalProperties": false,
-      "properties": {
-        "xmin": { 
-            "description": "Western boundary of domain. ",
-            "type": "number"},
-        "xmax": { 
-            "description": "Eastern boundary of domain. ",
-            "type": "number"},
-        "ymin": { 
-            "description": "Southern boundary of domain. ",
-            "type": "number" },
-        "ymax": { 
-            "description": "Northern boundary of domain. ",
-            "type": "number" }
-      }
-    },
-    "configurationTables": {
-        "description": "Paths to configuration tables. See the documentation for each table separately",
-        "required": ["inputs","indicators","scenarios","periods","seasons"],
-         "additionalProperties": false,
-        "properties": {
-            "inputs": { 
-                "description": "Path to input configuration table, relative to working directory. See (inputs.md) for more detail.",
-                "type": "string"},
-            "indicators": {
-                "description": "Path to indicator configuration table, relative to working directory. See (indicators.md) for more detail.",
-                "type": "string" },
-            "scenarios": {
-                "description": "Path to scenario configuration table, relative to working directory. See (scenarios.md) for more detail.",
-                "type": "string" },
-            "periods": { 
-                "description": "Path to period configuration table, relative to working directory. See (periods.md) for more detail.",
-                "type": "string" },
-            "seasons": { 
-                "description": "Path to season configuration table, relative to working directory. See (seasons.md) for more detail.",
-                "type": "string" }}
-    },
-    "notebooks": { 
-        "description": "List of paths to Jupyter notebooks that should be compiled in the pipeline. Multiple notebooks can be specified using square-braces e.g. ['foo','bar']. If empty, no notebooks will be built.",
-      "oneOf": [
-        {
-          "type": ["string","null"]
+    "title": "KAPy configuration options",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Configuration schema for KAPy configuration objects. These configurations are usually stored in the `config.yaml` file.",
+    "type": "object",
+    "required": [
+        "configurationTables",
+        "outputGrid",
+        "arealstats",
+        "dirs",
+        "ensembles"
+    ],
+    "additionalProperties": true,
+    "properties": {
+        "configurationTables": {
+            "description": "Paths to configuration tables. See the documentation for each table separately",
+            "required": [
+                "inputs",
+                "indicators",
+                "scenarios",
+                "periods",
+                "seasons"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "inputs": {
+                    "description": "Path to input configuration table, relative to working directory. See [inputs.md](inputs.md) for more detail.",
+                    "type": "string"
+                },
+                "secondaryVars": {
+                    "description": "Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if omitted, no secondary variables will be generated",
+                    "type": "string"
+                },
+                "indicators": {
+                    "description": "Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail.",
+                    "type": "string"
+                },
+                "scenarios": {
+                    "description": "Path to scenario configuration table, relative to working directory. See [scenarios.md](scenarios.md) for more detail.",
+                    "type": "string"
+                },
+                "periods": {
+                    "description": "Path to period configuration table, relative to working directory. See [periods.md](periods.md) for more detail.",
+                    "type": "string"
+                },
+                "seasons": {
+                    "description": "Path to season configuration table, relative to working directory. See [seasons.md](seasons.md) for more detail.",
+                    "type": "string"
+                }
+            }
         },
-        {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minitems": 0
+        "dirs": {
+            "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items",
+            "type": "object",
+            "required": [
+                "variables",
+                "indicators",
+                "regridded",
+                "ensstats",
+                "arealstats",
+                "plots"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "variables": {
+                    "description": "Directory for storing variables.",
+                    "type": "string"
+                },
+                "indicators": {
+                    "description": "Directory for storing indicators.",
+                    "type": "string"
+                },
+                "regridded": {
+                    "description": "Directory for storing indicators regridded to a common grid.",
+                    "type": "string"
+                },
+                "ensstats": {
+                    "description": "Directory for storing ensemble statistics.",
+                    "type": "string"
+                },
+                "arealstats": {
+                    "description": "Directory for storing statistics calculated over areas.",
+                    "type": "string"
+                },
+                "plots": {
+                    "description": "Directory for storing output plots.",
+                    "type": "string"
+                }
+            }
+        },
+        "arealstats": {
+            "required": [
+                "calcForMembers"
+            ],
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+                "calcForMembers": {
+                    "description": "Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.",
+                    "type": "boolean"
+                }
+            }
+        },
+        "cutouts": {
+            "description": "Configures spatial-subsetting (cutting-out) of the input data.",
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "method"
+                    ],
+                    "additionalProperties": false,
+                    "description": "**None**. Omit the cutout step. All available data in the input files is processed.",
+                    "properties": {
+                        "method": {
+                            "type": "string",
+                            "enum": [
+                                "None"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "method",
+                        "xmin",
+                        "xmax",
+                        "ymin",
+                        "ymax"
+                    ],
+                    "additionalProperties": false,
+                    "description": "**lonlatbox**. Use the `sellonlatbox`operator from cdo to do the subsetting. Details of this operator can be found in the CDO documentation.",
+                    "properties": {
+                        "method": {
+                            "type": "string",
+                            "enum": [
+                                "lonlatbox"
+                            ]
+                        },
+                        "xmin": {
+                            "description": "Western boundary of cutout box",
+                            "type": "number"
+                        },
+                        "xmax": {
+                            "description": "Eastern boundary of cutout box",
+                            "type": "number"
+                        },
+                        "ymin": {
+                            "description": "Southern boundary of cutout box",
+                            "type": "number"
+                        },
+                        "ymax": {
+                            "description": "Northern boundary of cutout box",
+                            "type": "number"
+                        }
+                    }
+                }
+            ]
+        },
+        "ensembles": {
+            "description": "Specify the percentiles [0-100] calculated from the ensemble. We allow three values, corresponding to the upper and lower confidence limits, and the central value.",
+            "type": "object",
+            "required": [
+                "upperPercentile",
+                "centralPercentile",
+                "lowerPercentile"
+            ],
+            "additionalProperties": false,
+            "properties": {
+                "upperPercentile": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "exclusiveMaximum": 100
+                },
+                "centralPercentile": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "exclusiveMaximum": 100
+                },
+                "lowerPercentile": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "exclusiveMaximum": 100
+                }
+            }
+        },
+        "outputGrid": {
+            "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple approaches to regridding can be configured, as described below.",
+            "oneOf": [
+                {
+                    "type": "object",
+                    "required": [
+                        "regriddingEngine"
+                    ],
+                    "additionalProperties": false,
+                    "description": "**None**. Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid",
+                    "properties": {
+                        "regriddingEngine": {
+                            "type": "string",
+                            "enum": [
+                                "None"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "type": "object",
+                    "required": [
+                        "regriddingEngine",
+                        "cdoGriddes"
+                    ],
+                    "additionalProperties": false,
+                    "description": "**cdo**. Use the Climate Data Operators to do the regridding. For more information, see the CDO website, https://code.mpimet.mpg.de/projects/cdo. Installation of CDO is handled behind the scenes by conda as part of the KAPy environment setup - be aware that this may result in a different version of CDO being used to what you have by default. In the current configuration we default to bilinear interpolation (`remapbil`). If other operators are required, please file a feature request in GitHub.",
+                    "properties": {
+                        "regriddingEngine": {
+                            "type": "string",
+                            "enum": [
+                                "cdo"
+                            ]
+                        },
+                        "cdoGriddes": {
+                            "description": "Path to CDO grid descriptor, specifying the output grid. For more information see the CDO documentation, specifically section 1.5 about horizontal grids, section 2.12 about interpolation and Appendix D for examples of grid descriptors.",
+                            "type": "string"
+                        }
+                    }
+                }
+            ]
         }
-      ]
-    },
-    "arealstats": {
-      "required": ["calcForMembers"],
-      "additionalProperties": false,
-      "type": "object",
-      "properties": {
-        "calcForMembers": {
-            "description": "Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.",
-            "type": "boolean" }
-      }
-    },
-    "dirs": {
-        "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items",
-        "type": "object",
-      "required": ["primVars", "bc", "indicators", "regridded", "ensstats", "arealstats", "notebooks"],
-      "additionalProperties": false,
-        "properties": {
-            "primVars": { 
-                "description": "Directory for storing primary variables.",
-                "type": "string" },
-            "bc": { 
-                "description": "Directory for storing bias-corrected variables.",
-                "type": "string" },
-            "indicators": {
-                "description": "Directory for storing indicators variables.",
-                "type": "string" },
-            "regridded": {
-                "description": "Directory for storing indicators regridded to a common grid.",
-                "type": "string" },
-            "ensstats": { 
-                "description": "Directory for storing enssemble statistics.",
-                "type": "string" },
-            "arealstats": { 
-                "description": "Directory for storing statistics calculated over areas.",
-                "type": "string" },
-            "notebooks": {
-                "description": "Directory for storing compiled Jupyter notebooks.",
-                "type": "string" }
-      }
-    },
-    "ensembles": {
-        "description": "Specify the percentiles [0-100] calculated from the ensemble. We allow three values, corresponding to the upper and lower confidence limits, and the central value.",
-        "type": "object",
-        "required": ["upperPercentile", "centralPercentile", "lowerPercentile"],
-        "additionalProperties": false,
-        "properties": {
-            "upperPercentile": {
-                "type": "integer",
-                "exclusiveMinimum": 0,
-                "exclusiveMaximum": 100},
-            "centralPercentile": {
-                "type": "integer",
-                "exclusiveMinimum": 0,
-                "exclusiveMaximum": 100},
-            "lowerPercentile": { 
-                "type": "integer",
-                "exclusiveMinimum": 0,
-                "exclusiveMaximum": 100}
-      }
-    },
-    "primVars": {
-        "description": "Configuration options relating to the primary variables.",
-        "type": "object",
-        "required": ["storeAsNetCDF"],
-        "additionalProperties": false,
-        "properties": {
-            "storeAsNetCDF": {
-                "description": "Should the primary variables be stored as NetCDF files (`true`) or written as pickled versions of the internal xarray objects (`false`). The former work with intermediate tools, the later saves disk space.",
-                "type": "boolean" }
-      }
     }
-  }
 }

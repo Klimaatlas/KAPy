@@ -3,12 +3,23 @@
   "title": "KAPy indicator configuration",
   "description": "Configuration of indicators is set through a tab-separated table, with one row per indicator. The available configuration options are described here. All options are required",
   "type": "object",
-  "required": ["id", "name", "units", "variables", "season", "statistic", "time_binning"],
+  "required": [
+    "id",
+    "name",
+    "units",
+    "variables",
+    "season",
+    "statistic",
+    "time_binning"
+  ],
   "additionalProperties": false,
   "properties": {
     "id": {
       "description": "Identifier for the indicators. Must be unique.",
-      "type": ["string","integer"],
+      "type": [
+        "string",
+        "integer"
+      ],
       "unique": true
     },
     "name": {
@@ -36,18 +47,24 @@
       ]
     },
     "season": {
-        "description": "Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons. Currently, only one season is supported - this will be modified in the future.",
-        "type": "string"
+      "description": "Season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons. Currently, only one season is supported - this will be modified in the future - see issue #36 https://github.com/Klimaatlas/KAPy/issues/36",
+      "type": "string"
     },
     "statistic": {
       "description": "Metric to be used to calculate the indicator.",
-      "enum": ["mean"],
+      "enum": [
+        "mean"
+      ],
       "type": "string"
     },
     "time_binning": {
       "description": "Time bins over which indicators are calculated. In the case of choosing `periods`, the indicator will be calculated for all periods defined in the [periods configuration](periods.md) table.",
       "type": "string",
-      "enum": ["periods", "years", "months"]
+      "enum": [
+        "periods",
+        "years",
+        "months"
+      ]
     }
-    }
+  }
 }

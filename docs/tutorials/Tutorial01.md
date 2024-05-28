@@ -6,13 +6,13 @@ To familiarise yourself with KAPy via a minimum working example of setting up an
 
 ## Point of departure
 
-A configured fresh version of KAPy. See the "Getting Started" section of README.md for more on this.
+A configured fresh version of KAPy. See the "Getting Started" section of [README.md](../../README.md) for more on this.
 
 ## Instructions
 
 1. KAPy comes with the necessary configuration files already in place. Configuration files are stored in `./config`. Open this directory, either on the webpage or in your terminal, and note the files that are present. The primary configuration file `./config/config.yaml` provides general coordination, while the tabular configuration files (ending with `.tsv`) are spreadsheet-like tables that provide configuration of indvidiual aspects (e.g. inputs, indicators, scenarios etc).
   
-2. Open `./config/config.yaml` in a text viewer (e.g. `vi`, `less`) and browse through it. Note in particular the definition of the spatial domains, directories, and other miscellaneous options, together with links to the other configuration tables defining inputs, indicators etc.
+2. Open `./config/config.yaml` in a text viewer (e.g. `vi`, `less`) and browse through it. Note in particular the definition of the cutouts and grids, directories, and other miscellaneous options, together with links to the other configuration tables defining inputs, indicators etc.
 
 3. Now open one of these configuration tables e.g `./config/inputs.tsv`. You will see a range of options configured as columns, while each row corresponds to an individual input data source. Details of all options can be found in the [configuration documentation](./docs/Configuration.md). Open some of the other configuration tables as well to see the differences.
 
@@ -48,10 +48,10 @@ snakemake --cores 1
 
 12. Now have a look in `./results` and the subdirectories there. You will see that they have all be filled out with the corresponding files.
 
-13. A Jupyter notebook is used to give a quick overview of the results. Note that this is intended to be generic and work for all possible configurations - the plot that you actually want is most likely not there. Nevertheless, it does still provide a nice overview. Open the file `./results/7.notebooks/Output_overview.py.html` in e.g. a browser to view the results:
+13. KAPy produces a set of of "quick-look" plots that can be used to give a quick overview of the results. Note that these are intended to be generic and work for all possible configurations - the plot that you actually want is most likely not there. Nevertheless, it does still provide a way to get a quick overview of the results. Open the directory `./results/6.plots/` and browser through the files with an image viewer e.g. :
 
 ```
-firefox results/7.notebooks/Output_overview.py.html 
+eog .
 ```
 
 16. Ka pai! You've finished your first analysis in KAPy! You can learn more in the other [Tutorials](README.md) that follow on from this point.
