@@ -39,7 +39,7 @@ snakemake -n
 7. We can also review the revised DAG with indicator `102` incorporated. Open the file `dag_tutorial03.png` and compare it to the previously created DAG - you will see the addition of the `102_*`files, but that they are also derived from the same input files. Note also the borders around each file - a dashed line means that the file does not need to be rerun, whereas a solid line means that the file either doesn't exist or needs to be recreated to reflect the updates.
 
 ```
-snakemake notebooks --dag | dot -Tpng -Grankdir=LR > dag_tutorial03.png
+snakemake --dag | dot -Tpng -Grankdir=LR > dag_tutorial03.png
 ```
 
 8. Make it so.

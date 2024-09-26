@@ -26,7 +26,7 @@ snakemake -l
 4. Snakemake has a handy visualisation tool that lets you examine the DAG. Try running this command, and then open `dag.png` in a graphics viewer or browser. You should be able to see the basic workflow of the pipeline, starting at the left from the `primVar_files` that serve as inputs, to the `101_files` where the indicators are calculated, then aggregated into the ensemble stats (`ensstats`), then the `arealstats`, and then finally the output `plots`. This command uses the `dot` tool installed. If you don't have it installed, it can be installed in e.g. ubuntu as part of the `graphviz` package: `sudo apt install graphviz`. Make the DAG with the following command.
 
 ```
-snakemake notebooks --dag | dot -Tpng -Grankdir=LR > dag.png
+snakemake --dag | dot -Tpng -Grankdir=LR > dag.png
 ```
 
 5. Ok, let's do something a bit more concrete. A natural start is to run the pipeline again with the command below. What do you think is going to happen? And what actually happens this time?
@@ -40,7 +40,7 @@ snakemake --cores 1
 7. Ok. So let's say then that something needs to be done - maybe we have, for example, updated our input data with a new version. Part of the way that Snakemake monitors changes and dependencies is via the modification time of the files - a downstream file should be "younger" (i.e. have a more recent modification date) than an "older" upstream file. We can throw the pipeline out of balance by modifying the time of one of the source files with the `touch`command to make it appear brandnew:
 
 ```
-touch resources/CORDEX/tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v1_mon_209101-210012.nc 
+touch resources/CORDEX/tas_AFR-22-GHANA_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v1_mon_209101-210012.nc
 ```
 
 8. Snakemake will recognise this and want to update the pipeline. But, because it is smart (and lazy), it will only update the downstream files that are dependent on the input file. Try this:
