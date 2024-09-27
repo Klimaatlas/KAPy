@@ -2,7 +2,7 @@
 """
 #Debugging setup for VS Code
 import os
-os.chdir("..")
+os.chdir("workflow")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
@@ -25,8 +25,8 @@ matplotlib.use('Agg')
 """
 indID="101"
 srcFiles=list(wf['plots'].values())[0]
-srcFiles=['results/5.areal_statistics/101_CORDEX_rcp26_ensstats.csv',
-          'results/5.areal_statistics/101_CORDEX_rcp85_ensstats.csv']
+srcFiles=['results/5.areal_statistics/101_CORDEX_Ghana025_rcp26_ensstats.csv',
+          'results/5.areal_statistics/101_CORDEX_Ghana025_rcp85_ensstats.csv']
 """
 
 def makeBoxplot(config, indID, srcFiles, outFile=None):
@@ -40,7 +40,7 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         datIn = pd.read_csv(f)
         datIn["fname"] = os.path.basename(f)
         datIn["periodID"] = [str(x) for x in datIn["periodID"]]
-        datIn["scenario"] = datIn["fname"].str.extract("^.*?_.*?_(.*?)_.*$")
+        datIn["experiment"] = datIn["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
         dat += [datIn]
     datdf = pd.concat(dat)
 
@@ -57,13 +57,11 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         x["id"]: f"{x['name']}\n({x['start']}-{x['end']})"
         for i, x in periodTbl.iterrows()
     }
-    scTbl = pd.DataFrame.from_dict(config["scenarios"], orient="index")
-    scColourDict = {x["id"]: "#" + x["hexcolour"] for i, x in scTbl.iterrows()}
 
     # Now merge into dataframe and pivot for plotting
     pltLong = pd.merge(datdf, ptileTbl, on="percentiles", how="left")
     pltDatWide = pltLong.pivot_table(
-        index=["scenario", "periodID"], columns="ptileLbl", values="indicator"
+        index=["experiment", "periodID"], columns="ptileLbl", values="indicator"
     ).reset_index()
 
     # Now plot
@@ -72,7 +70,7 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         + geom_boxplot(
             mapping=aes(
                 x="periodID",
-                fill="scenario",
+                fill="experiment",
                 middle="centralPercentile",
                 ymin="lowerPercentile",
                 ymax="upperPercentile",
@@ -86,10 +84,9 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
             x="Period",
             y=f"Value ({thisInd['units']})",
             title=f"{thisInd['name']} ",
-            fill="Scenario",
+            fill="Experiment",
         )
         + scale_x_discrete(labels=periodLblDict)
-        + scale_fill_manual(values=scColourDict)
         + theme_bw()
         + theme(legend_position="bottom", panel_grid_major_x=element_blank())
     )
@@ -121,7 +118,7 @@ def makeSpatialplot(config, indID, srcFiles, outFile=None):
         change = thisdat.isel(periodID=-1) - thisdat.isel(periodID=0)
         changedf = change.indicator_mean.to_dataframe().reset_index()
         changedf["fname"] = os.path.basename(d)
-        changedf["scenario"] = changedf["fname"].str.extract("^.*?_.*?_(.*?)_.*$")
+        changedf["experiment"] = changedf["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
         datdf += [changedf]
     pltDat = pd.concat(datdf)
 
@@ -129,7 +126,7 @@ def makeSpatialplot(config, indID, srcFiles, outFile=None):
     p = (
         ggplot(pltDat, aes(x="longitude", y="latitude", fill="indicator_mean"))
         + geom_raster()
-        + facet_wrap("~scenario")
+        + facet_wrap("~experiment")
         + theme_bw()
         + labs(
             x="",
@@ -167,21 +164,17 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
     for f in srcFiles:
         datIn = pd.read_csv(f)
         datIn["fname"] = os.path.basename(f)
-        datIn["scenario"] = datIn["fname"].str.extract("^.*?_.*?_(.*?)_.*$")
+        datIn["experiment"] = datIn["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
         dat += [datIn]
     datdf = pd.concat(dat)
     datdf["datetime"] = pd.to_datetime(datdf["time"])
-
-    # Get metafra data from configuration
-    scTbl = pd.DataFrame.from_dict(config["scenarios"], orient="index")
-    scColourDict = {x["id"]: "#" + x["hexcolour"] for i, x in scTbl.iterrows()}
 
     # Now select data for plotting - we only plot the central value, not the full range
     pltDat = datdf[datdf["percentiles"] == config["ensembles"]["centralPercentile"]]
 
     # Now plot
     p = (
-        ggplot(pltDat, aes(x="datetime", y="indicator", colour="scenario"))
+        ggplot(pltDat, aes(x="datetime", y="indicator", colour="experiment"))
         + geom_line()
         + labs(
             x="",
@@ -189,7 +182,6 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
             title=f"{thisInd['name']} ",
             colour="Scenario",
         )
-        + scale_colour_manual(values=scColourDict)
         + theme_bw()
         + theme(legend_position="bottom")
     )

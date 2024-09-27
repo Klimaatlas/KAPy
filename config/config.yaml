@@ -9,7 +9,6 @@
 configurationTables:
     inputs:  'config/inputs.tsv'
     indicators: 'config/indicators.tsv'
-    scenarios:  'config/scenarios.tsv'
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
 dirs:
@@ -22,7 +21,7 @@ dirs:
 
 # Configuration options------------------------------------
 arealstats:
-    calcForMembers: False
+    calcForMembers: True
 cutouts:
     method: 'lonlatbox'
     xmin: -4
@@ -35,4 +34,8 @@ ensembles:
     lowerPercentile: 10
 outputGrid:
     regriddingEngine: 'cdo'
+    gridName: 'Ghana025'
     cdoGriddes: './config/griddes.txt'
+processing:
+    picklePrimaryVariables: False
+    

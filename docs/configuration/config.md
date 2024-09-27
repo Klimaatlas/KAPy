@@ -8,7 +8,6 @@
   - **`inputs`** *(string, required)*: Path to input configuration table, relative to working directory. See [inputs.md](inputs.md) for more detail.
   - **`secondaryVars`** *(string)*: Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if omitted, no secondary variables will be generated.
   - **`indicators`** *(string, required)*: Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail.
-  - **`scenarios`** *(string, required)*: Path to scenario configuration table, relative to working directory. See [scenarios.md](scenarios.md) for more detail.
   - **`periods`** *(string, required)*: Path to period configuration table, relative to working directory. See [periods.md](periods.md) for more detail.
   - **`seasons`** *(string, required)*: Path to season configuration table, relative to working directory. See [seasons.md](seasons.md) for more detail.
 - **`dirs`** *(object)*: Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items. Cannot contain additional properties.
@@ -40,4 +39,7 @@
       - **`regriddingEngine`** *(string, required)*: Must be one of: `["None"]`.
     - *object*: **cdo**. Use the Climate Data Operators to do the regridding. For more information, see the CDO website, https://code.mpimet.mpg.de/projects/cdo. Installation of CDO is handled behind the scenes by conda as part of the KAPy environment setup - be aware that this may result in a different version of CDO being used to what you have by default. In the current configuration we default to bilinear interpolation (`remapbil`). If other operators are required, please file a feature request in GitHub. Cannot contain additional properties.
       - **`regriddingEngine`** *(string, required)*: Must be one of: `["cdo"]`.
+      - **`gridName`** *(string, required)*: String giving the name of the grid to be used in regridding filenames.
       - **`cdoGriddes`** *(string, required)*: Path to CDO grid descriptor, specifying the output grid. For more information see the CDO documentation, specifically section 1.5 about horizontal grids, section 2.12 about interpolation and Appendix D for examples of grid descriptors.
+- **`processing`** *(object)*: Cannot contain additional properties.
+  - **`picklePrimaryVariables`** *(boolean, required)*: Should the the primary variables be stored as 'pickled' xarray objects (`True`) or written out to disk as NetCDF files (`False`).

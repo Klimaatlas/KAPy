@@ -1,3 +1,3 @@
-id	srcName	varName	path	stemRegex	internalVarName	hasScenarios	applyPreprocessor	preprocessorPath	preprocessorFunction
-CORDEX-tas	CORDEX	tas	resources/CORDEX/tas_*	^tas_(.*)_.*?.nc$	tas	TRUE	FALSE		
-#ERA5-tas	ERA5	tas	resources/ERA5_monthly/t2m_ERA5_monthly.nc	^(.*).nc$	t2m	FALSE	FALSE		
+id	varID	srcID	path	internalVarName	fieldSeparator	gridField	experimentField	commonExperimentID	ensMemberFields	importScriptPath	importScriptFunction
+CORDEX-tas	tas	CORDEX	resources/CORDEX/tas_*	tas	_	3	5	historical	4,6,7,8,9,3		
+ERA5	tas	ERA5	resources/ERA5_monthly/t2m_ERA5_monthly.nc	t2m							

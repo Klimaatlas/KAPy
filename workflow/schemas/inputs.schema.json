@@ -5,62 +5,75 @@
   "type": "object",
   "required": [
     "id",
-    "srcName",
-    "varName",
-    "path",
-    "stemRegex",
-    "internalVarName",
-    "hasScenarios",
-    "applyPreprocessor"
+    "varID", 
+    "srcID", 
+    "path", 
+    "internalVarName", 
+    "gridField", 
+    "experimentField", 
+    "commonExperimentID", 
+    "importScriptPath",
+    "importScriptFunction"
   ],
   "additionalProperties": false,
   "properties": {
     "id": {
-      "description": "Identifier for the input. Must be unique. It is usually easiest to join the srcName and varName together into one string.",
       "type": "string",
-      "unique": true
+      "description": "A unique id for this dataset."
     },
-    "srcName": {
-      "description": "The name of the data source e.g CORDEX, ERA5. Need not be unique. Is used to group related variables from the same datasource together further in the analysis (e.g. tas and pr from ERA5). ",
-      "type": "string"
+    "varID": {
+      "type": "string",
+      "description": "The ID of the variable contained in this dataset. While there is no enforcement of naming conventions in KAPy, the variable names should anyway be standardised across the entire configuration and across input datasets. For example, both ERA5 and CORDEX provide surface temperature, but with different internal variable names in the input files - to ensure that they can be matched together, they should both be assigned the varName `tas`."
     },
-    "varName": {
-      "description": "The name of the variable contained in this dataset. While there is no enforcement of naming conventions in KAPy, the variable names should anyway be standardised across the entire configuration and across input datasets. For example, both ERA5 and CORDEX provide surface temperature, but with different internal variable names in the input files - to ensure that they can be matched together, they should both be assigned the varName `tas`.",
-      "type": "string"
+    "srcID": {
+      "type": "string",
+      "description": "The ID of the data source e.g CORDEX, ERA5. Need not be unique. Is used to group related variables from the same datasource together further in the analysis (e.g. tas and pr from ERA5). "
     },
     "path": {
-      "description": "Path to input files, relative to the working directory. Glob-matching (e.g. `./resources/CORDEX/tas_*`) can be used when then input covers multiple files  and/or there are multiple variable types in the same directory.",
-      "type": "string"
-    },
-    "stemRegex": {
-      "description": "A regular expression used to identify how files should be grouped together. Climate models outputs are often split into timeslices that need to be joined back together before use. This regular expression can be used to identify the parts of a filename (the 'stem' in KAPy language) that act as unique identifiers for the data source, and can therefore be used as a basis for grouping. Stems are identified as matching group, in brackets. e.g. `^tas_(.*)_.*?.nc$`. Note that scenario (or 'experiment') identifiers are handled separately, and should be included as part of the regex. Dates and timestamps, on the other hand, should be excluded.",
-      "type": "string"
+      "type": "string",
+      "description": "Path to input files, relative to the working directory. Glob-matching (e.g. `./resources/CORDEX/tas_*`) can be used when the input covers multiple files and/or there are multiple variable types in the same directory."
     },
     "internalVarName": {
-      "description": "The internal variable name stored within the input file that corresponds to varName. For example, in ERA5 files the internal variable name for surface temperature is `t2m`.",
-      "type": "string"
+      "type": "string",
+      "description": "The internal variable name used within the input file for the variable of interest. For example, in ERA5 files the internal variable name for surface temperature is `t2m` whereas in CORDEX is is `tas`."
     },
-    "hasScenarios": {
-      "description": "Indicates whether the input source has emissions scenarios associated with it. If so, the [scenario configuration table](scenarios.md) will used to further group input files together for this input source.",
-      "type": "boolean"
+    "fieldSeparator": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1,
+      "description": "Character separating fields in the input file names. Most often an underscore character '_'. Currently limited to a single character."
     },
-    "applyPreprocessor": {
-      "description": "Allows application of a preprocessing script to tidy inputs before they are written to disk as primVars. Different preprocessors can be used for different applications",
-      "type": "boolean"
+    "gridField": {
+      "type": "string",
+      "pattern": "^\\d*$",
+      "description": "Number of the field in the filename representing grid information e.g. for the file `tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_day_20360101-20401231.nc`, the second field (`AFR-22`) is the grid description and this parameter would therefore be set to 2. If not specified, the grid field will be given the code `native-grid`. It can be a good idea to also include the grid code in the ensember member codes, when the same model can be run with multiple grids. 1-based indexing is assumed.",
+      "default": null
     },
-    "preprocessorPath": {
-      "description": "Path to the script containing the preprocessor",
-      "type": [
-        "null",
-        "string"
-      ]
+    "experimentField": {
+      "type": "string",
+      "pattern": "^\\d*$",
+      "description": "Number of the field in the filename to be used for forming dataseries based on scenarios e.g. for the file `tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_day_20360101-20401231.nc`, the fourth field (`rcp85`) contains the emissions scenario code, and this parameter would then be set to 4. 1-based indexing is assumed.",
+      "default": null
     },
-    "preprocessorFunction": {
-      "description": "Name of the preprocessor function to apply.",
-      "type": [
-        "null",
-        "string"
-      ]
+    "commonExperimentID": {
+      "type": ["string","null"],
+      "description": "Many climate experiments, such as CMIP, involve splitting time into separate experiments e.g. a `historical` experiment that runs to 2005 and then the `rcp26` and `rcp85` scenario experiments that start from 2006. This field provides the name for the experiment that is common to all others (in this case `historical`) All (other) values of the `experimentField` will be concatenated with this experiment to produce one contiguous *dataseries*. Omission of this parameter will disable this feature, and all experiments will be processed individually.",
+      "default": null
+    },
+    "ensMemberFields": {
+      "type": ["string","null"],
+      "description": "Comma-separated list of integers representing the fields to join together to make the *ensemble member identifier*. Including the grid descriptor in this configuration is often a good idea, when the same model can be run on two different grids. 1-based indexing is assumed.",
+      "default": null
+    },
+    "importScriptPath": {
+      "type": ["string", "null"],
+      "description": "Path to the custom import script. Use this option to enable useage of a custom script to import data before being written to disk as primVars. If empty, then the default import system in KAPy will be used.",
+      "default": null
+    },
+    "importScriptFunction": {
+      "type": ["string", "null"],
+      "description": "Function in the custom import script to be used. Must be supplied if `importScriptPath` is present.",
+      "default": null
     }
   }
 }

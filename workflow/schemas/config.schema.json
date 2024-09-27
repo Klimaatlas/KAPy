@@ -8,7 +8,8 @@
         "outputGrid",
         "arealstats",
         "dirs",
-        "ensembles"
+        "ensembles",
+        "processing"
     ],
     "additionalProperties": true,
     "properties": {
@@ -17,7 +18,6 @@
             "required": [
                 "inputs",
                 "indicators",
-                "scenarios",
                 "periods",
                 "seasons"
             ],
@@ -33,10 +33,6 @@
                 },
                 "indicators": {
                     "description": "Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail.",
-                    "type": "string"
-                },
-                "scenarios": {
-                    "description": "Path to scenario configuration table, relative to working directory. See [scenarios.md](scenarios.md) for more detail.",
                     "type": "string"
                 },
                 "periods": {
@@ -208,6 +204,7 @@
                     "type": "object",
                     "required": [
                         "regriddingEngine",
+                        "gridName",
                         "cdoGriddes"
                     ],
                     "additionalProperties": false,
@@ -219,6 +216,10 @@
                                 "cdo"
                             ]
                         },
+                        "gridName": {
+                            "description": "String giving the name of the grid to be used in regridding filenames.",
+                            "type": "string"
+                        },
                         "cdoGriddes": {
                             "description": "Path to CDO grid descriptor, specifying the output grid. For more information see the CDO documentation, specifically section 1.5 about horizontal grids, section 2.12 about interpolation and Appendix D for examples of grid descriptors.",
                             "type": "string"
@@ -226,6 +227,19 @@
                     }
                 }
             ]
+        }, 
+        "processing": {
+            "required": [
+                "picklePrimaryVariables"
+            ],
+            "additionalProperties": false,
+            "type": "object",
+            "properties": {
+                "picklePrimaryVariables": {
+                    "description": "Should the the primary variables be stored as 'pickled' xarray objects (`True`) or written out to disk as NetCDF files (`False`).",
+                    "type": "boolean"
+                }
+            }
         }
     }
 }

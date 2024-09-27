@@ -27,7 +27,7 @@ wf=KAPy.getWorkflow(config)
 # Primary Variables---------------------------------
 #Primary variable singular rule
 def primaryVar_singular_rule(thisID):
-    thisVarName=config['inputs'][thisID]['varName']
+    thisVarName=config['inputs'][thisID]['varID']
     rule:  
         name: f'primaryVar_{thisID}_files'
         output:
@@ -51,9 +51,9 @@ def primaryVar_plural_rule(thisID):
         input:
             list(wf['primVars'][thisID].keys())
             
-for inpID in wf['primVars'].keys():
-    primaryVar_singular_rule(inpID)
-    primaryVar_plural_rule(inpID)
+for pvID in wf['primVars'].keys():
+    primaryVar_singular_rule(pvID)
+    primaryVar_plural_rule(pvID)
 
 #Run all indicators    
 rule primaryVars:
@@ -97,58 +97,9 @@ rule secondaryVars:
     input:
         [item for thisVar in wf['secondaryVars'].values() for item in thisVar['files'] ]
         
-
-"""
-#Variables---------------------------------
-#Rules for primary and secondary variables can be generated using a generic set of rules
-#Singular rule
-def var_singular_rule(varType,thisID):
-    rule:  
-        name: f'{varType}_{thisID}_files'
-        output:
-            os.path.join(outDirs[varType],"{varFname}")
-        input:
-            lambda wildcards: 
-                wf[varType][thisID][ os.path.join(outDirs[varType],wildcards.varFname)] \
-                if varType=="primVar" else \
-                wf[varType][thisID][ os.path.join(outDirs[varType],wildcards.varFname)].values()
-        run:
-            if varType=="primVar":
-                KAPy.buildPrimVar(config=config,
-                                         inFiles=input,
-                                         outFile=output,
-                                         inpID=thisID)
-            else:
-                KAPy.buildDerivedVar(config=config,
-                                         inFiles=input,
-                                         outFile=output,
-                                         inpID=config[varType][thisID])
-
-#Plural rule
-def var_plural_rule(varType,thisID):
-    rule:
-        name: f'{varType}_{thisID}'
-        input:
-            list(wf[varType][thisID].keys())
-            
-#Lumped rule
-def var_lumped(varType):
-    rule:  
-        name: f'{varType}'
-        input:
-            [list(thisVar.keys()) for thisVar in wf[varType].values()]
-            
-for varType in ['primVars','secVars']:
-    var_lumped(varType)
-    for varID in wf[varType].keys():
-        var_singular_rule(varType,varID)
-        var_plural_rule(varType,varID)
-
-"""
         
 # Bias correction -------------------
 # TODO
-
 
 # Indicators ---------------------------------
 # Create a loop over the indicators that defines the singular and plural rules
@@ -196,15 +147,18 @@ rule indicators:
 if config['outputGrid']['regriddingEngine']!='None':
     rule regrid:
         input:
-            wf['regridded']['files']
+            list(wf['regridded'].keys())
 
     rule regrid_file:
         output:
-            os.path.join(outDirs['regridded'],"{indID}","{stem}.nc")
+            this=os.path.join(outDirs['regridded'],"{indID}","{stem}.nc")
         input:
-            os.path.join(outDirs['indicators'],"{indID}","{stem}.nc")
+            lambda wildcards: wf['regridded'][os.path.join(outDirs['regridded'],
+                                                           wildcards.indID,
+                                                           wildcards.stem+".nc")]
         run:
             KAPy.regrid(config,input,output)
+
 
 # Enssemble Statistics ---------------------------------
 # Now we can combine them into ensembles

@@ -25,7 +25,7 @@ def readConfig(configfile):
     else:
         sys.exit(
             f"Cannot find configuration file: {configfile}. "
-            + "Working directory: '{os.getcwd()}'"
+            + f"Working directory: '{os.getcwd()}'"
         )
     return cfg
 
@@ -62,26 +62,23 @@ def validateConfig(config):
     # is defined in the following table
     tabularCfg = {
         "indicators": {"listCols": [], "dictCols": [], "schema": "indicators"},
-        "inputs": {"listCols": [], "dictCols": [], "schema": "inputs"},
-        "scenarios": {
-            "listCols": ["scenarioStrings"],
-            "dictCols": [],
-            "schema": "scenarios",
-        },
+        "inputs": {"listCols": ['ensMemberFields'], "dictCols": [], "schema": "inputs"},
         "periods": {"listCols": [], "dictCols": [], "schema": "periods"},
         "seasons": {"listCols": ["months"], "dictCols": [], "schema": "seasons"},
         "secondaryVars": {
             "listCols": ["inputVars", "outputVars"],
             "dictCols": ["additionalArgs"],
             "schema": "derivedVars",
-        },
+        }
     }
     for thisTblKey, theseVals in tabularCfg.items():
         # Load the variables that are defined as tabular configurations (if they exist)
         if not thisTblKey in config["configurationTables"]:
             break
         thisCfgFile = config["configurationTables"][thisTblKey]
-        thisTbl = pd.read_csv(thisCfgFile, sep="\t", comment="#")
+        thisTbl = pd.read_csv(thisCfgFile, sep="\t", 
+                              comment="#",
+                              keep_default_na=False)
         # We allow some columns to be defined here as lists, but these need to be
         # parsed before we can actually use them for something
         for col in theseVals["listCols"]:

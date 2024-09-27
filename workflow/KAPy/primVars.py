@@ -58,8 +58,8 @@ def buildPrimVar(config, inFiles, outFile, inpID):
     dsIn = xr.combine_by_coords(dsList, combine_attrs="drop_conflicts")
 
     # Select the desired variable and rename it
-    ds = dsIn.rename({thisInp["internalVarName"]: thisInp["varName"]})
-    da = ds[thisInp["varName"]]  # Convert to dataarray
+    ds = dsIn.rename({thisInp["internalVarName"]: thisInp["varID"]})
+    da = ds[thisInp["varID"]]  # Convert to dataarray
 
     # Drop degenerate dimensions. If any remain, throw an error
     da = da.squeeze()
@@ -71,13 +71,13 @@ def buildPrimVar(config, inFiles, outFile, inpID):
         )
 
     # Apply additional preprocessing scripts
-    if thisInp["applyPreprocessor"]:
+    if thisInp["importScriptPath"]!='':
         thisSpec = importlib.util.spec_from_file_location(
-            "customScript", thisInp["preprocessorPath"]
+            "customScript", thisInp["importScriptPath"]
         )
         thisModule = importlib.util.module_from_spec(thisSpec)
         thisSpec.loader.exec_module(thisModule)
-        ppFn = getattr(thisModule, thisInp["preprocessorFunction"])
+        ppFn = getattr(thisModule, thisInp["importScriptFunction"])
         da = ppFn(da)  # Assume no input arguments
 
     # Write the dataset object to disk, depending on the configuration

@@ -7,6 +7,7 @@ os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")
+thisInp=config['inputs']['CORDEX-tas']
 """
 
 import sys
@@ -14,17 +15,6 @@ import os
 import pandas as pd
 import glob
 import re
-
-
-def filelistToDataframe(flist):
-    # Converts a list of file paths to a dataframe, with metadata extract
-    thisTbl = pd.DataFrame(flist, columns=["path"])
-    thisTbl["fname"] = [os.path.basename(p) for p in thisTbl["path"]]
-    thisTbl["varName"] = thisTbl["fname"].str.extract("^(.*?)_.*$")
-    thisTbl["src"] = thisTbl["fname"].str.extract("^.*?_(.*?)_.*$")
-    thisTbl["stems"] = thisTbl["fname"].str.extract("^.*?_.*?_(.*).(?:nc|pkl)$")
-    return thisTbl
-
 
 def getWorkflow(config):
     """
@@ -35,7 +25,6 @@ def getWorkflow(config):
     # Extract specific configurations
     inp = config["inputs"]
     ind = config["indicators"]
-    sc = config["scenarios"]
     outDirs = config["dirs"]
 
     # Primary Variables ---------------------------------------------------------------
@@ -46,76 +35,128 @@ def getWorkflow(config):
     pvDict = {}
     for thisKey, thisInp in inp.items():
         # Get file list
-        inpTbl = pd.DataFrame(glob.glob(thisInp["path"]), columns=["inpPath"])
-        # Make into table and extract stems
-        inpTbl["stems"] = [
-            re.search(thisInp["stemRegex"], os.path.basename(x)).group(1)
-            for x in inpTbl["inpPath"]
-        ]
-        # Process inputs that have scenarios first
-        pvList = []
-        if thisInp["hasScenarios"]:
-            for thisSc in sc.values():
-                # Get files that match experiments first
-                scenarioRegex = "|".join(thisSc["scenarioStrings"])
-                inThisScenario = inpTbl["stems"].str.contains(scenarioRegex)
-                theseFiles = inpTbl[
-                    inThisScenario
-                ].copy()  # Explicit copy to avoid SettingWithCopyWarning
-                # Iterate over scenario Strings and test for presence.
-                for s in thisSc["scenarioStrings"]:
-                    theseFiles[s] = theseFiles["stems"].str.contains(s)
-                # Strip the scenario string out of the stem
-                theseFiles["stemsNoScen"] = theseFiles["stems"].str.replace(
-                    scenarioRegex, "_", regex=True
-                )
-                # We aggregate over the scenario-free stems, and drop rows where we we
-                # don't have all scenarios represented
-                aggDict = {
-                    s: lambda x: True if any(x) else None
-                    for s in thisSc["scenarioStrings"]
-                }
-                aggDict["inpPath"] = lambda x: list(x)
-                validStems = theseFiles.groupby("stemsNoScen").agg(aggDict)
-                validStems = validStems.dropna()
-                # Generate the primary variable filename
-                pvFnames = validStems.reset_index()[["stemsNoScen", "inpPath"]].explode(
-                    "inpPath"
-                )
-                pvFnames["pvFname"] = (
-                    f"{thisInp['varName']}_{thisInp['srcName']}_{thisSc['id']}_"
-                    + pvFnames["stemsNoScen"]
-                )
-                pvList += [pvFnames]
+        inpTbl = pd.DataFrame(glob.glob(thisInp["path"]), columns=["inPath"])
+        inpTbl['inFname']=[os.path.basename(p) for p in inpTbl['inPath']]
+
+        #First, handle case where we don't find any files. We could ignore it,
+        # but it's best to throw an error
+        if len(inpTbl)==0:
+            sys.exit(f'No files found for input path "{thisInp["path"]}"')
+        
+        # If we only get one file, then there's not really much to do - we're
+        # going to use that file more or less directly. Handle that case first.
+        elif len(inpTbl)==1:
+            #Set output filename, setting the file extension manually.
+            pvTbl=inpTbl
+            pvTbl['pvFname']= \
+                    f"{thisInp['varID']}_{thisInp['srcID']}_native-grid_no-expt_" + \
+                    os.path.splitext(pvTbl['inFname'][0])[0] + '.nc'
+
+        # Else multiple hits detected that need to be handled.
         else:
-            inpTbl["pvFname"] = (
-                f"{thisInp['varName']}_{thisInp['srcName']}_" + inpTbl["stems"]
-            )
-            pvList += [inpTbl]
+            # Handling multiple files requires some information from the filenames, 
+            # and therefore the fieldSeparator needs to be defined. If not, throw an error
+            if thisInp['fieldSeparator']=='':
+                sys.exit(f'fieldSeparator is not defined for "{thisInp['varID']}-{thisInp['srcID']}" ' + \
+                         f'but {len(inpTbl)} files were detected.')
+
+            # Split filenames into columns and extract predefined elements
+            inpTbl['split']=inpTbl['inFname'].str.split(thisInp['fieldSeparator'])
+            inpTbl['grid']=[f[int(thisInp['gridField'])-1] for f in inpTbl['split']]
+            inpTbl['experiment']=[f[int(thisInp['experimentField'])-1] for f in inpTbl['split']]
+            ensMemberFieldsIdxs = [int(i)-1 for i in thisInp['ensMemberFields']]
+            inpTbl['ensMemberID']=["_".join([f[i] for i in ensMemberFieldsIdxs]) for f in inpTbl['split']]
+
+            # Deal with the issue around the definition of a common experiment
+            if thisInp["commonExperimentID"]=='':
+                #If a commonExperiment is not defined, then we just handle each
+                #experiment individually
+                #Form the corresponding filename. Don't forget to add the .nc
+                inpTbl['pvFname']= \
+                    f"{thisInp['varID']}_{thisInp['srcID']}_" + \
+                    inpTbl['grid'] +"_" + inpTbl['experiment'] + "_" + \
+                    inpTbl['ensMemberID'] +".nc"
+
+                # Store results
+                pvTbl = inpTbl[['pvFname','inPath']]
+
+            # Else, handle the more complex case where we have defined a common experiment
+            else:
+                #Split table into commonExperiment and other Experiments
+                commonExptTable=inpTbl[inpTbl['experiment'].isin([thisInp['commonExperimentID']])].copy()
+                otherExptTable=inpTbl[~inpTbl['experiment'].isin([thisInp['commonExperimentID']])]
+
+                #Get list of other experiments
+                otherExptList=otherExptTable['experiment'].unique()
+
+                #Setup storage and  loop over the experiments
+                pvList = []
+                for thisExpt in otherExptList:
+                    # Get files that are either in the experiment of interest first
+                    theseExptFiles=inpTbl[inpTbl['experiment'].isin([thisExpt])].copy()
+
+                    #Forming the corresponding filename. Don't forget to add the .nc
+                    theseExptFiles['pvFname']= \
+                        f"{thisInp['varID']}_{thisInp['srcID']}_" + \
+                        theseExptFiles['grid'] +"_" + thisExpt + "_" + \
+                        theseExptFiles['ensMemberID'] +".nc"
+                    
+                    #Now do the same for the commonExpt - using the experiment
+                    #naming from thisExpt (and not the native commonExperimentID)
+                    commonExptTable['pvFname']= \
+                        f"{thisInp['varID']}_{thisInp['srcID']}_" + \
+                        commonExptTable['grid'] +"_" + thisExpt + "_" + \
+                        commonExptTable['ensMemberID'] +".nc"
+                    
+                    #Now select the files from the commonExpt that are also in the
+                    #otherExperiment table. This makes sure that we only add
+                    #commonExpt ensemble members that have corresponding files
+                    #in the given experiment (thisExpt). Then concat.
+                    theseCommonExptFiles=commonExptTable[
+                        commonExptTable['pvFname'].isin(theseExptFiles['pvFname'])
+                    ]
+                    combinedFileTbl=pd.concat([theseExptFiles,theseCommonExptFiles])
+
+                    # Store results
+                    pvList += [combinedFileTbl[['pvFname','inPath']]]
+                
+                #Concatenate into the final table
+                pvTbl = pd.concat(pvList)
 
         # Build the full filename and tidy up the output into a dict
-        pvTbl = pd.concat(pvList)
         pvTbl["pvPath"] = [
-            os.path.join(outDirs["variables"], thisInp["varName"], f)
+            os.path.join(outDirs["variables"], thisInp["varID"], f)
             for f in pvTbl["pvFname"]
         ]
-        pvTbl["pvPath"] = (
-            pvTbl["pvPath"] + ".nc"
-        )  # Store as NetCDF - alt. pkl in the future.
 
-        pvDict[thisKey] = (
+        # If we're pickling, name the output files accordingly
+        if config['processing']['picklePrimaryVariables']:
+            pvTbl["pvPath"] = pvTbl["pvPath"] + ".pkl"
+        
+        #Prior to adding to the pvDict, check that we have unique keys
+        if any(pvTbl['pvPath'].isin(pvDict.keys())):
+            sys.exit("Duplicate keys found in generating primary variables.")
+
+        #Finally, make the dict
+        pvDict[thisKey] =(
             pvTbl.groupby("pvPath")
-            .apply(lambda x: list(x["inpPath"]), include_groups=False)
+            .apply(lambda x: list(x["inPath"]), include_groups=False)
             .to_dict()
         )
 
     # Secondary Variables---------------------------------------------
-    # Setup the variable palette. As we add each addition variable, we concatentate it onto
-    # the variable palette
-    varList = [k for v in pvDict.values() for k in v.keys()]
+    # Setup the variable palette as a tabular list of files. As we add each
+    # additional variable, we concatentate it onto the variable palette.
+    varPal = pd.DataFrame([k for v in pvDict.values() for k in v.keys()], 
+                          columns=["path"])
+    varPal["fname"] = [os.path.basename(p) for p in varPal["path"]]
+    varPal["varID"] = varPal["fname"].str.extract("^([^_]+)_.*$")
+    varPal["srcID"] = varPal["fname"].str.extract("^[^_]+_([^_]+)_.*$")
+    varPal["stems"] = varPal["fname"].str.extract("^[^_]+_[^_]+_(.+).nc(?:.pkl)?$")
     svDict = {}
     # Iterate over secondary variables if they are request
     if "secondaryVars" in config:
+        sys.exit("Not tested. TODO")
         for thisSV in config["secondaryVars"].values():
             # Convert varList into a workable format
             varTbl = filelistToDataframe(varList)
@@ -148,18 +189,16 @@ def getWorkflow(config):
             varList += validPaths
 
     # Indicators -----------------------------------------------------
-    # Get the full variable palette from varList
-    varPal = filelistToDataframe(varList)
     # Loop over indicators and get required files
-    # Currently only matching one variable. TODO: Add multiple
+    # Currently only matching one variable. TODO: Allow multiple variables
     indDict = {}
     for indKey, thisInd in ind.items():
-        useThese = varPal["varName"] == thisInd["variables"]
+        useThese = varPal["varID"] == thisInd["variables"]
         selVars = varPal[useThese]
         validPaths = [
             os.path.join(outDirs["indicators"], str(thisInd["id"]), fName)
             for fName in f"{thisInd['id']}_"
-            + selVars["src"]
+            + selVars["srcID"]
             + "_"
             + selVars["stems"]
             + ".nc"
@@ -179,33 +218,37 @@ def getWorkflow(config):
             os.path.basename(os.path.dirname(f)) for f in rgTbl["indPath"]
         ]
         rgTbl["indFname"] = [os.path.basename(p) for p in rgTbl["indPath"]]
+        #Replace grid code in the filename with the appropriate one
+        rgTbl['rgFname'] = \
+            rgTbl["indFname"].str.replace(r'^([^_]+_[^_]+_)[^_]+(_.*$)',
+                                        r'\1'+config['outputGrid']['gridName']+r'\2',
+                                        regex=True)
+        #Build the rest of the paths
         rgTbl["rgPath"] = [
-            os.path.join(outDirs["regridded"], f) for f in rgTbl["indFname"]
-        ]
-        validPaths = [
-            os.path.join(outDirs["regridded"], rw["indID"], rw["indFname"])
+            os.path.join(outDirs["regridded"], rw["indID"], rw["rgFname"])
             for idx, rw in rgTbl.iterrows()
         ]
+        
         # Extract the dict
-        rgDict = {"files": validPaths}
+        rgDict = {rw["rgPath"]: [rw["indPath"]] for idx, rw in rgTbl.iterrows()}
     else:
-        rgDict = {"files": []}
+        rgDict = {}
 
     # Ensembles----------------------------------------------------------------------------
     # Build ensemble membership - the exact source here depends on whether
     # we are doing regridding or not
     if doRegridding:
-        ensTbl = pd.DataFrame(rgDict["files"], columns=["srcPath"])
+        ensTbl = pd.DataFrame(rgDict.keys(), columns=["srcPath"])
     else:
         ensTbl = pd.DataFrame(
             [i for this in indDict.values() for i in this["files"]], columns=["srcPath"]
         )
     ensTbl["srcFname"] = [os.path.basename(p) for p in ensTbl["srcPath"]]
-    ensTbl["ens"] = ensTbl["srcFname"].str.extract("(.*?_.*?_.*?)_.*$")
+    ensTbl["ensID"] = ensTbl["srcFname"].str.extract("^([^_]+_[^_]+_[^_]+_[^_]+)_.*$")
+    #Build path and extract dict
     ensTbl["ensPath"] = [
-        os.path.join(outDirs["ensstats"], f + "_ensstats.nc") for f in ensTbl["ens"]
+        os.path.join(outDirs["ensstats"], f + "_ensstats.nc") for f in ensTbl["ensID"]
     ]
-    # Extract the dict
     ensDict = (
         ensTbl.groupby("ensPath")
         .apply(lambda x: list(x["srcPath"]), include_groups=False)
@@ -288,8 +331,6 @@ def getWorkflow(config):
         ]:  # Requires special handling, as these are nested lists
             for x in v.values():
                 allList += x["files"]
-        elif k in ["regridded"]:  # Requires special handling, as these are nested lists
-            allList += v["files"]
         else:
             allList += v.keys()
     rtn["all"] = allList
