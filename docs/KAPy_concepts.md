@@ -6,7 +6,7 @@ In this document we describe the core concepts and definitions that KAPy is buil
 
 ## Some boundaries
 
-First, lets define a basic principles to live by.
+First, lets define a few basic principles to live by.
 
 * No hardcoding. All parameters, text strings and configurations must be handled by external configuration files. The user should not have to edit Python code.
 * Document, document, document. 
@@ -54,25 +54,32 @@ The KAPy workflow involves a set of discrete steps to process climate data, cove
   * Indicators are calculated for each dataset. 
   * Individual indicators can be built by using their id code as a target e.g. `101`
 
+* `regrid` : Regridded files
+  * Indicators are regridded to a common grid
+
 * `ensstats` : Ensemble statistics
   * Indicators on a common grid can then be merged into a single object and ensemble statistics (e.g. median, mean 10th percentile, 90th percentile) calculated
 
 * `arealstats` : Areal statistics
-  * Indicator statistics are calculated for all polygons areas defined in `config.yaml`. 
+  * Indicator statistics are calculated for all polygons area defined in `config.yaml`. 
  
 * `plots` : Outputs
-  * Produce ouput plots summarising all indicators
+  * Produce output plots summarising all indicators
+
+* `all` : Make everything
+  * Produce all outputs.
+  * The default target - if no target is defined when calling snakemake, everything will be produced.
 
 
 ## Filenaming conventions
 
 KAPy is a tool that works from file to file, and therefore requires a systematic naming convention to make sense of the many outputs and inputs. The convention is inspired by that seem commonly in climate data, but also reflects the specific needs for KAPy. All KAPy files are therefore named as follows:
 
-`<variable / indicator ID>_<data source ID>_<grid>_<experiment ID>_<ensemble member identifiers>.nc`
+`<variable ID / indicator ID>_<data source ID>_<grid>_<experiment ID>_<ensemble member identifiers>.nc`
 
 where
-  * `<variable / indicator ID>` is the unique identifier of either the *climate variable* or *climate indicator*, as defined above. Generally, the suggested convention is that variables get a letter-based identifiers (e.g. `tasmin`), while indicators get numeric indicators (e.g. `151`). However, this is not enforced by KAPy.
+  * `<variable ID / indicator ID>` is the unique identifier of either the *climate variable* or *climate indicator*, as defined above. Generally, the suggested convention is that variables get letter-based identifiers (e.g. `tasmin`), while indicators get numeric indicators (e.g. `151`). However, this is not enforced by KAPy.
   * `<data source ID>` is the identifier of the data source that the variable or indicator is derived from (e.g. `CORDEX`).
   * `<grid>` is an identifier for the grid (including both the resolution and spatial domain) that the data is presented on.
   * `<experiment ID>` is an identifier used to identify *dataseries* formed from multiple experiments from the same data source (e.g. `RCP2.6` within the `CORDEX` data source).
-  * `<ensemble member identifiers>` is a series of codes used to identify the ensemble member that the *dataseries* is associated with.
+  * `<ensemble member identifiers>` is a series of codes used to identify the ensemble member that the *dataseries* is associated with. Can contain further fields separated by `_`, as defined in the input filenames, but individual fields beyond this point are not parsed by KAPy, but rather handled as one block.
