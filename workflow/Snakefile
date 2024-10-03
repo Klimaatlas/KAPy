@@ -31,13 +31,14 @@ def primaryVar_singular_rule(thisID):
     rule:  
         name: f'primaryVar_{thisID}_files'
         output:
-            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
-                   varName=thisVarName)
+            os.path.join(outDirs['variables'],
+                         f"{thisVarName}",
+                         f"{thisVarName}_{{stem}}")
         input:
             lambda wildcards: 
                 wf['primVars'][thisID][ os.path.join(outDirs['variables'],
                                                      thisVarName,
-                                                     f"{thisVarName}_{wildcards.stem}.nc")]
+                                                     f"{thisVarName}_{wildcards.stem}")]
         run:
             KAPy.buildPrimVar(config=config,
                               inFiles=input,
@@ -70,11 +71,13 @@ def secVar_singular_rule(thisID):
     rule:  
         name: f'secondaryVar_{thisID}_files'
         output:
-            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
-                   varName=thisVar['outputVars'])
+            os.path.join(outDirs['variables'],
+                         f"{thisVar['outputVars']}",
+                         f"{thisVar['outputVars']}_{{stem}}")
         input:
-            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
-                   varName=thisVar['inputVars'])
+            os.path.join(outDirs['variables'],
+                         f"{thisVar['inputVars']}",
+                         f"{thisVar['inputVars']}_{{stem}}")
         run:
             KAPy.buildDerivedVar(config=config,
                                      inFiles=input, 
@@ -112,12 +115,13 @@ def ind_singular_rule(thisID):
         name: f'indicator_{thisID}_files'
         output:
             os.path.join(outDirs['indicators'],
-                         f"{thisID}",f"{thisID}_{{stem}}.nc")
+                         f"{thisID}",
+                         f"{thisID}_{{stem}}")
         input:
-            expand(os.path.join(outDirs['variables'],
-                                "{varName}",
-                                "{varName}_{{stem}}.nc"),
-                   varName=thisInd['variables'])
+            lambda wildcards: 
+                wf['indicators'][thisID][ os.path.join(outDirs['indicators'],
+                                                     thisID,
+                                                     f"{thisID}_{wildcards.stem}")]
         run:
             KAPy.calculateIndicators(config=config,
                                      inFile=input,
@@ -138,7 +142,7 @@ for indID in config['indicators'].keys():
 #Run all indicators    
 rule indicators:
     input:
-        [f for thisInd in wf['indicators'].values() for f in thisInd['files']]
+        [f for thisInd in wf['indicators'].values() for f in thisInd.keys()]
 
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
@@ -151,11 +155,11 @@ if config['outputGrid']['regriddingEngine']!='None':
 
     rule regrid_file:
         output:
-            this=os.path.join(outDirs['regridded'],"{indID}","{stem}.nc")
+            this=os.path.join(outDirs['regridded'],"{indID}","{fname}")
         input:
             lambda wildcards: wf['regridded'][os.path.join(outDirs['regridded'],
                                                            wildcards.indID,
-                                                           wildcards.stem+".nc")]
+                                                           wildcards.fname)]
         run:
             KAPy.regrid(config,input,output)
 
@@ -189,9 +193,10 @@ rule arealstats:
 #Singular rule
 rule arealstats_file:
     output:
-        os.path.join(outDirs['arealstats'],'{arealstats}')
+        os.path.join(outDirs['arealstats'],'{fname}')
     input:
-        lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],wildcards.arealstats)]
+        lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],
+                                                        wildcards.fname)]
     run:
         KAPy.generateArealstats(config,input,output)
 

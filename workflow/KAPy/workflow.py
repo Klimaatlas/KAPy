@@ -14,7 +14,6 @@ import sys
 import os
 import pandas as pd
 import glob
-import re
 
 def getWorkflow(config):
     """
@@ -152,7 +151,7 @@ def getWorkflow(config):
     varPal["fname"] = [os.path.basename(p) for p in varPal["path"]]
     varPal["varID"] = varPal["fname"].str.extract("^([^_]+)_.*$")
     varPal["srcID"] = varPal["fname"].str.extract("^[^_]+_([^_]+)_.*$")
-    varPal["stems"] = varPal["fname"].str.extract("^[^_]+_[^_]+_(.+).nc(?:.pkl)?$")
+    varPal["stems"] = varPal["fname"].str.extract("^[^_]+_[^_]+_(.+)$")
     svDict = {}
     # Iterate over secondary variables if they are request
     if "secondaryVars" in config:
@@ -193,30 +192,31 @@ def getWorkflow(config):
     # Currently only matching one variable. TODO: Allow multiple variables
     indDict = {}
     for indKey, thisInd in ind.items():
-        useThese = varPal["varID"] == thisInd["variables"]
-        selVars = varPal[useThese]
-        validPaths = [
-            os.path.join(outDirs["indicators"], str(thisInd["id"]), fName)
-            for fName in f"{thisInd['id']}_"
-            + selVars["srcID"]
-            + "_"
-            + selVars["stems"]
-            + ".nc"
+        #Build up the output filename first
+        varPal['indFname']=varPal['fname'].str.replace(r"^([^_]+)_(.+?)(\.pkl)?$",
+                                                       indKey+r"_\2",
+                                                       regex=True)
+        #Build the rest of the path
+        varPal["indPath"] = [
+            os.path.join(outDirs["indicators"],
+                         thisInd["id"],
+                         rw["indFname"])
+            for idx, rw in varPal.iterrows()
         ]
-        indDict[indKey] = thisInd
-        indDict[indKey]["files"] = validPaths
+        #Only extract the dict for the part that we are actually
+        #interested in
+        useThese = varPal["varID"] == thisInd["variables"]
+        indDict[indKey] = {rw["indPath"]: [rw["path"]] \
+                                    for idx, rw in varPal[useThese].iterrows()}
 
     # Regridding-----------------------------------------------------------------------
     # We only regrid if it is requested in the configuration
     doRegridding = config["outputGrid"]["regriddingEngine"] != "None"
     if doRegridding:
         # Remap directory
-        rgTbl = pd.DataFrame(
-            [i for this in indDict.values() for i in this["files"]], columns=["indPath"]
-        )
-        rgTbl["indID"] = [
-            os.path.basename(os.path.dirname(f)) for f in rgTbl["indPath"]
-        ]
+        rgTbl = pd.DataFrame([k for v in indDict.values() for k in v.keys()], 
+                          columns=["indPath"])
+        rgTbl["indID"] = [os.path.basename(os.path.dirname(f)) for f in rgTbl["indPath"]]
         rgTbl["indFname"] = [os.path.basename(p) for p in rgTbl["indPath"]]
         #Replace grid code in the filename with the appropriate one
         rgTbl['rgFname'] = \
@@ -309,7 +309,7 @@ def getWorkflow(config):
             lpFname = os.path.join(outDirs["plots"], f"{thisInd['id']}_lineplot.png")
             pltDict[lpFname] = asList[str(thisInd["id"])]
 
-    # Collate and round off--------------------------------------------------------
+    # Collate and round off----------------------------------------------
     rtn = {
         "primVars": pvDict,
         "secondaryVars": svDict,
@@ -319,16 +319,15 @@ def getWorkflow(config):
         "arealstats": asDict,
         "plots": pltDict,
     }
-    # Need to create an "all" dict as well containing all targets in the workflow
+    # Create an "all" dict  containing 
+    # all targets in the workflow
     allList = []
     for k, v in rtn.items():
-        if k in ["primVars"]:  # Requires special handling, as these are nested lists
+        if k in ["primVars",
+                 "indicators"]:  # Requires special handling, as these are nested lists
             for x in v.values():
                 allList += x.keys()
-        elif k in [
-            "secondaryVars",
-            "indicators",
-        ]:  # Requires special handling, as these are nested lists
+        elif k in ["secondaryVars"]:  # Requires special handling, as these are nested lists
             for x in v.values():
                 allList += x["files"]
         else:

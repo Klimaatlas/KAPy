@@ -37,5 +37,5 @@ outputGrid:
     gridName: 'Ghana025'
     cdoGriddes: './config/griddes.txt'
 processing:
-    picklePrimaryVariables: False
+    picklePrimaryVariables: True
     
