@@ -21,8 +21,8 @@
   - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
 - **`cutouts`**: Configures spatial-subsetting (cutting-out) of the input data.
   - **One of**
-    - *object*: **None**. Omit the cutout step. All available data in the input files is processed. Cannot contain additional properties.
-      - **`method`** *(string, required)*: Must be one of: `["None"]`.
+    - *object*: **none**. Omit the cutout step. All available data in the input files is processed. Cannot contain additional properties.
+      - **`method`** *(string, required)*: Must be one of: `["none"]`.
     - *object*: **lonlatbox**. Use the `sellonlatbox`operator from cdo to do the subsetting. Details of this operator can be found in the CDO documentation. Cannot contain additional properties.
       - **`method`** *(string, required)*: Must be one of: `["lonlatbox"]`.
       - **`xmin`** *(number, required)*: Western boundary of cutout box.
@@ -36,7 +36,7 @@
 - **`outputGrid`**: Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple approaches to regridding can be configured, as described below.
   - **One of**
     - *object*: **None**. Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid. Cannot contain additional properties.
-      - **`regriddingEngine`** *(string, required)*: Must be one of: `["None"]`.
+      - **`regriddingEngine`** *(string, required)*: Must be one of: `["none"]`.
     - *object*: **cdo**. Use the Climate Data Operators to do the regridding. For more information, see the CDO website, https://code.mpimet.mpg.de/projects/cdo. Installation of CDO is handled behind the scenes by conda as part of the KAPy environment setup - be aware that this may result in a different version of CDO being used to what you have by default. In the current configuration we default to bilinear interpolation (`remapbil`). If other operators are required, please file a feature request in GitHub. Cannot contain additional properties.
       - **`regriddingEngine`** *(string, required)*: Must be one of: `["cdo"]`.
       - **`gridName`** *(string, required)*: String giving the name of the grid to be used in regridding filenames.

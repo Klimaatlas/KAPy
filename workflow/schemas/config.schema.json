@@ -106,12 +106,12 @@
                         "method"
                     ],
                     "additionalProperties": false,
-                    "description": "**None**. Omit the cutout step. All available data in the input files is processed.",
+                    "description": "**none**. Omit the cutout step. All available data in the input files is processed.",
                     "properties": {
                         "method": {
                             "type": "string",
                             "enum": [
-                                "None"
+                                "none"
                             ]
                         }
                     }
@@ -190,12 +190,12 @@
                         "regriddingEngine"
                     ],
                     "additionalProperties": false,
-                    "description": "**None**. Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid",
+                    "description": "**none**. Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid",
                     "properties": {
                         "regriddingEngine": {
                             "type": "string",
                             "enum": [
-                                "None"
+                                "none"
                             ]
                         }
                     }
