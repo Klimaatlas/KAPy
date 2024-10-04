@@ -211,7 +211,7 @@ def getWorkflow(config):
 
     # Regridding-----------------------------------------------------------------------
     # We only regrid if it is requested in the configuration
-    doRegridding = config["outputGrid"]["regriddingEngine"] != "None"
+    doRegridding = config["outputGrid"]["regriddingEngine"] != "none"
     if doRegridding:
         # Remap directory
         rgTbl = pd.DataFrame([k for v in indDict.values() for k in v.keys()], 
@@ -241,7 +241,7 @@ def getWorkflow(config):
         ensTbl = pd.DataFrame(rgDict.keys(), columns=["srcPath"])
     else:
         ensTbl = pd.DataFrame(
-            [i for this in indDict.values() for i in this["files"]], columns=["srcPath"]
+            [k for v in indDict.values() for k in v.keys()], columns=["srcPath"]
         )
     ensTbl["srcFname"] = [os.path.basename(p) for p in ensTbl["srcPath"]]
     ensTbl["ensID"] = ensTbl["srcFname"].str.extract("^([^_]+_[^_]+_[^_]+_[^_]+)_.*$")
