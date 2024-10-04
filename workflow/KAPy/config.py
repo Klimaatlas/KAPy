@@ -78,6 +78,7 @@ def validateConfig(config):
         thisCfgFile = config["configurationTables"][thisTblKey]
         thisTbl = pd.read_csv(thisCfgFile, sep="\t", 
                               comment="#",
+                              dtype='str',
                               keep_default_na=False)
         # We allow some columns to be defined here as lists, but these need to be
         # parsed before we can actually use them for something

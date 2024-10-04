@@ -8,7 +8,7 @@
   "properties": {
     "id": {
       "description": "Unique identifier for the period. This can be numeric, but will be treated as a string",
-      "type": ["integer","string"],
+      "type": "string",
       "uniqueItems": true
     },
     "name": {
@@ -17,11 +17,12 @@
     },
     "start": { 
       "description": "The start year of the period. The full year is included in the calculation.",
-      "type": "integer"
+      "type": "string",
+      "pattern": "^\\d{4}$"
     },
     "end": {
-      "type": "integer",
-      "description": "The end year of the period. The full year is included in the calculation."
-    }
+      "description": "The end year of the period. The full year is included in the calculation.",
+      "type": "string",
+      "pattern": "^\\d{4}$"}
   }
 }

@@ -34,8 +34,8 @@ def calculateIndicators(config, inFile, outFile, indID):
         slices = []
         for thisPeriod in config["periods"].values():
             # Slice dataset
-            timemin = datSeason.time.dt.year >= thisPeriod["start"]
-            timemax = datSeason.time.dt.year <= thisPeriod["end"]
+            timemin = datSeason.time.dt.year >= int(thisPeriod["start"])
+            timemax = datSeason.time.dt.year <= int(thisPeriod["end"])
             datPeriodSeason = datSeason.sel(time=timemin & timemax)
             timebounds = pd.to_datetime(
                 [f"{thisPeriod['start']}-01-01", f"{thisPeriod['end']}-12-31"]

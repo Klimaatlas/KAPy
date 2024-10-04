@@ -19,7 +19,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "A unique id for this dataset."
+      "description": "A unique id for this dataset.",
+      "uniqueItems": true
     },
     "varID": {
       "type": "string",
