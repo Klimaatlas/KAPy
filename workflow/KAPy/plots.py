@@ -129,7 +129,7 @@ def makeSpatialplot(config, indID, srcFiles, outFile=None):
 
     # Make plot
     p = (
-        ggplot(pltDat, aes(x="x", y="x", fill="indicator_mean"))
+        ggplot(pltDat, aes(x="x", y="y", fill="indicator_mean"))
         + geom_raster()
         + facet_grid("periodID~experiment")
         + theme_bw()
