@@ -3,6 +3,7 @@
 """
 #Setup for debugging with VS Code 
 import os
+print(os.getcwd())
 os.chdir("..")
 import KAPy
 os.chdir("..")
@@ -273,41 +274,48 @@ def getWorkflow(config):
     )
 
     # Plots----------------------------------------------------
-    # Collate and process sources for plots
-    def makeInputDict(d):
-        inpTbl = pd.DataFrame(list(d.keys()), columns=["path"])
-        inpTbl["fname"] = [os.path.basename(f) for f in inpTbl["path"]]
-        inpTbl["indId"] = inpTbl["fname"].str.extract("^(.*?)_.*$")
-        inpTbl["indSrc"] = inpTbl["fname"].str.extract("^.*?_(.*?)_.*$")
-        inpDict = (
-            inpTbl.groupby("indId")
-            .apply(lambda x: list(x["path"]), include_groups=False)
-            .to_dict()
-        )
-        return inpDict
-
-    asList = makeInputDict(asDict)
-    ensList = makeInputDict(ensDict)
+    #Get list of areal statistics csv files (in the ensstats version)
+    csvList = pd.DataFrame(list(asDict.keys()), columns=["path"])
+    csvList["fname"] = [os.path.basename(f) for f in csvList["path"]]
+    csvList["indId"] = csvList["fname"].str.extract("^([^_]+)_.*$")
+    csvList["ensMemberID"] = csvList["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+).*$")
+    csvList=csvList[csvList["ensMemberID"]=='ensstats.csv']
+    csvDict = (
+        csvList.groupby("indId")
+        .apply(lambda x: list(x["path"]), include_groups=False)
+        .to_dict()
+    )
+    
+    #And of the netcdf files
+    ncList = pd.DataFrame(list(ensDict.keys()), columns=["path"])
+    ncList["fname"] = [os.path.basename(f) for f in ncList["path"]]
+    ncList["indId"] = ncList["fname"].str.extract("^([^_]+)_.*$")
+    ncDict = (
+        ncList.groupby("indId")
+        .apply(lambda x: list(x["path"]), include_groups=False)
+        .to_dict()
+    )
 
     # Loop over available indicators to make plots
     pltDict = {}
     for thisInd in config["indicators"].values():
         # But what should we plot? It depends on the nature of the indicator
-        # * Period-based indicators should plot the spatial map and the plots
-        # * Yearly (or monthly) based indicators show a time series
+        # * Period-based indicators should plot the spatial map and the plots, derived
+        #   from the ensemble statistics
+        # * Yearly (or monthly) based indicators show a time series, also for ensemble statistcs
         if thisInd["time_binning"] == "periods":
-            # Box plot
+            # Box plot - requires ensemble csv files
             bxpFname = os.path.join(outDirs["plots"], f"{thisInd['id']}_boxplot.png")
-            pltDict[bxpFname] = asList[str(thisInd["id"])]
+            pltDict[bxpFname] = csvDict[str(thisInd["id"])]
 
-            # Spatial plot
+            # Spatial plot - requires ensemble netcdf files
             spFname = os.path.join(outDirs["plots"], f"{thisInd['id']}_spatial.png")
-            pltDict[spFname] = ensList[str(thisInd["id"])]
+            pltDict[spFname] = ncDict[str(thisInd["id"])]
 
         elif thisInd["time_binning"] in ["years", "months"]:
-            # Time series plot
+            # Time series plot - requires ensemble csv files
             lpFname = os.path.join(outDirs["plots"], f"{thisInd['id']}_lineplot.png")
-            pltDict[lpFname] = asList[str(thisInd["id"])]
+            pltDict[lpFname] = csvDict[str(thisInd["id"])]
 
     # Collate and round off----------------------------------------------
     rtn = {

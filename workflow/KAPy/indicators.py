@@ -1,6 +1,7 @@
 """
 #Setup for debugging with VS code
 import os
+print(os.getcwd())
 os.chdir("..")
 import KAPy
 os.chdir("..")

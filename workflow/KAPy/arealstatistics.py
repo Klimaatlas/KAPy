@@ -12,8 +12,6 @@ inFile=wf['ensstats'][ensID]
 """
 
 import xarray as xr
-import pandas as pd
-
 
 def generateArealstats(config, inFile, outFile):
     # Generate statistics over an area by applying a polygon mask and averaging
@@ -24,7 +22,7 @@ def generateArealstats(config, inFile, outFile):
     # TODO
 
     # Average spatially over the time dimension
-    spDims =[d for d in thisDat.dims if d not in ['time','periodID']]
+    spDims =[d for d in thisDat.dims if d not in ['time','periodID','percentiles']]
     spMean = thisDat.indicator.mean(dim=spDims)
 
     # Save files pandas

@@ -2,7 +2,8 @@
 """
 #Debugging setup for VS Code
 import os
-os.chdir("workflow")
+print(os.getcwd())
+os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
@@ -103,8 +104,6 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
 indID='101'
 srcFiles=list(wf['plots'].values())[1]
 """
-
-
 def makeSpatialplot(config, indID, srcFiles, outFile=None):
     # Extract indicator info
     thisInd = config["indicators"][indID]
@@ -114,26 +113,31 @@ def makeSpatialplot(config, indID, srcFiles, outFile=None):
     for d in srcFiles:
         # Import object
         thisdat = xr.open_dataset(d)
-        # We want to plot a spatial map of the change from start to finish
-        change = thisdat.isel(periodID=-1) - thisdat.isel(periodID=0)
-        changedf = change.indicator_mean.to_dataframe().reset_index()
-        changedf["fname"] = os.path.basename(d)
-        changedf["experiment"] = changedf["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
-        datdf += [changedf]
+        # We want to plot a spatial map of the first and last indicators
+        firstlast = thisdat.isel(periodID=[0,-1])
+        firstlastdf = firstlast.indicator_mean.to_dataframe().reset_index()
+        firstlastdf["fname"] = os.path.basename(d)
+        firstlastdf["experiment"] = firstlastdf["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
+        datdf += [firstlastdf]
     pltDat = pd.concat(datdf)
+
+    #Identify spatial coordinates
+    spDimX=[d for d in pltDat.columns if d in ['x','longitude','long']]
+    spDimY=[d for d in pltDat.columns if d in ['y','latitude','lat']]
+    pltDat['x']=pltDat[spDimX]
+    pltDat['y']=pltDat[spDimY]
 
     # Make plot
     p = (
-        ggplot(pltDat, aes(x="longitude", y="latitude", fill="indicator_mean"))
+        ggplot(pltDat, aes(x="x", y="x", fill="indicator_mean"))
         + geom_raster()
-        + facet_wrap("~experiment")
+        + facet_grid("periodID~experiment")
         + theme_bw()
         + labs(
             x="",
             y="",
-            fill=f"Change\n({thisInd['units']})",
-            title=f"{thisInd['name']} ",
-            caption="Change in indicator from first period to last period",
+            fill=f"Value\n({thisInd['units']})",
+            title=f"{thisInd['name']} "
         )
         + scale_x_continuous(expand=[0, 0])
         + scale_y_continuous(expand=[0, 0])
