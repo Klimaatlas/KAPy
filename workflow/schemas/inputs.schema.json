@@ -7,9 +7,9 @@
     "id",
     "varID", 
     "srcID", 
+    "gridID",
     "path", 
     "internalVarName", 
-    "gridField", 
     "experimentField", 
     "commonExperimentID", 
     "importScriptPath",
@@ -24,11 +24,18 @@
     },
     "varID": {
       "type": "string",
-      "description": "The ID of the variable contained in this dataset. While there is no enforcement of naming conventions in KAPy, the variable names should anyway be standardised across the entire configuration and across input datasets. For example, both ERA5 and CORDEX provide surface temperature, but with different internal variable names in the input files - to ensure that they can be matched together, they should both be assigned the varName `tas`."
+      "pattern": "^[^ ]+$",
+      "description": "The ID of the variable contained in this dataset. While there is no enforcement of naming conventions in KAPy, the variable names should anyway be standardised across the entire configuration and across input datasets. For example, both ERA5 and CORDEX provide surface temperature, but with different internal variable names in the input files - to ensure that they can be matched together, they should both be assigned the varName `tas`. Must not contain a space."
     },
     "srcID": {
       "type": "string",
-      "description": "The ID of the data source e.g CORDEX, ERA5. Need not be unique. Is used to group related variables from the same datasource together further in the analysis (e.g. tas and pr from ERA5). "
+      "pattern": "^[^ ]+$",
+      "description": "The ID of the data source e.g CORDEX, ERA5. Need not be unique. Is used to group related variables from the same datasource together further in the analysis (e.g. tas and pr from ERA5). Must not contain a space."
+    },
+    "gridID": {
+      "type": "string",
+      "pattern": "^[^ ]+$",
+      "description": "Identifier for the grid that the data set is on. The idnetifier need not be unique, and most commonly will be duplicated across multiple input sources. Must not contain a space."
     },
     "path": {
       "type": "string",
@@ -43,12 +50,6 @@
       "minLength": 0,
       "maxLength": 1,
       "description": "Character separating fields in the input file names. Most often an underscore character '_'. Currently limited to a single character."
-    },
-    "gridField": {
-      "type": "string",
-      "pattern": "^\\d*$",
-      "description": "Number of the field in the filename representing grid information e.g. for the file `tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_day_20360101-20401231.nc`, the second field (`AFR-22`) is the grid description and this parameter would therefore be set to 2. If not specified, the grid field will be given the code `native-grid`. It can be a good idea to also include the grid code in the ensember member codes, when the same model can be run with multiple grids. 1-based indexing is assumed.",
-      "default": null
     },
     "experimentField": {
       "type": "string",

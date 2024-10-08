@@ -49,7 +49,7 @@ def getWorkflow(config):
             #Set output filename, setting the file extension manually.
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-                    f"{thisInp['varID']}_{thisInp['srcID']}_native-grid_no-expt_" + \
+                    f"{thisInp['varID']}_{thisInp['srcID']}_{thisInp['gridID']}_no-expt_" + \
                     os.path.splitext(pvTbl['inFname'][0])[0] + '.nc'
 
         # Else multiple hits detected that need to be handled.
@@ -62,7 +62,6 @@ def getWorkflow(config):
 
             # Split filenames into columns and extract predefined elements
             inpTbl['split']=inpTbl['inFname'].str.split(thisInp['fieldSeparator'])
-            inpTbl['grid']=[f[int(thisInp['gridField'])-1] for f in inpTbl['split']]
             inpTbl['experiment']=[f[int(thisInp['experimentField'])-1] for f in inpTbl['split']]
             ensMemberFieldsIdxs = [int(i)-1 for i in thisInp['ensMemberFields']]
             inpTbl['ensMemberID']=["_".join([f[i] for i in ensMemberFieldsIdxs]) for f in inpTbl['split']]
@@ -73,8 +72,8 @@ def getWorkflow(config):
                 #experiment individually
                 #Form the corresponding filename. Don't forget to add the .nc
                 inpTbl['pvFname']= \
-                    f"{thisInp['varID']}_{thisInp['srcID']}_" + \
-                    inpTbl['grid'] +"_" + inpTbl['experiment'] + "_" + \
+                    f"{thisInp['varID']}_{thisInp['srcID']}_{thisInp['gridID']}_" + \
+                    inpTbl['experiment'] + "_" + \
                     inpTbl['ensMemberID'] +".nc"
 
                 # Store results
@@ -97,15 +96,15 @@ def getWorkflow(config):
 
                     #Forming the corresponding filename. Don't forget to add the .nc
                     theseExptFiles['pvFname']= \
-                        f"{thisInp['varID']}_{thisInp['srcID']}_" + \
-                        theseExptFiles['grid'] +"_" + thisExpt + "_" + \
+                        f"{thisInp['varID']}_{thisInp['srcID']}_{thisInp['gridID']}_" + \
+                        thisExpt + "_" + \
                         theseExptFiles['ensMemberID'] +".nc"
                     
                     #Now do the same for the commonExpt - using the experiment
                     #naming from thisExpt (and not the native commonExperimentID)
                     commonExptTable['pvFname']= \
-                        f"{thisInp['varID']}_{thisInp['srcID']}_" + \
-                        commonExptTable['grid'] +"_" + thisExpt + "_" + \
+                        f"{thisInp['varID']}_{thisInp['srcID']}_{thisInp['gridID']}_" + \
+                        thisExpt + "_" + \
                         commonExptTable['ensMemberID'] +".nc"
                     
                     #Now select the files from the commonExpt that are also in the
