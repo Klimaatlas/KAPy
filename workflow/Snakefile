@@ -182,13 +182,17 @@ rule ensstats_file:
 
 
 #Areal statistics------------------
-#Areal statistics can be calculated for both the enssemble statistics and the
-#individual ensemble members - these options can be turned on and off as required
-#via the configuration options. 
-#Plural rule
+#Areal statistics are calculated for both the enssemble statistics and individual members
+#Note that we don't include the combined statistics in the workflow, as we would to be able to
+#overwrite the naming of this output file from e.g. another project.
 rule arealstats:
     input:
         list(wf['arealstats'].keys())
+    output:
+        os.path.join(outDirs['arealstats'],'Areal_statistics.csv')
+    run:
+        KAPy.combineArealstats(config,input,output)
+
 
 #Singular rule
 rule arealstats_file:
@@ -239,6 +243,7 @@ rule plots_spatial:
 #All-------------------
 rule all:
     input:
-        wf['all']
+        wf['all'],
+        rules.arealstats.output
     default_target: True
 

@@ -18,6 +18,7 @@ import pandas as pd
 import geopandas as gpd
 import regionmask
 import numpy as np
+import os
 
 def generateArealstats(config, inFile, outFile):
     # Generate statistics over an area by applying a polygon mask and averaging
@@ -73,3 +74,31 @@ def generateArealstats(config, inFile, outFile):
     
     #Write results out
     dfOut.to_csv(outFile[0])
+
+
+
+"""
+inFiles=wf['arealstats'].keys()
+outFile=["results/5.areal_statistics/Areal_statistics.csv"]
+"""
+
+def combineArealstats(config, inFiles, outFile):
+    #Load individual files
+    dat = []
+    for f in inFiles:
+        datIn=pd.read_csv(f)
+        datIn.insert(0,'sourcePath',f)
+        datIn.insert(0,'filename',os.path.basename(f))
+        dat += [datIn]
+    datdf = pd.concat(dat)
+    
+    #Split out the defined elements
+    datdf.insert(1,'memberID',datdf['filename'].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.*?).csv$"))
+    datdf.insert(1,'expt',datdf['filename'].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$"))
+    datdf.insert(1,'gridID',datdf['filename'].str.extract("^[^_]+_[^_]+_([^_]+)_.*$"))
+    datdf.insert(1,'srcID',datdf['filename'].str.extract("^[^_]+_([^_]+)_.*$"))
+    datdf.insert(1,'indID',datdf['filename'].str.extract("^([^_]+)_.*$"))
+
+    #Drop the filename and write out
+    datdf.drop(columns=['filename']).to_csv(outFile[0])
+

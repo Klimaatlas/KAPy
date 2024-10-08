@@ -21,7 +21,6 @@ dirs:
 
 # Configuration options------------------------------------
 arealstats:
-    calcForMembers: True
     shapefile: ''
     idColumn: ''
     # shapefile: 'resources/shapefiles/Ghana_regions.shp'

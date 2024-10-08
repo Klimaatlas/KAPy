@@ -18,7 +18,6 @@
   - **`arealstats`** *(string, required)*: Directory for storing statistics calculated over areas.
   - **`plots`** *(string, required)*: Directory for storing output plots.
 - **`arealstats`** *(object)*: Cannot contain additional properties.
-  - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
   - **`shapefile`** *(['string', 'null'], required)*: Path to shapefile to be used for defining areas. When the path is undefined, averages are calculated across the entire domain. The path should point to the .shp file.
   - **`idColumn`** *(['string', 'null'], required)*: Name of the column in the above shapefile to be used as a unique identifier code for the area.
 - **`cutouts`**: Configures spatial-subsetting (cutting-out) of the input data.

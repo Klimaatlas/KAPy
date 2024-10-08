@@ -258,14 +258,18 @@ def getWorkflow(config):
 
     # Arealstatistics----------------------------------------------
     # Start by building list of input files to calculate arealstatistics for
-    asInps = list(ensDict.keys())
-    if config["arealstats"]["calcForMembers"]:
-        asInps += [y for x in ensDict.values() for y in x]
-    asTbl = pd.DataFrame(asInps, columns=["srcPath"])
+    # Note that we split into ensemble and member statistics
+    asEnsInps = pd.DataFrame(list(ensDict.keys()),columns=['srcPath'])
+    asEnsInps['type']='ensstats'
+    asMemInps = pd.DataFrame([y for x in ensDict.values() for y in x],
+                             columns=['srcPath'])
+    asMemInps['type']='members'
+    asTbl=pd.concat([asEnsInps,asMemInps])
     # Now setup output structures
     asTbl["srcFname"] = [os.path.basename(p) for p in asTbl["srcPath"]]
     asTbl["asFname"] = asTbl["srcFname"].str.replace("nc", "csv")
-    asTbl["asPath"] = [os.path.join(outDirs["arealstats"], f) for f in asTbl["asFname"]]
+    asTbl["asPath"] = [os.path.join(outDirs["arealstats"], rw["type"], rw["asFname"]) \
+                       for idx, rw in asTbl.iterrows()]
     # Make the dict
     asDict = (
         asTbl.groupby("asPath")

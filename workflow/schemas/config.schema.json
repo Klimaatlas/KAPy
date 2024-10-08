@@ -86,26 +86,20 @@
         },
         "arealstats": {
             "required": [
-                "calcForMembers",
                 "shapefile",
                 "idColumn"
             ],
             "additionalProperties": false,
             "type": "object",
             "properties": {
-                "calcForMembers": {
-                    "description": "Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.",
-                    "type": "boolean"
+                "shapefile": {
+                    "description": "Path to shapefile to be used for defining areas. When the path is undefined, averages are calculated across the entire domain. The path should point to the .shp file.",
+                    "type": ["string","null"]
                 },
-            "shapefile": {
-                "description": "Path to shapefile to be used for defining areas. When the path is undefined, averages are calculated across the entire domain. The path should point to the .shp file.",
-                "type": ["string","null"]
-            },
-            "idColumn": {
-                "description": "Name of the column in the above shapefile to be used as a unique identifier code for the area.",
-                "type": ["string","null"]
-            }
-
+                "idColumn": {
+                    "description": "Name of the column in the above shapefile to be used as a unique identifier code for the area.",
+                    "type": ["string","null"]
+                }
             }
         },
         "cutouts": {
