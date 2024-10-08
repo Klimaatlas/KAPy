@@ -19,6 +19,8 @@
   - **`plots`** *(string, required)*: Directory for storing output plots.
 - **`arealstats`** *(object)*: Cannot contain additional properties.
   - **`calcForMembers`** *(boolean, required)*: Should the areal statistics be calculated for the individual ensemble members as well as for the entire ensemble. `true` or `false`.
+  - **`shapefile`** *(['string', 'null'], required)*: Path to shapefile to be used for defining areas. When the path is undefined, averages are calculated across the entire domain. The path should point to the .shp file.
+  - **`idColumn`** *(['string', 'null'], required)*: Name of the column in the above shapefile to be used as a unique identifier code for the area.
 - **`cutouts`**: Configures spatial-subsetting (cutting-out) of the input data.
   - **One of**
     - *object*: **none**. Omit the cutout step. All available data in the input files is processed. Cannot contain additional properties.
@@ -35,7 +37,7 @@
   - **`lowerPercentile`** *(integer, required)*: Exclusive minimum: `0`. Exclusive maximum: `100`.
 - **`outputGrid`**: Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Multiple approaches to regridding can be configured, as described below.
   - **One of**
-    - *object*: **None**. Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid. Cannot contain additional properties.
+    - *object*: **none**. Omit the regridding step. Assumes that all files within an input type are on the same grid, which will be used as the output grid. Cannot contain additional properties.
       - **`regriddingEngine`** *(string, required)*: Must be one of: `["none"]`.
     - *object*: **cdo**. Use the Climate Data Operators to do the regridding. For more information, see the CDO website, https://code.mpimet.mpg.de/projects/cdo. Installation of CDO is handled behind the scenes by conda as part of the KAPy environment setup - be aware that this may result in a different version of CDO being used to what you have by default. In the current configuration we default to bilinear interpolation (`remapbil`). If other operators are required, please file a feature request in GitHub. Cannot contain additional properties.
       - **`regriddingEngine`** *(string, required)*: Must be one of: `["cdo"]`.

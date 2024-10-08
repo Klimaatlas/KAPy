@@ -1,17 +1,12 @@
-# This YAML file defines the optional requirements used in the development of KAPy, including version numbers and hash tags.
-#
-# This file can be used to generate a fresh conda environment like so:
-#
-# conda env create -f dev.yaml
-#
 name: KAPy-dev
 channels:
   - bioconda
   - conda-forge
-  - nodefaults
+  - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
+  - affine=2.4.0=pyhd8ed1ab_0
   - amply=0.1.6=pyhd8ed1ab_0
   - appdirs=1.4.4=pyh9f0ad1d_0
   - argparse-dataclass=2.0.0=pyhd8ed1ab_0
@@ -32,24 +27,32 @@ dependencies:
   - aws-checksums=0.1.18=h36a0aea_4
   - aws-crt-cpp=0.26.8=h02fd9b4_10
   - aws-sdk-cpp=1.11.267=h51dfee4_8
+  - azure-core-cpp=1.11.1=h91d86a7_1
+  - azure-identity-cpp=1.6.0=hf1915f5_1
+  - azure-storage-blobs-cpp=12.10.0=h00ab1b0_1
+  - azure-storage-common-cpp=12.5.0=h94269e2_4
   - black=24.4.2=py312h7900ff3_0
   - blosc=1.21.5=hc2324a3_1
   - bokeh=3.4.1=pyhd8ed1ab_0
   - boltons=24.0.0=pyhd8ed1ab_0
   - bottleneck=1.3.8=py312hc7c0aa3_0
+  - branca=0.7.2=pyhd8ed1ab_0
   - brotli=1.1.0=hd590300_1
   - brotli-bin=1.1.0=hd590300_1
   - brotli-python=1.1.0=py312h30efb56_1
   - bzip2=1.0.8=hd590300_5
   - c-ares=1.28.1=hd590300_0
-  - ca-certificates=2024.2.2=hbcca054_0
+  - ca-certificates=2024.6.2=hbcca054_0
   - cairo=1.18.0=h3faef2a_0
   - cdo=2.4.0=hd11aaf1_1
   - certifi=2024.2.2=pyhd8ed1ab_0
   - cf_xarray=0.9.0=pyhd8ed1ab_0
+  - cfitsio=4.4.0=hbdc6101_1
   - cftime=1.6.3=py312hc7c0aa3_0
   - charset-normalizer=3.3.2=pyhd8ed1ab_0
   - click=8.1.7=unix_pyh707e725_0
+  - click-plugins=1.1.1=py_0
+  - cligj=0.7.2=pyhd8ed1ab_1
   - cloudpickle=3.0.0=pyhd8ed1ab_0
   - coin-or-cbc=2.10.10=h9002f0b_0
   - coin-or-cgl=0.60.7=h516709c_0
@@ -82,6 +85,9 @@ dependencies:
   - fasteners=0.17.3=pyhd8ed1ab_0
   - fftw=3.3.10=nompi_hc118613_108
   - findlibs=0.0.5=pyhd8ed1ab_0
+  - fiona=1.9.6=py312h32ad294_3
+  - fmt=10.2.1=h00ab1b0_0
+  - folium=0.16.0=pyhd8ed1ab_0
   - font-ttf-dejavu-sans-mono=2.37=hab24e00_0
   - font-ttf-inconsolata=3.000=h77eed37_0
   - font-ttf-source-code-pro=2.038=h77eed37_0
@@ -92,9 +98,16 @@ dependencies:
   - fonttools=4.51.0=py312h98912ed_0
   - freeglut=3.2.2=hac7e632_2
   - freetype=2.12.1=h267a509_2
+  - freexl=2.0.0=h743c826_0
   - fribidi=1.0.10=h36c2ea0_0
   - fsspec=2024.3.1=pyhca7485f_0
+  - gdal=3.9.0=py312h86af8fa_4
+  - geopandas=0.14.4=pyhd8ed1ab_0
+  - geopandas-base=0.14.4=pyha770c72_0
+  - geos=3.12.1=h59595ed_0
+  - geotiff=1.7.3=h928be8b_0
   - gflags=2.2.2=he1b5a44_1004
+  - giflib=5.2.2=hd590300_0
   - gitdb=4.0.11=pyhd8ed1ab_0
   - gitpython=3.1.43=pyhd8ed1ab_0
   - glog=0.7.0=hed5481d_0
@@ -116,12 +129,14 @@ dependencies:
   - jedi=0.19.1=pyhd8ed1ab_0
   - jinja2=3.1.4=pyhd8ed1ab_0
   - joblib=1.4.2=pyhd8ed1ab_0
+  - json-c=0.17=h7ab15ed_0
   - jsonpickle=3.0.4=pyhd8ed1ab_0
   - jsonschema=4.22.0=pyhd8ed1ab_0
   - jsonschema-specifications=2023.12.1=pyhd8ed1ab_0
   - jsonschema2md=1.1.0=pyhd8ed1ab_0
   - jupyter_client=8.6.1=pyhd8ed1ab_0
   - jupyter_core=5.7.2=py312h7900ff3_0
+  - kealib=1.5.3=hee9dde6_1
   - keyutils=1.6.1=h166bdaf_0
   - kiwisolver=1.4.5=py312h8572e83_1
   - krb5=1.21.2=h659d440_0
@@ -130,11 +145,13 @@ dependencies:
   - lerc=4.0.0=h27087fc_0
   - libabseil=20240116.2=cxx17_h59595ed_0
   - libaec=1.1.3=h59595ed_0
+  - libarchive=3.7.4=hfca40fe_0
   - libarrow=16.0.0=hefa796f_1_cpu
   - libarrow-acero=16.0.0=hac33072_1_cpu
   - libarrow-dataset=16.0.0=hac33072_1_cpu
   - libarrow-substrait=16.0.0=h7e0c224_1_cpu
   - libblas=3.9.0=22_linux64_openblas
+  - libboost-headers=1.85.0=ha770c72_1
   - libbrotlicommon=1.1.0=hd590300_1
   - libbrotlidec=1.1.0=hd590300_1
   - libbrotlienc=1.1.0=hd590300_1
@@ -148,6 +165,7 @@ dependencies:
   - libexpat=2.6.2=h59595ed_0
   - libffi=3.4.2=h7f98852_5
   - libgcc-ng=13.2.0=h77fa898_7
+  - libgdal=3.9.0=h77540a9_4
   - libgfortran-ng=13.2.0=h69a702a_7
   - libgfortran5=13.2.0=hca663fb_7
   - libglib=2.80.2=hf974151_0
@@ -158,6 +176,7 @@ dependencies:
   - libgrpc=1.62.2=h15f2491_0
   - libiconv=1.17=hd590300_2
   - libjpeg-turbo=3.0.0=hd590300_1
+  - libkml=1.3.0=h01aab08_1018
   - liblapack=3.9.0=22_linux64_openblas
   - liblapacke=3.9.0=22_linux64_openblas
   - libllvm14=14.0.6=hcd5def8_4
@@ -168,9 +187,13 @@ dependencies:
   - libparquet=16.0.0=h6a7eafb_1_cpu
   - libpnetcdf=1.12.3=mpi_mpich_h4ac58e2_101
   - libpng=1.6.43=h2797004_0
+  - libpq=16.3=ha72fbe1_0
   - libprotobuf=4.25.3=h08a7969_0
   - libre2-11=2023.09.01=h5a48ba9_2
+  - librttopo=1.1.0=h8917695_15
   - libsodium=1.0.18=h36c2ea0_1
+  - libspatialindex=1.9.3=he02047a_5
+  - libspatialite=5.1.0=h5539517_6
   - libsqlite=3.45.3=h2797004_0
   - libssh2=1.11.0=h0841786_0
   - libstdcxx-ng=13.2.0=hc0a3c3a_7
@@ -190,13 +213,16 @@ dependencies:
   - logmuse=0.2.6=pyh8c360ce_0
   - lz4=4.3.3=py312h03f37cb_0
   - lz4-c=1.9.4=hcb278e6_0
+  - lzo=2.10=hd590300_1001
   - magics=4.15.4=h3aff5e6_0
   - magics-python=1.5.8=pyhd8ed1ab_1
+  - mapclassify=2.6.1=pyhd8ed1ab_0
   - markdown-it-py=3.0.0=pyhd8ed1ab_0
   - markupsafe=2.1.5=py312h98912ed_0
   - matplotlib-base=3.8.4=py312he5832f3_0
   - matplotlib-inline=0.1.7=pyhd8ed1ab_0
   - mdurl=0.1.2=pyhd8ed1ab_0
+  - minizip=4.0.6=h9d307f2_0
   - mizani=0.11.3=pyhd8ed1ab_0
   - mpi=1.0=mpich
   - mpich=4.2.1=h846660c_100
@@ -207,11 +233,14 @@ dependencies:
   - ncurses=6.5=h59595ed_0
   - nest-asyncio=1.6.0=pyhd8ed1ab_0
   - netcdf4=1.6.5=nompi_py312h26027e0_100
+  - networkx=3.3=pyhd8ed1ab_1
+  - nspr=4.35=h27087fc_0
+  - nss=3.100=hca3bf56_0
   - numba=0.59.1=py312hacefee8_0
   - numcodecs=0.12.1=py312h7070661_1
   - numpy=1.26.4=py312heda63a1_0
   - openjpeg=2.5.2=h488ebb8_0
-  - openssl=3.3.0=hd590300_0
+  - openssl=3.3.1=h4ab18f5_0
   - orc=2.0.0=h17fec99_1
   - packaging=24.0=pyhd8ed1ab_0
   - pandas=2.2.2=py312hfb8ada1_0
@@ -233,6 +262,10 @@ dependencies:
   - platformdirs=4.2.1=pyhd8ed1ab_0
   - plotnine=0.13.6=pyhd8ed1ab_0
   - pluggy=1.5.0=pyhd8ed1ab_0
+  - pooch=1.8.1=pyhd8ed1ab_0
+  - poppler=24.04.0=hb6cd0d7_0
+  - poppler-data=0.4.12=hd8ed1ab_0
+  - postgresql=16.3=h8e811e2_0
   - proj=9.4.0=h1d62c97_1
   - prompt-toolkit=3.0.42=pyha770c72_0
   - psutil=5.9.8=py312h98912ed_0
@@ -245,6 +278,7 @@ dependencies:
   - pyarrow-hotfix=0.6=pyhd8ed1ab_0
   - pygments=2.18.0=pyhd8ed1ab_0
   - pyparsing=3.1.2=pyhd8ed1ab_0
+  - pyproj=3.6.1=py312hb591178_6
   - pysocks=1.7.1=pyha2e5f31_6
   - pytest=8.2.0=pyhd8ed1ab_0
   - python=3.12.3=hab00c5b_0_cpython
@@ -256,17 +290,21 @@ dependencies:
   - pytz=2024.1=pyhd8ed1ab_0
   - pyyaml=6.0.1=py312h98912ed_1
   - pyzmq=26.0.3=py312h8fd38d8_0
+  - rasterio=1.3.10=py312h180d1f8_3
   - re2=2023.09.01=h7f4b329_2
   - readline=8.2=h8228510_1
   - referencing=0.35.1=pyhd8ed1ab_0
+  - regionmask=0.12.1=pyhd8ed1ab_0
   - requests=2.31.0=pyhd8ed1ab_0
   - reretry=0.11.8=pyhd8ed1ab_0
   - rich=13.7.1=pyhd8ed1ab_0
   - rpds-py=0.18.1=py312h4413252_0
+  - rtree=1.2.0=py312hb0aae1a_0
   - s2n=1.4.13=he19d79f_0
   - scikit-learn=1.4.2=py312h394d371_0
   - scipy=1.13.0=py312hc2bc53b_1
   - setuptools=69.5.1=pyhd8ed1ab_0
+  - shapely=2.0.4=py312ha5b4d35_1
   - simplejson=3.19.2=py312h98912ed_0
   - six=1.16.0=pyh6c4a22f_0
   - slack-sdk=3.27.1=pyha770c72_0
@@ -280,7 +318,9 @@ dependencies:
   - snakemake-interface-storage-plugins=3.2.2=pyhdfd78af_0
   - snakemake-minimal=8.11.3=pyhdfd78af_0
   - snappy=1.2.0=hdb0a2a9_1
+  - snuggs=1.4.7=py_0
   - sortedcontainers=2.4.0=pyhd8ed1ab_0
+  - spdlog=1.13.0=hd2e6256_0
   - sqlite=3.45.3=h2c6b66d_0
   - stack_data=0.6.2=pyhd8ed1ab_0
   - statsmodels=0.14.1=py312hc7c0aa3_0
@@ -289,6 +329,7 @@ dependencies:
   - tblib=3.0.0=pyhd8ed1ab_0
   - threadpoolctl=3.5.0=pyhc1e730c_0
   - throttler=1.2.2=pyhd8ed1ab_0
+  - tiledb=2.23.0=h27f064a_0
   - tk=8.6.13=noxft_h4845f30_101
   - tomli=2.0.1=pyhd8ed1ab_0
   - toolz=0.12.1=pyhd8ed1ab_0
@@ -296,9 +337,11 @@ dependencies:
   - tornado=6.4=py312h98912ed_0
   - traitlets=5.14.3=pyhd8ed1ab_0
   - typing_extensions=4.11.0=pyha770c72_0
+  - tzcode=2024a=h3f72095_0
   - tzdata=2024a=h0c530f3_0
   - ubiquerg=0.7.0=pyhd8ed1ab_0
   - udunits2=2.2.28=h40f5838_3
+  - uriparser=0.9.8=hac33072_0
   - urllib3=2.2.1=pyhd8ed1ab_0
   - veracitools=0.1.3=py_0
   - wcwidth=0.2.13=pyhd8ed1ab_0
@@ -306,6 +349,7 @@ dependencies:
   - wrapt=1.16.0=py312h98912ed_0
   - xarray=2024.5.0=pyhd8ed1ab_0
   - xclim=0.49.0=pyhd8ed1ab_0
+  - xerces-c=3.2.5=hac6953d_0
   - xorg-fixesproto=5.0=h7f98852_1002
   - xorg-inputproto=2.3.2=h7f98852_1002
   - xorg-kbproto=1.0.7=h7f98852_1002

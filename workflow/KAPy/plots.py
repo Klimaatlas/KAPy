@@ -62,7 +62,7 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
     # Now merge into dataframe and pivot for plotting
     pltLong = pd.merge(datdf, ptileTbl, on="percentiles", how="left")
     pltDatWide = pltLong.pivot_table(
-        index=["experiment", "periodID"], columns="ptileLbl", values="indicator"
+        index=["experiment", "periodID"], columns="ptileLbl", values="mean"
     ).reset_index()
 
     # Now plot
@@ -178,7 +178,7 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
 
     # Now plot
     p = (
-        ggplot(pltDat, aes(x="datetime", y="indicator", colour="experiment"))
+        ggplot(pltDat, aes(x="datetime", y="mean", colour="experiment"))
         + geom_line()
         + labs(
             x="",

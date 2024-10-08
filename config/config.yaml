@@ -22,12 +22,17 @@ dirs:
 # Configuration options------------------------------------
 arealstats:
     calcForMembers: True
+    shapefile: ''
+    idColumn: ''
+    # shapefile: 'resources/shapefiles/Ghana_regions.shp'
+    # idColumn: 'ADM1_PCODE'
 cutouts:
-    method: 'lonlatbox'
-    xmin: -4
-    xmax: 2
-    ymin: 4
-    ymax: 12
+    method: 'none'
+    # method: 'lonlatbox'
+    # xmin: -4
+    # xmax: 2
+    # ymin: 4
+    # ymax: 12
 ensembles:
     upperPercentile: 90
     centralPercentile: 50

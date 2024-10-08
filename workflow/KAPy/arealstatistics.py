@@ -9,23 +9,67 @@ config=KAPy.getConfig("./config/config.yaml")
 wf=KAPy.getWorkflow(config)
 ensID=next(iter(wf['ensstats'].keys()))
 inFile=wf['ensstats'][ensID]
+#Enable inline plotting in vscode
+%matplotlib inline
 """
 
 import xarray as xr
+import pandas as pd
+import geopandas as gpd
+import regionmask
+import numpy as np
 
 def generateArealstats(config, inFile, outFile):
     # Generate statistics over an area by applying a polygon mask and averaging
     # Setup xarray
-    thisDat = xr.open_dataset(inFile[0])
+    thisDat = xr.open_dataset(inFile[0]).indicator
 
-    # Perform masking
-    # TODO
+    # If we have a shapefile defined, then work with it
+    if config['arealstats']['shapefile']!='':
+        #Import shapefile
+        shapefile = gpd.GeoDataFrame.from_file(config['arealstats']['shapefile'])
 
-    # Average spatially over the time dimension
-    spDims =[d for d in thisDat.dims if d not in ['time','periodID','percentiles']]
-    spMean = thisDat.indicator.mean(dim=spDims)
+        #Setup mask
+        maskRegions=regionmask.from_geopandas(shapefile,
+                                       names=config['arealstats']['idColumn'],
+                                       abbrevs=config['arealstats']['idColumn'],
+                                       name='test')
+        maskRaster=maskRegions.mask_3D_frac_approx(thisDat)
 
-    # Save files pandas
-    dfOut = spMean.to_dataframe()
-    dfOut["area"] = "All"  # Currently place holder. Implement masking in future.
+        #Apply masking and calculate
+        statDims=[d for d in thisDat.dims if d not in ['region','periodID','time','percentiles']]
+        wtMean = thisDat.weighted(maskRaster).mean(dim=statDims)
+        wtMean.name='mean'
+        wtSd = thisDat.weighted(maskRaster).std(dim=statDims)
+        wtSd.name='sd'
+        wtUpper = thisDat.weighted(maskRaster).quantile(q=config['ensembles']['upperPercentile']/100,dim=statDims)
+        wtUpper.name='upperPercentile'
+        wtUpper = wtUpper.drop_vars('quantile')
+        wtCentral = thisDat.weighted(maskRaster).quantile(q=config['ensembles']['centralPercentile']/100,dim=statDims)
+        wtCentral.name='centralPercentile'
+        wtCentral = wtCentral.drop_vars('quantile')        
+        wtLower = thisDat.weighted(maskRaster).quantile(q=config['ensembles']['lowerPercentile']/100,dim=statDims)
+        wtLower.name='lowerPercentile'
+        wtLower = wtLower.drop_vars('quantile')
+
+        #Output object
+        dfOut=xr.merge([wtMean,wtSd,wtLower,wtCentral,wtUpper]).to_dataframe()
+        dfOut=dfOut.rename(columns={'names':'area'})
+        dfOut=dfOut.drop(columns=['abbrevs'])
+        
+
+    #Otherwise, just average spatially
+    else:
+        # Average spatially over the time dimension
+        spDims =[d for d in thisDat.dims if d not in ['time','periodID','percentiles']]
+        spMean = thisDat.mean(dim=spDims)
+        spMean.name='mean'
+        spSd = thisDat.mean(dim=spDims)
+        spSd.name='sd'
+
+        # Save files pandas
+        dfOut = xr.merge([spMean,spSd]).to_dataframe()
+        dfOut["area"] = "All"  
+    
+    #Write results out
     dfOut.to_csv(outFile[0])
