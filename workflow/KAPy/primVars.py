@@ -32,9 +32,11 @@ def buildPrimVar(config, inFiles, outFile, inpID):
     thisInp = config["inputs"][inpID]
 
     # Make dataset object using xarray lazy load approach.
+    # Apply a manual sort ensures that the time axis is correct
     dsIn =xr.open_mfdataset(inFiles,
-                            combine='nested',
+                            combine='nested',  
                             concat_dim='time')
+    dsIn=dsIn.sortby('time')
 
     # Select the desired variable and rename it
     ds = dsIn.rename({thisInp["internalVarName"]: thisInp["varID"]})
