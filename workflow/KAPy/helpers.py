@@ -15,7 +15,8 @@ def readFile(thisPath):
     # pickled or NetCDF based on the file extension
     inExt = os.path.splitext(os.path.basename(thisPath))[1]
     if inExt == ".nc":
-        thisDat = xr.open_dataarray(thisPath)
+        thisDat = xr.open_dataarray(thisPath,
+                                    use_cftime=True)
     elif inExt == ".pkl":  # Read pickle
         with open(thisPath, "rb") as f:
             thisDat = pickle.load(f)

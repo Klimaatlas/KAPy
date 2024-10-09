@@ -34,7 +34,8 @@ def buildPrimVar(config, inFiles, outFile, inpID):
     # Make dataset object using xarray lazy load approach.
     # Apply a manual sort ensures that the time axis is correct
     dsIn =xr.open_mfdataset(inFiles,
-                            combine='nested',  
+                            combine='nested',
+                            use_cftime=True,  
                             concat_dim='time')
     dsIn=dsIn.sortby('time')
 
