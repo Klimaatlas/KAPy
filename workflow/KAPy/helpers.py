@@ -22,3 +22,11 @@ def readFile(thisPath):
     else:
         raise IOError(f"Unknown file format, {inExt} in {thisPath}")
     return thisDat
+
+
+def timeslice(this,startYr,endYr):
+    # Slice dataset
+    timemin = this.time.dt.year >= int(startYr)
+    timemax = this.time.dt.year <= int(endYr)
+    sliced = this.sel(time=timemin & timemax)
+    return sliced

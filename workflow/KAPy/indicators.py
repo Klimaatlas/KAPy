@@ -15,8 +15,7 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 import sys
-from .helpers import readFile
-
+from . import helpers 
 
 def calculateIndicators(config, inFile, outFile, indID):
 
@@ -24,7 +23,7 @@ def calculateIndicators(config, inFile, outFile, indID):
     thisInd = config["indicators"][indID]
 
     # Read the dataset object back from disk, depending on the configuration
-    thisDat = readFile(inFile[0])
+    thisDat = helpers.readFile(inFile[0])
 
     # Filter by season first (should always work)
     theseMonths = config["seasons"][thisInd["season"]]["months"]
@@ -35,9 +34,7 @@ def calculateIndicators(config, inFile, outFile, indID):
         slices = []
         for thisPeriod in config["periods"].values():
             # Slice dataset
-            timemin = datSeason.time.dt.year >= int(thisPeriod["start"])
-            timemax = datSeason.time.dt.year <= int(thisPeriod["end"])
-            datPeriodSeason = datSeason.sel(time=timemin & timemax)
+            datPeriodSeason=helpers.timeslice(datSeason,thisPeriod["start"],thisPeriod["end"])
             timebounds = pd.to_datetime(
                 [f"{thisPeriod['start']}-01-01", f"{thisPeriod['end']}-12-31"]
             )
