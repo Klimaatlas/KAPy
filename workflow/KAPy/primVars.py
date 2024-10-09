@@ -4,7 +4,7 @@ import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.getConfig("./config/config.yaml")  
+config=KAPy.getConfig("./config/config.yaml")
 wf=KAPy.getWorkflow(config)
 inpID=next(iter(wf['primVars'].keys()))
 outFile=[next(iter(wf['primVars'][inpID]))]
@@ -14,7 +14,6 @@ inFiles=wf['primVars'][inpID][outFile[0]]
 
 # Given a set of input files, create objects that can be worked with
 import xarray as xr
-import pickle
 import sys
 import importlib
 from cdo import Cdo
@@ -47,6 +46,11 @@ def buildPrimVar(config, inFiles, outFile, inpID):
                 input=f,
                 returnXDataset=True,
             )
+            # print(type(thisDs))
+            # print(np.min(thisDs["lon"]))
+            # print(np.max(thisDs["lon"]))
+            # print(np.min(thisDs["lat"]))
+            # print(np.max(thisDs["lat"]))
             dsList += [thisDs]
         elif config["cutouts"]["method"] == "none":
             # Load everything using xarray
@@ -66,15 +70,13 @@ def buildPrimVar(config, inFiles, outFile, inpID):
     if len(da.dims) != 3:
         sys.exit(
             f"Extra dimensions found in processing '{inpID}' - there should be only "
-            + f"three dimensions after degenerate dimensions are dropped but "
+            + "three dimensions after degenerate dimensions are dropped but "
             + f"found {len(da.dims)} i.e. {da.dims}."
         )
 
     # Apply additional preprocessing scripts
     if thisInp["applyPreprocessor"]:
-        thisSpec = importlib.util.spec_from_file_location(
-            "customScript", thisInp["preprocessorPath"]
-        )
+        thisSpec = importlib.util.spec_from_file_location("customScript", thisInp["preprocessorPath"])
         thisModule = importlib.util.module_from_spec(thisSpec)
         thisSpec.loader.exec_module(thisModule)
         ppFn = getattr(thisModule, thisInp["preprocessorFunction"])

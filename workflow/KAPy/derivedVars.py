@@ -4,7 +4,7 @@ import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.getConfig("./config/config.yaml")  
+config=KAPy.getConfig("./config/config.yaml")
 wf=KAPy.getWorkflow(config)
 thisID='SPI3'
 thisVar=config['secondaryVars'][thisID]
@@ -14,7 +14,7 @@ sys.path.append("KAPy/workflow/KAPy/")
 from helpers import readFile
 """
 
-import xarray as xr
+import sys
 import importlib
 from .helpers import readFile
 import os
@@ -26,9 +26,7 @@ def buildDerivedVar(config, inFiles, outFile, thisVar):
     inDict = {os.path.basename(os.path.dirname(f)): f for f in inFiles}
 
     # Load input files
-    if thisVar[
-        "passXarrays"
-    ]:  # Then load the paths into xarrays. Otherwise just pass the path.
+    if thisVar["passXarrays"]:  # Then load the paths into xarrays. Otherwise just pass the path.
         inDict = {thisKey: readFile(thisPath) for thisKey, thisPath in inDict.items()}
 
     # Now get the function to call
@@ -36,9 +34,7 @@ def buildDerivedVar(config, inFiles, outFile, thisVar):
         thisModule = importlib.import_module(thisVar["processorPath"])
         thisFn = getattr(thisModule, thisVar["processorFunction"])
     elif thisVar["processorType"] == "script":
-        thisSpec = importlib.util.spec_from_file_location(
-            "customScript", thisVar["processorPath"]
-        )
+        thisSpec = importlib.util.spec_from_file_location("customScript", thisVar["processorPath"])
         thisModule = importlib.util.module_from_spec(thisSpec)
         thisSpec.loader.exec_module(thisModule)
         thisFn = getattr(thisModule, thisVar["processorFunction"])

@@ -1,17 +1,16 @@
 """
-#Setup for debugging with VS code 
+#Setup for debugging with VS code
 import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.getConfig("./config/config.yaml")  
+config=KAPy.getConfig("./config/config.yaml")
 wf=KAPy.getWorkflow(config)
 ensID=next(iter(wf['ensstats'].keys()))
 inFiles=wf['ensstats'][ensID]
 """
 
 import xarray as xr
-import pandas as pd
 
 
 def generateArealstats(config, inFile, outFile):
@@ -23,7 +22,7 @@ def generateArealstats(config, inFile, outFile):
     # TODO
 
     # Average spatially
-    spMean = thisDat.indicator.mean(dim=["longitude", "latitude"])
+    spMean = thisDat.indicator.mean(dim=["Yc", "Xc"])  # (dim=["longitude", "latitude"])
 
     # Save files pandas
     dfOut = spMean.to_dataframe()

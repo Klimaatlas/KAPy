@@ -4,7 +4,7 @@ import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.getConfig("./config/config.yaml")  
+config=KAPy.getConfig("./config/config.yaml")
 inFile=['./results/1.variables/tas/tas_CORDEX_rcp85_AFR-44_MPI-M-MPI-ESM-LR_r1i1p1_SMHI-RCA4_v1_mon.nc']
 inFile=["./results/1.variables/tas/tas_ERA5_t2m_ERA5_monthly.nc"]
 indID='101'
@@ -37,10 +37,9 @@ def calculateIndicators(config, inFile, outFile, indID):
             timemin = datSeason.time.dt.year >= thisPeriod["start"]
             timemax = datSeason.time.dt.year <= thisPeriod["end"]
             datPeriodSeason = datSeason.sel(time=timemin & timemax)
-            timebounds = pd.to_datetime(
-                [f"{thisPeriod['start']}-01-01", f"{thisPeriod['end']}-12-31"]
-            )
-            timestamp = timebounds.mean()
+            # timebounds = pd.to_datetime([f"{thisPeriod['start']}-01-01", f"{thisPeriod['end']}-12-31"])
+            # timestamp = timebounds.mean()
+
             # If there is nothing left, we want a result all the same so that we
             # can put it in the outputs. We copy the structure and populate
             # it with NaNs
@@ -51,17 +50,16 @@ def calculateIndicators(config, inFile, outFile, indID):
             elif thisInd["statistic"] == "mean":
                 res = datPeriodSeason.mean("time", keep_attrs=True)
             else:
-                sys.exit('Unknown indicator statistic, "' + ind["statistic"] + '"')
+                sys.exit(f"Unknown indicator statistic '{thisInd["statistic"]}'")
+                # sys.exit('Unknown indicator statistic, "' + ind["statistic"] + '"')
             # Tidy output
             res["periodID"] = thisPeriod["id"]
             slices.append(res)
 
         # Convert list back into dataset
-        dout = xr.concat(slices, dim="periodID")
+        dout = xr.concat(slices, dim="periodID", coords="minimal")
         dout.periodID.attrs["name"] = "periodID"
-        dout.periodID.attrs["description"] = (
-            f"For period definitions see {config['configurationTables']['periods']}"
-        )
+        dout.periodID.attrs["description"] = f"For period definitions see {config['configurationTables']['periods']}"
 
     # Time binning by defined units
     elif thisInd["time_binning"] in ["years", "months"]:

@@ -4,7 +4,7 @@ import os
 os.chdir("..")
 import KAPy
 os.chdir("..")
-config=KAPy.getConfig("./config/config.yaml")  
+config=KAPy.getConfig("./config/config.yaml")
 inFile=["results/2.indicators/101/101_CORDEX_rcp85_AFR-44_NOAA-GFDL-GFDL-ESM2M_r1i1p1_SMHI-RCA4_v1_mon.nc"]
 outFile=["results/3.common_grid/101/101_CORDEX_rcp85_AFR-22_MPI-M-MPI-ESM-LR_r1i1p1_GERICS-REMO2015_v1_mon.nc"]
 inFile=["resources/ERA5_monthly/t2m_ERA5_monthly.nc"]
@@ -35,9 +35,7 @@ def regrid(config, inFile, outFile):
     # If we have time dimensions, then we can just do the regridding in one hit
     if "time" in thisDat.dims:
         # Apply regridding
-        cdo.remapbil(
-            config["outputGrid"]["cdoGriddes"], input=inFile[0], output=outFile[0]
-        )
+        cdo.remapbil(config["outputGrid"]["cdoGriddes"], input=inFile[0], output=outFile[0])
 
     # Otherwise if we have periodIDs dimensions, then we need to loop over the
     # periods manually

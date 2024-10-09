@@ -58,7 +58,8 @@
                 "regridded",
                 "ensstats",
                 "arealstats",
-                "plots"
+                "plots",
+                "netcdf"
             ],
             "additionalProperties": false,
             "properties": {
@@ -84,6 +85,10 @@
                 },
                 "plots": {
                     "description": "Directory for storing output plots.",
+                    "type": "string"
+                },
+                "netcdf": {
+                    "description": "Directory for storing output netcdfs.",
                     "type": "string"
                 }
             }

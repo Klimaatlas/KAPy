@@ -1,0 +1,9 @@
+id	description	scenarioStrings	hexcolour
+# For CMIP5 models
+#historical	Historical values	_hist_	66C2A5
+#rcp26	Low emissions scenario (RCP2.6)	_rcp26_	FC8D62
+#rcp45	Medium emissions scenario (RCP4.5)	_rcp45_	8DA0CB
+#
+# For CMIP6 models
+historical	Historical values	_hist_	66C2A5
+ssp370	2nd worst scenario (SSP370)	_ssp370_	FC8D62

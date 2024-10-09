@@ -23,10 +23,7 @@ def readConfig(configfile):
         with open(configfile, "r") as f:
             cfg = yaml.safe_load(f)
     else:
-        sys.exit(
-            f"Cannot find configuration file: {configfile}. "
-            + "Working directory: '{os.getcwd()}'"
-        )
+        sys.exit(f"Cannot find configuration file: {configfile}. " + f"Working directory: '{os.getcwd()}'")
     return cfg
 
 
@@ -44,9 +41,7 @@ def validateConfig(config):
     # Setup location of validation schemas
     # schemaDir="./workflow/schemas/"
     # schemaDir="./KAPy/workflow/schemas/"
-    schemaDir = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "schemas"
-    )
+    schemaDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "schemas")
 
     # Validate configuration file
     validate(config, os.path.join(schemaDir, "config.schema.json"))
@@ -54,9 +49,7 @@ def validateConfig(config):
     # Now check that the other configuration tables exist
     for thisKey, thisPath in config["configurationTables"].items():
         if not os.path.exists(thisPath):
-            sys.exit(
-                f"Cannot find configuration table '{thisKey}' at path '{thisPath}'."
-            )
+            sys.exit(f"Cannot find configuration table '{thisKey}' at path '{thisPath}'.")
 
     # Validate each table in turn. The validation approach used
     # is defined in the following table
@@ -97,9 +90,7 @@ def validateConfig(config):
             try:
                 thisTbl[col] = [ast.literal_eval(x) for x in thisTbl[col]]
             except (SyntaxError, ValueError) as e:
-                print(
-                    f"Error occurred in parsing column '{col}' in '{thisCfgFile}' : {e}"
-                )
+                print(f"Error occurred in parsing column '{col}' in '{thisCfgFile}' : {e}")
                 sys.exit()
         # Force id column to be a string. Set to as the index so it can be used as the key
         thisTbl["id"] = [str(x) for x in thisTbl["id"]]

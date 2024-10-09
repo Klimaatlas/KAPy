@@ -1,0 +1,38 @@
+# Basic configuration file
+#---------------------------
+# This configuration file is intended to be used as a basic example and test
+# dataset for the KAPy suite. It is loosely based on the configuration used in the
+# Ghana Climate Atlas, but with simplifications to make it run faster. Sample datasets
+# can be downloaded from https://download.dmi.dk/Research_Projects/KAPy/
+# For instructions, see 
+
+configurationTables:
+    inputs:  '/lustre/storeC-ext/users/klimakverna/development/KAPy/config/inputs_testcase_1.tsv'
+    indicators: '/lustre/storeC-ext/users/klimakverna/development/KAPy/config/indicators_testcase_1.tsv'
+    scenarios:  '/lustre/storeC-ext/users/klimakverna/development/KAPy/config/scenarios_testcase_1.tsv'
+    periods:  '/lustre/storeC-ext/users/klimakverna/development/KAPy/config/periods_testcase_1.tsv'
+    seasons: '/lustre/storeC-ext/users/klimakverna/development/KAPy/config/seasons.tsv'
+dirs:
+    variables: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/1.variables/time_binning_periods/cnrm_hclim'
+    indicators: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/2.indicators/time_binning_periods/cnrm_hclim'
+    regridded: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/3.commmon_grid'
+    ensstats: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/4.ensstats/time_binning_periods/cnrm_hclim'
+    arealstats: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/5.areal_statistics/time_binning_periods/cnrm_hclim'
+    plots: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/6.plots/cnrm_hclim'
+    netcdf: '/lustre/storeC-ext/users/klimakverna/development/KAPy/results/7.netcdf/cnrm_hclim'
+
+# Configuration options------------------------------------
+arealstats:
+    calcForMembers: False
+cutouts:
+    method: 'lonlatbox'
+    xmin: 4.088
+    xmax: 31.761
+    ymin: 57.759
+    ymax: 71.384
+ensembles:
+    upperPercentile: 90
+    centralPercentile: 50
+    lowerPercentile: 10
+outputGrid:
+    regriddingEngine: None

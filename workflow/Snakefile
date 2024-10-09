@@ -17,9 +17,9 @@ import os
 
 #Setup-----------------------
 #Load configuration 
-configfile: "./config/config.yaml"  #Defined relative to execution directory
-config=KAPy.validateConfig(config)
-outDirs=config['dirs']
+configfile: "/lustre/storeC-ext/users/klimakverna/development/KAPy/config/config_testcase_1.yaml"  #Defined relative to execution directory
+config = KAPy.validateConfig(config)
+outDirs = config['dirs']
 
 #Generate filename dicts
 wf=KAPy.getWorkflow(config)
@@ -27,17 +27,13 @@ wf=KAPy.getWorkflow(config)
 # Primary Variables---------------------------------
 #Primary variable singular rule
 def primaryVar_singular_rule(thisID):
-    thisVarName=config['inputs'][thisID]['varName']
+    thisVarName = config['inputs'][thisID]['varName']
     rule:  
         name: f'primaryVar_{thisID}_files'
         output:
-            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
-                   varName=thisVarName)
+            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"), varName=thisVarName)
         input:
-            lambda wildcards: 
-                wf['primVars'][thisID][ os.path.join(outDirs['variables'],
-                                                     thisVarName,
-                                                     f"{thisVarName}_{wildcards.stem}.nc")]
+            lambda wildcards: wf['primVars'][thisID][os.path.join(outDirs['variables'], thisVarName, f"{thisVarName}_{wildcards.stem}.nc")]
         run:
             KAPy.buildPrimVar(config=config,
                               inFiles=input,
@@ -267,17 +263,26 @@ rule plots_boxplots:
     run:
         KAPy.makeBoxplot(config,wildcards.indID,input,output)
 
-rule plots_spatial:
+# rule plots_spatial:
+#     output:
+#         os.path.join(outDirs['plots'],'{indID}_spatial.png')
+#     input:
+#         lambda wildcards: wf['plots'][os.path.join(outDirs['plots'],
+#                                                    f"{wildcards.indID}_spatial.png")]
+#     run:
+#         KAPy.makeSpatialplot(config,wildcards.indID,input,output)
+
+# Change in netcdf
+rule save_change_to_netcdf:
     output:
-        os.path.join(outDirs['plots'],'{indID}_spatial.png')
+        os.path.join(outDirs['netcdf'], '{indID}_{es}_change_periods.nc')
     input:
-        lambda wildcards: wf['plots'][os.path.join(outDirs['plots'],
-                                                   f"{wildcards.indID}_spatial.png")]
+        lambda wildcards: wf['netcdf'][os.path.join(outDirs['netcdf'], f"{wildcards.indID}_{wildcards.es}_change_periods.nc")]
     run:
-        KAPy.makeSpatialplot(config,wildcards.indID,input,output)
-        
+        KAPy.save_change_to_netcdf(config, wildcards.indID, wildcards.es, input, output)
 
 #All-------------------
+# wf['all'] = wf['all'][:-1]
 rule all:
     input:
         wf['all']

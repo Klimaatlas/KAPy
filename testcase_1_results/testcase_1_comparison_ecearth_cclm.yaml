@@ -1,0 +1,19 @@
+(KAPy_040) [kajalhb@ppi-r8login-b1 ~]$ cdo infon /lustre/storeC-ext/users/klimakverna/development/Klimakverna-pilot-KAPy/KAPy/results/7.netcdf/ecearth_cclm/102_rcp45_change_periods.nc 
+cdi  warning (cdf_check_variables): 4 dimensional variables without time dimension are not supported, skipped variable indicator!
+    -1 :       Date     Time   Level Gridsize    Miss :     Minimum        Mean     Maximum : Parameter name
+     1 : 0000-00-00 00:00:00       1  1852250 1497802 : -3.5696e-06  1.1161e-06  1.1143e-05 : indicator_mean
+     2 : 0000-00-00 00:00:00       2  1852250 1497802 : -3.6948e-06  1.9113e-06  1.2984e-05 : indicator_mean
+     3 : 0000-00-00 00:00:00       1  1852250 1497802 : -2.2745e-06  1.0152e-06  1.0573e-05 : indicator_stdev
+     4 : 0000-00-00 00:00:00       2  1852250 1497802 : -7.2345e-06  4.0206e-07  1.0929e-05 : indicator_stdev
+     5 : 0000-00-00 00:00:00       1  1852250 1497802 : -1.3179e-05  4.0004e-06  4.9860e-05 : indicator_max 
+     6 : 0000-00-00 00:00:00       2  1852250 1497802 : -1.8450e-05  4.4332e-06  4.1430e-05 : indicator_max 
+     7 : 0000-00-00 00:00:00       1  1852250 1497802 : -1.6876e-05  4.0064e-07  2.4245e-05 : indicator_min 
+     8 : 0000-00-00 00:00:00       2  1852250 1497802 : -9.2712e-06  2.3190e-06  2.6932e-05 : indicator_min 
+     9 : 0000-00-00 00:00:00       1  1852250 1497802 :     -11.226      2.3554      14.204 : indicator_mean_rel
+    10 : 0000-00-00 00:00:00       2  1852250 1497802 :     -8.4546      5.1859      18.969 : indicator_mean_rel
+cdo    infon: Processed 18522500 values from 5 variables over 1 timestep [0.84s 79MB]
+(KAPy_040) [kajalhb@ppi-r8login-b1 ~]$ cdo infon -sub  /lustre/storeC-ext/users/kin2100/MET/annmeans_bc/far_future_mean/pr/30yrmean_ff_ecearth-r12i1p1-cclm_rcp45_3dbc-eqm-sn2018v2005_rawbc_norway_1km_pr_annual_merged.nc /lustre/storeC-ext/users/kin2100/MET/annmeans_bc/ref_period_mean/pr/30yrmean_ref_ecearth-r12i1p1-cclm_rcp45_3dbc-eqm-sn2018v2005_rawbc_norway_1km_pr_annual_merged.nc 
+cdo(1) sub: Process started
+    -1 :       Date     Time   Level Gridsize    Miss :     Minimum        Mean     Maximum : Parameter name
+     1 : 2086-01-01 00:00:00       0  1852250 1497802 : -3.7009e-06  1.9120e-06  1.3018e-05 : pr            
+cdo    infon: Processed 1852250 values from 1 variable over 1 timestep [0.89s 141MB]
