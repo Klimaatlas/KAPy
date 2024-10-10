@@ -15,11 +15,11 @@ def calculate_ensemble_mean(
     current_dir = Path(__file__).parent
     if "hist" not in scenario:
         periods = [2, 3]
-        search_dir = current_dir / "KAPy/results/7.netcdf"
+        search_dir = current_dir / "results/7.netcdf"
         netcdf_files = glob(f"{search_dir}/**/{indicator_id}_{scenario}*.nc", recursive=True)
     else:
         periods = [1, 2, 3]
-        search_dir = current_dir / "KAPy/results/4.ensstats"
+        search_dir = current_dir / "results/4.ensstats"
 
         match CMIP_version:
             case 6:
@@ -152,8 +152,8 @@ if __name__ == "__main__":
     units = "kg m-2 s-1"
     indicator_name = "Annual mean precipitation by period"
 
-    path_to_config = current_dir / "KAPy/config/config_testcase_1.yaml"
-    path_to_periods = current_dir / "KAPy/config/periods_testcase_1.tsv"
+    path_to_config = current_dir / "config/config_testcase_1.yaml"
+    path_to_periods = current_dir / "config/periods_testcase_1.tsv"
 
     # Create config for this scenario/CMIP version, periods and indicator
     config, scenarios, CMIP_version = create_config(

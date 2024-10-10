@@ -7,7 +7,14 @@
 # config.yaml
 # *.Rproj
 
+__pycache__
+*/__pycache__
+*/*/__pycache__
+.vscode
+
+*.md
+.github
+docs
+workflow/.snakemake
 testcase_1_results/model_ensembles/*/*.nc
 testcase_1_results/model_ensembles/*/*/*.nc
-workflow/.snakemake
-.vscode
