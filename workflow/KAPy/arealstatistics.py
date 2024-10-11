@@ -43,18 +43,9 @@ def generateArealstats(config, inFile, outFile):
         wtMean.name='mean'
         wtSd = thisDat.weighted(maskRaster).std(dim=statDims)
         wtSd.name='sd'
-        wtUpper = thisDat.weighted(maskRaster).quantile(q=config['ensembles']['upperPercentile']/100,dim=statDims)
-        wtUpper.name='upperPercentile'
-        wtUpper = wtUpper.drop_vars('quantile')
-        wtCentral = thisDat.weighted(maskRaster).quantile(q=config['ensembles']['centralPercentile']/100,dim=statDims)
-        wtCentral.name='centralPercentile'
-        wtCentral = wtCentral.drop_vars('quantile')        
-        wtLower = thisDat.weighted(maskRaster).quantile(q=config['ensembles']['lowerPercentile']/100,dim=statDims)
-        wtLower.name='lowerPercentile'
-        wtLower = wtLower.drop_vars('quantile')
 
         #Output object
-        dfOut=xr.merge([wtMean,wtSd,wtLower,wtCentral,wtUpper]).to_dataframe()
+        dfOut=xr.merge([wtMean,wtSd]).to_dataframe()
         dfOut=dfOut.rename(columns={'names':'area'})
         dfOut=dfOut.drop(columns=['abbrevs'])
         
@@ -93,7 +84,7 @@ def combineArealstats(config, inFiles, outFile):
     datdf = pd.concat(dat)
     
     #Split out the defined elements
-    datdf.insert(2,'memberID',datdf['filename'].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.*?).csv$"))
+    datdf.insert(2,'memberID',datdf['filename'].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.*).csv$"))
     datdf.insert(2,'expt',datdf['filename'].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$"))
     datdf.insert(2,'gridID',datdf['filename'].str.extract("^[^_]+_[^_]+_([^_]+)_.*$"))
     datdf.insert(2,'srcID',datdf['filename'].str.extract("^[^_]+_([^_]+)_.*$"))
