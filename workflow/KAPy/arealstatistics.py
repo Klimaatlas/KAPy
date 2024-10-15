@@ -23,7 +23,9 @@ import os
 def generateArealstats(config, inFile, outFile):
     # Generate statistics over an area by applying a polygon mask and averaging
     # Setup xarray
-    thisDat = xr.open_dataset(inFile[0]).indicator
+    # Note that we need to use open_dataset here, as the ensemble files have
+    # multiple data variables in them
+    thisDat = xr.open_dataset(inFile[0],use_cftime=True).indicator
 
     # If we have a shapefile defined, then work with it
     if config['arealstats']['shapefile']!='':

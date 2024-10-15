@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import sys
 from . import helpers 
+import cftime
 
 def calculateIndicators(config, inFile, outFile, indID):
 
@@ -80,7 +81,10 @@ def calculateIndicators(config, inFile, outFile, indID):
         # Round time to the middle of the month. This ensures that everything
         # has an identical datetime, regardless of the calendar being used.
         # Kudpos to ChatGPT for this little work around
-        dout["time"] = pd.to_datetime(dout.time.dt.strftime("%Y-%m-15"))
+        # Note that we need to ensure cftime representation, for runs that
+        # go out paste 2262
+        dout["time"] = [cftime.DatetimeGregorian(x.dt.strftime("%Y"),x.dt.strftime("%m"),15)
+                                                for x in dout.time]
 
     else:
         sys.exit("Unknown time_binning method, '" + thisInd["time_binning"] + "'")

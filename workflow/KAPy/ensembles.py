@@ -22,7 +22,7 @@ def generateEnsstats(config, inFiles, outFile):
     # However, this is quite fancy, and does a lot of logic about calendars that
     # create further problems. Instead, given that everything is on the same grid,
     # we can just open it all using open_mfdataset
-    thisEns = xr.open_mfdataset(inFiles, concat_dim="realization", combine="nested")
+    thisEns = xr.open_mfdataset(inFiles, concat_dim="realization", combine="nested",use_cftime=True)
     # Calculate the statistics
     ens_mean_std = xcEns.ensemble_mean_std_max_min(thisEns)
     ens_percs = xcEns.ensemble_percentiles(
