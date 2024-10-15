@@ -15,6 +15,7 @@ import pandas as pd
 import os
 import xarray as xr
 import matplotlib
+import cftime
 
 # Set default backend to workaround problems caused by the
 # default not being uniform across systems - in particular, we 
@@ -122,7 +123,7 @@ def makeSpatialplot(config, indID, srcFiles, outFile=None):
     pltDat = pd.concat(datdf)
 
     #Identify spatial coordinates
-    spDimX=[d for d in pltDat.columns if d in ['x','longitude','long']]
+    spDimX=[d for d in pltDat.columns if d in ['x','longitude','long','lon']]
     spDimY=[d for d in pltDat.columns if d in ['y','latitude','lat']]
     pltDat['x']=pltDat[spDimX]
     pltDat['y']=pltDat[spDimY]
