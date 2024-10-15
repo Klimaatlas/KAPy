@@ -15,7 +15,7 @@ import pandas as pd
 import os
 import xarray as xr
 import matplotlib
-import cftime
+from datetime import datetime
 
 # Set default backend to workaround problems caused by the
 # default not being uniform across systems - in particular, we 
@@ -172,7 +172,8 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
         datIn["experiment"] = datIn["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
         dat += [datIn]
     datdf = pd.concat(dat)
-    datdf["datetime"] = pd.to_datetime(datdf["time"])
+    #Use datetime library to handle dates longer than 2262 and plotting in plotnine
+    datdf["datetime"] = [datetime.strptime(d,"%Y-%m-%d") for d in datdf["time"]]
 
     # Now select data for plotting - we only plot the central value, not the full range
     pltDat = datdf[datdf["percentiles"] == config["ensembles"]["centralPercentile"]]
@@ -180,7 +181,7 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
     # Now plot
     p = (
         ggplot(pltDat, aes(x="datetime", y="mean", colour="experiment"))
-        + geom_line()
+        + geom_point()
         + labs(
             x="",
             y=f"Value ({thisInd['units']})",
@@ -188,6 +189,7 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
             colour="Scenario",
         )
         + theme_bw()
+        + scale_x_datetime(date_labels="%Y")
         + theme(legend_position="bottom")
     )
     # Output

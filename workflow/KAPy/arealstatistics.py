@@ -58,15 +58,20 @@ def generateArealstats(config, inFile, outFile):
         spDims =[d for d in thisDat.dims if d not in ['time','periodID','percentiles']]
         spMean = thisDat.mean(dim=spDims)
         spMean.name='mean'
-        spSd = thisDat.mean(dim=spDims)
+        spSd = thisDat.std(dim=spDims)
         spSd.name='sd'
 
         # Save files pandas
         dfOut = xr.merge([spMean,spSd]).to_dataframe()
         dfOut["area"] = "All"  
+
+    #Write out date without time for easier handling
+    dfOut=dfOut.reset_index()
+    if 'time' in dfOut.columns:
+        dfOut['time']=[d.strftime("%Y-%m-%d") for d in dfOut['time']]
     
     #Write results out
-    dfOut.to_csv(outFile[0])
+    dfOut.to_csv(outFile[0],index=False)
 
 
 
