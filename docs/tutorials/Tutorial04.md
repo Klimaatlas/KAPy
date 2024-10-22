@@ -20,11 +20,11 @@ ls resources/CORDEX/*
 
 3. Input data sources are defined via the input configuration table `./config/inputs.tsv`. Open this file in a text editor (e.g. `vi`). Each row corresponds to an input file type. You should be able to identify one row for CORDEX tas inputs and one for ERA5 inputs.
 
-4. Next, we need to modify this file to incorporate the new data inputs using a spreadsheet.  A correctly formatted version of this file can be found [here](Tutorial04_files) - download and save it over the top of the existing `./config/inputs.tsv`. 
+4. Next, we need to modify this file to incorporate the new data inputs using a `spreadsheet`. For convinience, a correctly formatted version of this file can be found [here](Tutorial04_files) - download and save it over the top of the existing `./config/inputs.tsv`. 
 
-5. Open the new file in a text viewer - you will see that two more lines have been added for precipitation data at the bottom. Note also the addition of the new `pr` tags to the `CORDEX` and `ERA5` inputs. `path` is the path to the files, including a `*` glob to allow for general pattern matching. `stemRegex` is a regular expression used to describe the structure of the filenames - the bracketed section are the common elements in the filename. `internalVarName` is the internal representation of the variable - in this case, ERA5 calls precipitation `tp` rather than `pr` in CORDEX.
+5. Open the new file in a text viewer - you will see that three more lines have been added for precipitation data at the bottom. Note also the addition of the new `pr` tags to the `CORDEX` and `ERA5` inputs. `path` is the path to the files, including a `*` glob to allow for general pattern matching. To allow an intuitive way of uniquely selecting all the input files of interest, certain parts of the original CORDEX file naming structure, separated by the `fieldSeparator` (_), are assigned positions specified in `ensMemberFields`. This method offers a flexible way to generate meaningful criteria for selecting/naming `CORDEX` data files based on a structured naming convention. `internalVarName` is the internal representation of the variable - in this case, ERA5 calls precipitation `tp` rather than `pr` in CORDEX.
 
-6. We also want to do something with this input dataset, so we need to define some indicators that can use it as well. Modify the indicator section of `config.yaml` to look like the following and save the file, maintaining indenting. Here we have added two parallel indicators to `101` and `102` that work with `pr` rather than `tas`. Alternatively you can download a correctly formatted version of this file from [here](Tutorial04_files).
+6. We also want to do something with this input dataset, so we need to define some indicators that can use it as well. Modify the indicator section of `config.yaml` to look like the following and save the file, maintaining indenting is very important. Here we have added two parallel indicators to `101` and `102` that work with `pr` rather than `tas`. Alternatively you can download a correctly formatted version of this file from [here](Tutorial04_files).
 
 ```
 id      name    units   variables       season  statistic       time_binning
@@ -43,7 +43,7 @@ snakemake -n
 7. The revised DAG is also more complicated as a result. Open the file `dag_tutorial04.png` and compare it to the previous DAGs.
 
 ```
-snakemake notebooks --dag | dot -Tpng -Grankdir=LR > dag_tutorial04.png
+snakemake --dag | dot -Tpng -Grankdir=LR > dag_tutorial04.png
 ```
 
 8. Make it so!
