@@ -16,11 +16,8 @@
   "properties": {
     "id": {
       "description": "Identifier for the indicators. Must be unique.",
-      "type": [
-        "string",
-        "integer"
-      ],
-      "unique": true
+      "type": "string",
+      "uniqueItems": true
     },
     "name": {
       "description": "Name of the indicator.",

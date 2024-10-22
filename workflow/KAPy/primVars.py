@@ -1,6 +1,7 @@
 """
 #Setup for debugging with a Jupyterlab console
 import os
+print(os.getcwd())
 os.chdir("..")
 import KAPy
 os.chdir("..")
@@ -30,36 +31,17 @@ def buildPrimVar(config, inFiles, outFile, inpID):
     # Get input configuration
     thisInp = config["inputs"][inpID]
 
-    # Make dataset object. We do this manually, so as to explictly avoid
-    # dask getting involved. This may change in the future
-    # We also do the cutouts at this point, so as to minimise the amount of
-    # data that is actually loaded into memory
-    dsList = []
-    for f in inFiles:
-        if config["cutouts"]["method"] == "lonlatbox":
-            # Do cutouts using cdo sellonlatbox
-            cdo = Cdo()
-            thisDs = cdo.sellonlatbox(
-                config["cutouts"]["xmin"],
-                config["cutouts"]["xmax"],
-                config["cutouts"]["ymin"],
-                config["cutouts"]["ymax"],
-                input=f,
-                returnXDataset=True,
-            )
-            dsList += [thisDs]
-        elif config["cutouts"]["method"] == "none":
-            # Load everything using xarray
-            dsList += [xr.open_dataset(f)]
-        else:
-            sys.exit(f"Unsupported cutout option '{config['cutouts']['method']}'.")
-
-    # Now combine into one object
-    dsIn = xr.combine_by_coords(dsList, combine_attrs="drop_conflicts")
+    # Make dataset object using xarray lazy load approach.
+    # Apply a manual sort ensures that the time axis is correct
+    dsIn =xr.open_mfdataset(inFiles,
+                            combine='nested',
+                            use_cftime=True,  
+                            concat_dim='time')
+    dsIn=dsIn.sortby('time')
 
     # Select the desired variable and rename it
-    ds = dsIn.rename({thisInp["internalVarName"]: thisInp["varName"]})
-    da = ds[thisInp["varName"]]  # Convert to dataarray
+    ds = dsIn.rename({thisInp["internalVarName"]: thisInp["varID"]})
+    da = ds[thisInp["varID"]]  # Convert to dataarray
 
     # Drop degenerate dimensions. If any remain, throw an error
     da = da.squeeze()
@@ -70,16 +52,48 @@ def buildPrimVar(config, inFiles, outFile, inpID):
             + f"found {len(da.dims)} i.e. {da.dims}."
         )
 
-    # Apply additional preprocessing scripts
-    if thisInp["applyPreprocessor"]:
-        thisSpec = importlib.util.spec_from_file_location(
-            "customScript", thisInp["preprocessorPath"]
-        )
-        thisModule = importlib.util.module_from_spec(thisSpec)
-        thisSpec.loader.exec_module(thisModule)
-        ppFn = getattr(thisModule, thisInp["preprocessorFunction"])
-        da = ppFn(da)  # Assume no input arguments
+    #Apply cutout functionality
+    if config["cutouts"]["method"] == "lonlatbox":
+        # The processing chain here is to first take
+        # a slide, and then do a cdo cutoout on it. This
+        # can be used as a mask on the xarray object - this
+        # way we can maintain the lazy-loading and storage benefits
+        # associated with pickling
+        
+        # Extract first time step. This avoids having to work
+        # with the entire dataset
+        firstTS=da.isel(time=0)
+
+        # Do cutouts using cdo sellonlatbox.
+        cdo = Cdo()
+        cutoutMask = cdo.sellonlatbox(
+            config["cutouts"]["xmin"],
+            config["cutouts"]["xmax"],
+            config["cutouts"]["ymin"],
+            config["cutouts"]["ymax"],
+            input=firstTS,
+            returnXDataset=True)
+        
+        # Apply masking to data array object
+        da=da.where(cutoutMask.notnull(),drop=True)
+
+    elif config["cutouts"]["method"] != "none":
+        #problem
+        sys.exit(f"Unsupported cutout option '{config['cutouts']['method']}'.")
+
+    # # Apply additional preprocessing scripts
+    # if thisInp["importScriptPath"]!='':
+    #     thisSpec = importlib.util.spec_from_file_location(
+    #         "customScript", thisInp["importScriptPath"]
+    #     )
+    #     thisModule = importlib.util.module_from_spec(thisSpec)
+    #     thisSpec.loader.exec_module(thisModule)
+    #     ppFn = getattr(thisModule, thisInp["importScriptFunction"])
+    #     da = ppFn(da)  # Assume no input arguments
 
     # Write the dataset object to disk, depending on the configuration
-    # Currently write the whole lot. Could potentially pickle in the future
-    da.to_netcdf(outFile[0])
+    if config['processing']['picklePrimaryVariables']:
+        with open(outFile[0],'wb') as f:
+            pickle.dump(da,f,protocol=-1)
+    else:
+        da.to_netcdf(outFile[0])

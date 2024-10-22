@@ -15,7 +15,7 @@ outFile=["~/foo.nc"]
 from cdo import Cdo
 import xarray as xr
 import sys
-from .helpers import readFile
+from . import helpers
 
 
 def regrid(config, inFile, outFile):
@@ -30,7 +30,7 @@ def regrid(config, inFile, outFile):
     # based on periods and based on years / months - this is because CDO
     # doesn't like the idea of a periodID dimension. Start by opening
     # the file with xarray to figure out what we've got
-    thisDat = readFile(inFile[0])
+    thisDat = helpers.readFile(inFile[0])
 
     # If we have time dimensions, then we can just do the regridding in one hit
     if "time" in thisDat.dims:

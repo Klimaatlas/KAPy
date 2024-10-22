@@ -22,8 +22,10 @@ channels:
 dependencies:
   - python
   - pandas
+  - geopandas
   - snakemake
   - xarray
+  - regionmask
   - netcdf4
   - zarr
   - xclim

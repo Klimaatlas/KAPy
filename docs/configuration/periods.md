@@ -4,7 +4,7 @@
 
 ## Properties
 
-- **`id`** *(['integer', 'string'])*: Unique identifier for the period. This can be numeric, but will be treated as a string.
+- **`id`** *(string)*: Unique identifier for the period. This can be numeric, but will be treated as a string.
 - **`name`** *(string)*: A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long!
-- **`start`** *(integer)*: The start year of the period. The full year is included in the calculation.
-- **`end`** *(integer)*: The end year of the period. The full year is included in the calculation.
+- **`start`** *(string)*: The start year of the period. The full year is included in the calculation.
+- **`end`** *(string)*: The end year of the period. The full year is included in the calculation.

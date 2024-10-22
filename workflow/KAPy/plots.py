@@ -2,6 +2,7 @@
 """
 #Debugging setup for VS Code
 import os
+print(os.getcwd())
 os.chdir("..")
 import KAPy
 os.chdir("..")
@@ -14,6 +15,7 @@ import pandas as pd
 import os
 import xarray as xr
 import matplotlib
+from datetime import datetime
 
 # Set default backend to workaround problems caused by the
 # default not being uniform across systems - in particular, we 
@@ -25,8 +27,8 @@ matplotlib.use('Agg')
 """
 indID="101"
 srcFiles=list(wf['plots'].values())[0]
-srcFiles=['results/5.areal_statistics/101_CORDEX_rcp26_ensstats.csv',
-          'results/5.areal_statistics/101_CORDEX_rcp85_ensstats.csv']
+srcFiles=['results/5.areal_statistics/101_CORDEX_Ghana025_rcp26_ensstats.csv',
+          'results/5.areal_statistics/101_CORDEX_Ghana025_rcp85_ensstats.csv']
 """
 
 def makeBoxplot(config, indID, srcFiles, outFile=None):
@@ -40,7 +42,7 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         datIn = pd.read_csv(f)
         datIn["fname"] = os.path.basename(f)
         datIn["periodID"] = [str(x) for x in datIn["periodID"]]
-        datIn["scenario"] = datIn["fname"].str.extract("^.*?_.*?_(.*?)_.*$")
+        datIn["experiment"] = datIn["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
         dat += [datIn]
     datdf = pd.concat(dat)
 
@@ -57,13 +59,11 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         x["id"]: f"{x['name']}\n({x['start']}-{x['end']})"
         for i, x in periodTbl.iterrows()
     }
-    scTbl = pd.DataFrame.from_dict(config["scenarios"], orient="index")
-    scColourDict = {x["id"]: "#" + x["hexcolour"] for i, x in scTbl.iterrows()}
 
     # Now merge into dataframe and pivot for plotting
     pltLong = pd.merge(datdf, ptileTbl, on="percentiles", how="left")
     pltDatWide = pltLong.pivot_table(
-        index=["scenario", "periodID"], columns="ptileLbl", values="indicator"
+        index=["experiment", "periodID"], columns="ptileLbl", values="mean"
     ).reset_index()
 
     # Now plot
@@ -72,7 +72,7 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         + geom_boxplot(
             mapping=aes(
                 x="periodID",
-                fill="scenario",
+                fill="experiment",
                 middle="centralPercentile",
                 ymin="lowerPercentile",
                 ymax="upperPercentile",
@@ -86,10 +86,9 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
             x="Period",
             y=f"Value ({thisInd['units']})",
             title=f"{thisInd['name']} ",
-            fill="Scenario",
+            fill="Experiment",
         )
         + scale_x_discrete(labels=periodLblDict)
-        + scale_fill_manual(values=scColourDict)
         + theme_bw()
         + theme(legend_position="bottom", panel_grid_major_x=element_blank())
     )
@@ -106,8 +105,6 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
 indID='101'
 srcFiles=list(wf['plots'].values())[1]
 """
-
-
 def makeSpatialplot(config, indID, srcFiles, outFile=None):
     # Extract indicator info
     thisInd = config["indicators"][indID]
@@ -117,26 +114,31 @@ def makeSpatialplot(config, indID, srcFiles, outFile=None):
     for d in srcFiles:
         # Import object
         thisdat = xr.open_dataset(d)
-        # We want to plot a spatial map of the change from start to finish
-        change = thisdat.isel(periodID=-1) - thisdat.isel(periodID=0)
-        changedf = change.indicator_mean.to_dataframe().reset_index()
-        changedf["fname"] = os.path.basename(d)
-        changedf["scenario"] = changedf["fname"].str.extract("^.*?_.*?_(.*?)_.*$")
-        datdf += [changedf]
+        # We want to plot a spatial map of the first and last indicators
+        firstlast = thisdat.isel(periodID=[0,-1])
+        firstlastdf = firstlast.indicator_mean.to_dataframe().reset_index()
+        firstlastdf["fname"] = os.path.basename(d)
+        firstlastdf["experiment"] = firstlastdf["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
+        datdf += [firstlastdf]
     pltDat = pd.concat(datdf)
+
+    #Identify spatial coordinates
+    spDimX=[d for d in pltDat.columns if d in ['x','longitude','long','lon']]
+    spDimY=[d for d in pltDat.columns if d in ['y','latitude','lat']]
+    pltDat['x']=pltDat[spDimX]
+    pltDat['y']=pltDat[spDimY]
 
     # Make plot
     p = (
-        ggplot(pltDat, aes(x="longitude", y="latitude", fill="indicator_mean"))
+        ggplot(pltDat, aes(x="x", y="y", fill="indicator_mean"))
         + geom_raster()
-        + facet_wrap("~scenario")
+        + facet_grid("periodID~experiment")
         + theme_bw()
         + labs(
             x="",
             y="",
-            fill=f"Change\n({thisInd['units']})",
-            title=f"{thisInd['name']} ",
-            caption="Change in indicator from first period to last period",
+            fill=f"Value\n({thisInd['units']})",
+            title=f"{thisInd['name']} "
         )
         + scale_x_continuous(expand=[0, 0])
         + scale_y_continuous(expand=[0, 0])
@@ -167,30 +169,27 @@ def makeLineplot(config, indID, srcFiles, outFile=None):
     for f in srcFiles:
         datIn = pd.read_csv(f)
         datIn["fname"] = os.path.basename(f)
-        datIn["scenario"] = datIn["fname"].str.extract("^.*?_.*?_(.*?)_.*$")
+        datIn["experiment"] = datIn["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
         dat += [datIn]
     datdf = pd.concat(dat)
-    datdf["datetime"] = pd.to_datetime(datdf["time"])
-
-    # Get metafra data from configuration
-    scTbl = pd.DataFrame.from_dict(config["scenarios"], orient="index")
-    scColourDict = {x["id"]: "#" + x["hexcolour"] for i, x in scTbl.iterrows()}
+    #Use datetime library to handle dates longer than 2262 and plotting in plotnine
+    datdf["datetime"] = [datetime.strptime(d,"%Y-%m-%d") for d in datdf["time"]]
 
     # Now select data for plotting - we only plot the central value, not the full range
     pltDat = datdf[datdf["percentiles"] == config["ensembles"]["centralPercentile"]]
 
     # Now plot
     p = (
-        ggplot(pltDat, aes(x="datetime", y="indicator", colour="scenario"))
-        + geom_line()
+        ggplot(pltDat, aes(x="datetime", y="mean", colour="experiment"))
+        + geom_point()
         + labs(
             x="",
             y=f"Value ({thisInd['units']})",
             title=f"{thisInd['name']} ",
             colour="Scenario",
         )
-        + scale_colour_manual(values=scColourDict)
         + theme_bw()
+        + scale_x_datetime(date_labels="%Y")
         + theme(legend_position="bottom")
     )
     # Output

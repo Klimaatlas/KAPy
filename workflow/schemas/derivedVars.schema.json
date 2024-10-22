@@ -15,7 +15,8 @@
     "properties": {
         "id": {
             "description": "Code by which to refer to the variable e.g. `tas`, `SPI`, `pr` etc",
-            "type": "string"
+            "type": "string",
+            "uniqueItems": true
         },
         "inputVars": {
             "description": "Comma-separated list of input variables to be used in generating this new variable.",
