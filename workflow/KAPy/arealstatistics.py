@@ -19,6 +19,7 @@ import geopandas as gpd
 import regionmask
 import numpy as np
 import os
+from cdo import Cdo
 
 def generateArealstats(config, inFile, outFile):
     # Generate statistics over an area by applying a polygon mask and averaging
@@ -26,6 +27,16 @@ def generateArealstats(config, inFile, outFile):
     # Note that we need to use open_dataset here, as the ensemble files have
     # multiple data variables in them
     thisDat = xr.open_dataset(inFile[0],use_cftime=True).indicator
+
+    # If using area weighting, get the pixel size
+    if config['arealstats']['useAreaWeighting']:
+        cdo=Cdo()
+        pxlSize=cdo.gridarea(input=thisDat.isel(time=0),
+                             returnXDataset=True)
+        pxlSize=pxlSize.cell_area
+    else:
+        pxlSize=thisDat.isel(time=0)
+        pxlSize.value[:]=1
 
     # If we have a shapefile defined, then work with it
     if config['arealstats']['shapefile']!='':
@@ -39,26 +50,26 @@ def generateArealstats(config, inFile, outFile):
                                        name='test')
         maskRaster=maskRegions.mask_3D_frac_approx(thisDat)
 
-        #Apply masking and calculate
-        statDims=[d for d in thisDat.dims if d not in ['region','periodID','time','percentiles']]
-        wtMean = thisDat.weighted(maskRaster).mean(dim=statDims)
+        #Apply masking and weighting and calculate
+        wtThis=maskRaster*pxlSize
+        statDims=set(thisDat.dims) - set(['region','periodID','time','percentiles'])
+        wtMean = thisDat.weighted(wtThis).mean(dim=statDims)
         wtMean.name='mean'
-        wtSd = thisDat.weighted(maskRaster).std(dim=statDims)
+        wtSd = thisDat.weighted(wtThis).std(dim=statDims)
         wtSd.name='sd'
 
         #Output object
         dfOut=xr.merge([wtMean,wtSd]).to_dataframe()
         dfOut=dfOut.rename(columns={'names':'area'})
         dfOut=dfOut.drop(columns=['abbrevs'])
-        
 
     #Otherwise, just average spatially
     else:
         # Average spatially over the time dimension
-        spDims =[d for d in thisDat.dims if d not in ['time','periodID','percentiles']]
-        spMean = thisDat.mean(dim=spDims)
+        spDims =set(thisDat.dims)-set(['time','periodID','percentiles'])
+        spMean = thisDat.weighted(pxlSize).mean(dim=spDims)
         spMean.name='mean'
-        spSd = thisDat.std(dim=spDims)
+        spSd = thisDat.weighted(pxlSize).std(dim=spDims)
         spSd.name='sd'
 
         # Save files pandas

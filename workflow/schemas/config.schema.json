@@ -86,12 +86,17 @@
         },
         "arealstats": {
             "required": [
+                "useAreaWeighting",
                 "shapefile",
                 "idColumn"
             ],
             "additionalProperties": false,
             "type": "object",
             "properties": {
+                "useAreaWeighting": {
+                    "description": "Use area-weighting when calculating averages over a polygon or area. Nearly all climate data is presented on grids where the area of the pixels is not constant, but changes in space - for example, on a regular lat-lon grid, the pixels get smaller towards the poles. When this option is configured, the CDO `gridarea` operator is used to calculate the area of each cell, and weightings applied to the calculation of area statistics accordingly. Requires that CDO can calculate the cell area - otherwise, it is recommended to disable this option manually.",
+                    "type": "boolean"
+                },
                 "shapefile": {
                     "description": "Path to shapefile to be used for defining areas. When the path is undefined, averages are calculated across the entire domain. The path should point to the .shp file.",
                     "type": ["string","null"]
@@ -226,7 +231,7 @@
                             "type": "string"
                         },
                         "cdoGriddes": {
-                            "description": "Path to CDO grid descriptor, specifying the output grid. For more information see the CDO documentation, specifically section 1.5 about horizontal grids, section 2.12 about interpolation and Appendix D for examples of grid descriptors.",
+                            "description": "CDO grid descriptor, specifying the output grid. Following the way that CDO works, this can either be a path to a grid descriptor file, or one of the predefined grids e.g. `global_1`. For more information see the CDO documentation, specifically [section 1.5](https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-280001.5) about horizontal grids, [section 2.12](https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-6900002.12] about interpolation and [Appendix D](https://code.mpimet.mpg.de/projects/cdo/embedded/index.html#x1-995000D] for examples of grid descriptors.",
                             "type": "string"
                         }
                     }

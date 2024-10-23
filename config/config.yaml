@@ -21,6 +21,7 @@ dirs:
 
 # Configuration options------------------------------------
 arealstats:
+    useAreaWeighting: True
     shapefile: ''
     idColumn: ''
     # shapefile: 'resources/shapefiles/Ghana_regions.shp'

@@ -11,7 +11,7 @@ indID='101y'
 outFile=[next(iter(wf['indicators'][indID]))]
 inFile=wf['indicators'][indID][outFile[0]]
 import matplotlib.pyplot as plt
-%matplotlib qt
+%matplotlib inline
 
 """
 
