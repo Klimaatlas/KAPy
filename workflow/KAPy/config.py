@@ -1,7 +1,8 @@
 """
 #Debug setup
 import os
-os.chdir("../..")
+print(os.getcwd())
+os.chdir("..")
 """
 
 import yaml
@@ -65,6 +66,9 @@ def validateConfig(config):
         "inputs": {"listCols": ['ensMemberFields'], "dictCols": [], "schema": "inputs"},
         "periods": {"listCols": [], "dictCols": [], "schema": "periods"},
         "seasons": {"listCols": ["months"], "dictCols": [], "schema": "seasons"},
+        "calibration": {"listCols": [], 
+                        "dictCols": ["additionalArgs"],
+                        "schema": "calibration"},
         "secondaryVars": {
             "listCols": ["inputVars", "outputVars"],
             "dictCols": ["additionalArgs"],
