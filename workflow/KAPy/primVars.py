@@ -1,16 +1,19 @@
 """
-#Setup for debugging with a Jupyterlab console
+#Setup for debugging with VSCode
 import os
 print(os.getcwd())
 os.chdir("..")
 import KAPy
 os.chdir("..")
+os.chdir("..")
+print(os.getcwd())
 config=KAPy.getConfig("./config/config.yaml")  
 wf=KAPy.getWorkflow(config)
 inpID=next(iter(wf['primVars'].keys()))
 outFile=[next(iter(wf['primVars'][inpID]))]
 inFiles=wf['primVars'][inpID][outFile[0]]
-
+import matplotlib.pyplot as plt
+%matplotlib qt
 """
 
 # Given a set of input files, create objects that can be worked with
@@ -33,9 +36,13 @@ def buildPrimVar(config, inFiles, outFile, inpID):
 
     # Make dataset object using xarray lazy load approach.
     # Apply a manual sort ensures that the time axis is correct
+    # Use the join="override" argument to handle the case where
+    # there are small numerical differences in the values of the
+    # coordinates - in this case, we take the coordinates from the first file
     dsIn =xr.open_mfdataset(inFiles,
                             combine='nested',
-                            use_cftime=True,  
+                            use_cftime=True, 
+                            join="override", 
                             concat_dim='time')
     dsIn=dsIn.sortby('time')
 
@@ -44,7 +51,7 @@ def buildPrimVar(config, inFiles, outFile, inpID):
     da = ds[thisInp["varID"]]  # Convert to dataarray
 
     # Drop degenerate dimensions. If any remain, throw an error
-    da = da.squeeze()
+    da = da.squeeze(drop=True)
     if len(da.dims) != 3:
         sys.exit(
             f"Extra dimensions found in processing '{inpID}' - there should be only "
