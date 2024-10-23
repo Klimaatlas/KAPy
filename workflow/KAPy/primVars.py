@@ -13,7 +13,7 @@ inpID=next(iter(wf['primVars'].keys()))
 outFile=[next(iter(wf['primVars'][inpID]))]
 inFiles=wf['primVars'][inpID][outFile[0]]
 import matplotlib.pyplot as plt
-%matplotlib qt
+%matplotlib inline
 """
 
 # Given a set of input files, create objects that can be worked with
@@ -58,6 +58,16 @@ def buildPrimVar(config, inFiles, outFile, inpID):
             + f"three dimensions after degenerate dimensions are dropped but "
             + f"found {len(da.dims)} i.e. {da.dims}."
         )
+
+    # Drop coordinates that are not associated with a dimension. Often you seen
+    # height or level coming in as a coordinate, when it is perhaps more appropriate as
+    # an attribute. However, different models handle this differently, and some have
+    # already dropped it. The different between the two can cause problems when we
+    # come to the point of merging ensemble members.
+    for thisCoord in da.coords.keys():
+        if len(da[thisCoord].dims)==0:
+            da.attrs[thisCoord]=da[thisCoord].values
+            da= da.drop_vars(thisCoord)
 
     #Apply cutout functionality
     if config["cutouts"]["method"] == "lonlatbox":

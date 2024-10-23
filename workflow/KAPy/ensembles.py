@@ -6,8 +6,8 @@ import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
 wf=KAPy.getWorkflow(config)
-ensID=next(iter(wf['ensstats'].keys()))
-inFiles=wf['ensstats'][ensID]
+outFile=[next(iter(wf['ensstats'].keys()))]
+inFiles=wf['ensstats'][outFile[0]]
 """
 
 import xarray as xr
@@ -20,9 +20,13 @@ def generateEnsstats(config, inFiles, outFile):
     # they can then be concatenated into a single object. There are
     # two approachs. Previously we have used the create_ensemble from xclim.ensembles
     # However, this is quite fancy, and does a lot of logic about calendars that
-    # create further problems. Instead, given that everything is on the same grid,
-    # we can just open it all using open_mfdataset
-    thisEns = xr.open_mfdataset(inFiles, concat_dim="realization", combine="nested",use_cftime=True)
+    # create further problems. It also doesn't seem to handle cftime calendars at all well
+    # Instead, we do it by directly opening the files with open_mfdataset. 
+    thisEns = xr.open_mfdataset(inFiles, 
+                                concat_dim="realization", 
+                                combine="nested",
+                                coords="all",
+                                use_cftime=True)
     # Calculate the statistics
     ens_mean_std = xcEns.ensemble_mean_std_max_min(thisEns)
     ens_percs = xcEns.ensemble_percentiles(
