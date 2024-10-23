@@ -6,9 +6,13 @@ os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
-inFile=['./results/1.variables/tas/tas_CORDEX_rcp85_AFR-44_MPI-M-MPI-ESM-LR_r1i1p1_SMHI-RCA4_v1_mon.nc']
-inFile=["./results/1.variables/tas/tas_ERA5_t2m_ERA5_monthly.nc"]
-indID='101'
+wf=KAPy.getWorkflow(config)
+indID='101y'
+outFile=[next(iter(wf['indicators'][indID]))]
+inFile=wf['indicators'][indID][outFile[0]]
+import matplotlib.pyplot as plt
+%matplotlib qt
+
 """
 
 import xarray as xr
@@ -64,11 +68,11 @@ def calculateIndicators(config, inFile, outFile, indID):
 
     # Time binning by defined units
     elif thisInd["time_binning"] in ["years", "months"]:
-        # Then group by time
+        # Then group by time. Could consider using groupby as an alternative
         if thisInd["time_binning"] == "years":
-            datGroupped = datSeason.resample(time="1Y", label="right")
+            datGroupped = datSeason.resample(time="YE", label="right")
         elif thisInd["time_binning"] == "months":
-            datGroupped = datSeason.resample(time="1M", label="right")
+            datGroupped = datSeason.resample(time="ME", label="right")
         else:
             sys.exit("Shouldn't be here")
 
