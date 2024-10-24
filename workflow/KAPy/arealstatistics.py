@@ -28,15 +28,22 @@ def generateArealstats(config, inFile, outFile):
     # multiple data variables in them
     thisDat = xr.open_dataset(inFile[0],use_cftime=True).indicator
 
+    #Identify the time / period coordinate first
+    if 'time' in thisDat.coords:
+        tCoord='time'
+    elif 'periodID' in thisDat.coords:
+        tCoord='periodID'
+    else:
+        raise ValueError(f'Cannot find time or periodID coordinate in "{inFile[0]}".')
+
     # If using area weighting, get the pixel size
     if config['arealstats']['useAreaWeighting']:
         cdo=Cdo()
-        pxlSize=cdo.gridarea(input=thisDat.isel(time=0),
-                             returnXDataset=True)
-        pxlSize=pxlSize.cell_area
+        pxlSize=cdo.gridarea(input=thisDat[{tCoord:0}],
+                             returnXArray='cell_area')
     else:
-        pxlSize=thisDat.isel(time=0)
-        pxlSize.value[:]=1
+        pxlSize=thisDat[{tCoord:0}]
+        pxlSize.values[:]=1
 
     # If we have a shapefile defined, then work with it
     if config['arealstats']['shapefile']!='':
