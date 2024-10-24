@@ -12,8 +12,8 @@ wf=KAPy.getWorkflow(config)
 inpID=next(iter(wf['primVars'].keys()))
 outFile=[next(iter(wf['primVars'][inpID]))]
 inFiles=wf['primVars'][inpID][outFile[0]]
+%matplotlib qt
 import matplotlib.pyplot as plt
-%matplotlib inline
 """
 
 # Given a set of input files, create objects that can be worked with
@@ -81,7 +81,8 @@ def buildPrimVar(config, inFiles, outFile, inpID):
         # with the entire dataset
         firstTS=da.isel(time=0)
 
-        # Do cutouts using cdo sellonlatbox.
+        # Do cutouts using cdo sellonlatbox. Make sure that we
+        # return a dataarray and not a dataset
         cdo = Cdo()
         cutoutMask = cdo.sellonlatbox(
             config["cutouts"]["xmin"],
@@ -89,7 +90,7 @@ def buildPrimVar(config, inFiles, outFile, inpID):
             config["cutouts"]["ymin"],
             config["cutouts"]["ymax"],
             input=firstTS,
-            returnXDataset=True)
+            returnXArray=thisInp["varID"])
         
         # Apply masking to data array object
         da=da.where(cutoutMask.notnull(),drop=True)
