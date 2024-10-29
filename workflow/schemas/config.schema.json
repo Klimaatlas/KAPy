@@ -31,6 +31,10 @@
                     "description": "Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if omitted, no secondary variables will be generated",
                     "type": "string"
                 },
+                "calibration": {
+                    "description": "Path to calibration configuration table, relative to working directory. See [calibration.md](calibration.md) for more detail.",
+                    "type": "string"
+                },
                 "indicators": {
                     "description": "Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail.",
                     "type": "string"
