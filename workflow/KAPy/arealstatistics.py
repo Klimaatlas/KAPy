@@ -116,5 +116,5 @@ def combineArealstats(config, inFiles, outFile):
     datdf.insert(2,'indID',datdf['filename'].str.extract("^([^_]+)_.*$"))
 
     #Drop the filename and write out
-    datdf.drop(columns=['filename']).to_csv(outFile[0])
+    datdf.drop(columns=['filename','sourcePath']).to_csv(outFile[0],index=False)
 
