@@ -50,6 +50,10 @@ def generateArealstats(config, inFile, outFile):
         #Import shapefile
         shapefile = gpd.GeoDataFrame.from_file(config['arealstats']['shapefile'])
 
+    # Filter to include only the specific province by name
+        domain_name = config['arealstats']['areaName']  # actual name of the domain ( province/country id)  found under the idColumn of the shapefie
+        shapefile = shapefile[shapefile[config['arealstats']['idColumn']] == domain_name]
+
         #Setup mask
         maskRegions=regionmask.from_geopandas(shapefile,
                                        names=config['arealstats']['idColumn'],
