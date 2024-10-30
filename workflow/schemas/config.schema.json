@@ -54,6 +54,7 @@
             "type": "object",
             "required": [
                 "variables",
+                "calibration",
                 "indicators",
                 "regridded",
                 "ensstats",
@@ -64,6 +65,10 @@
             "properties": {
                 "variables": {
                     "description": "Directory for storing variables.",
+                    "type": "string"
+                },
+                "calibration": {
+                    "description": "Directory for storing calibrated variables.",
                     "type": "string"
                 },
                 "indicators": {

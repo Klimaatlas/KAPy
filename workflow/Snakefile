@@ -33,12 +33,12 @@ def primaryVar_singular_rule(thisID):
         output:
             os.path.join(outDirs['variables'],
                          f"{thisVarName}",
-                         f"{thisVarName}_{{stem}}")
+                         f"{{fname}}")
         input:
             lambda wildcards: 
                 wf['primVars'][thisID][ os.path.join(outDirs['variables'],
                                                      thisVarName,
-                                                     f"{thisVarName}_{wildcards.stem}")]
+                                                     wildcards.fname)]
         run:
             KAPy.buildPrimVar(config=config,
                               inFiles=input,
@@ -101,8 +101,27 @@ rule secondaryVars:
         [item for thisVar in wf['secondaryVars'].values() for item in thisVar['files'] ]
         
         
-# Bias correction -------------------
-# TODO
+# Calibration -------------------
+# Aka bias-correction. Only run if we need to
+if 'calibratedVars' in wf:
+    rule calibration:
+        input:
+            list(wf['calibratedVars'].keys())
+
+    rule calibration_file:
+        output:
+            os.path.join(outDirs['calibration'],"{varID}","{fname}")
+        input:
+            unpack(lambda wildcards:
+                wf['calibratedVars'][os.path.join(outDirs['calibration'],
+                                      wildcards.varID,
+                                      wildcards.fname)])
+        run:
+            KAPy.calibrate(config,
+                           histSimFile=input.histSim,
+                           refFile=input.ref,
+                           outFile=output,
+                           thisCal=wildcards.varID)
 
 # Indicators ---------------------------------
 # Create a loop over the indicators that defines the singular and plural rules
@@ -148,7 +167,7 @@ rule indicators:
 # Combining everything into an ensemble requires that they are all on a common grid
 # This step is optional but if the models are not on a common grid, this will cause failure 
 # when we come to the ensstats generation
-if config['outputGrid']['regriddingEngine']!='None':
+if config['outputGrid']['regriddingEngine']!='none':
     rule regrid:
         input:
             list(wf['regridded'].keys())

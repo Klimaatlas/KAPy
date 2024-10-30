@@ -8,7 +8,6 @@ os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")
-thisInp=config['inputs']['CORDEX-tas']
 """
 
 import sys
@@ -146,14 +145,20 @@ def getWorkflow(config):
     # Secondary Variables---------------------------------------------
     # Setup the variable palette as a tabular list of files. As we add each
     # additional variable, we concatentate it onto the variable palette.
-    varPal = pd.DataFrame([k for v in pvDict.values() for k in v.keys()], 
-                          columns=["path"])
-    varPal["fname"] = [os.path.basename(p) for p in varPal["path"]]
-    varPal["varID"] = varPal["fname"].str.extract("^([^_]+)_.*$")
-    varPal["srcID"] = varPal["fname"].str.extract("^[^_]+_([^_]+)_.*$")
-    varPal["stems"] = varPal["fname"].str.extract("^[^_]+_[^_]+_(.+)$")
-    svDict = {}
+    def parseFilelist(flist):
+        thisTbl = pd.DataFrame(flist,columns=["path"])
+        thisTbl["fname"] = [os.path.basename(p) for p in thisTbl["path"]]
+        thisTbl["varID"] = thisTbl["fname"].str.extract("^([^_]+)_.*$")
+        thisTbl["srcID"] = thisTbl["fname"].str.extract("^[^_]+_([^_]+)_.*$")
+        thisTbl["gridID"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_([^_]+)_.*$")
+        thisTbl["expt"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
+        thisTbl["stems"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+)$")
+        return thisTbl
+
+    varPal = parseFilelist([k for v in pvDict.values() for k in v.keys()])
+
     # Iterate over secondary variables if they are request
+    svDict = {}
     if "secondaryVars" in config:
         sys.exit("Not tested. TODO")
         for thisSV in config["secondaryVars"].values():
@@ -186,6 +191,51 @@ def getWorkflow(config):
             svDict[thisSV["id"]] = thisSV
             svDict[thisSV["id"]]["files"] = validPaths
             varList += validPaths
+
+    # Calibration -------------------------------------------------------
+    # Calibrated variables and secondary variables share a very similar logic
+    # They only kick in if requested, draw upon the variable palette, and feed back
+    # into when complete
+    calDict = {}
+    # Iterate over secondary variables if they are request
+    if "calibration" in config:
+        for thisCal in config["calibration"].values():
+            # Now filter by the input variables needed for this calibration 
+            selThese = (varPal["varID"] ==thisCal['calibrationVariable']) & \
+                        (varPal["srcID"]==thisCal['calibSource'])
+            calTbl = varPal[selThese].copy()
+            try:
+                if calTbl.size == 0:
+                    raise ValueError(
+                        f"Cannot find any matching input files for {thisCal['id']}. "
+                        + "Check the definition again. Also check the order of definition."
+                    )
+            except ValueError as e:
+                print("Error:", e)
+
+            # The workflow also requires that the reference dataset is present, so this becomes
+            # a prerequisite for making the output
+            selThese = (varPal["varID"] ==thisCal['calibrationVariable']) & \
+                        (varPal["srcID"]==thisCal['refSource'])
+            if sum(selThese)!=1:
+                raise ValueError("Cannot find a unique data variable to use as the reference "
+                                 + f'for calibration of "{thisCal['calibrationVariable']}_{thisCal['calibSource']}"')
+            refDict = varPal[selThese].to_dict(orient="records")[0]
+
+            # Now we have a list of valid files that can be made. Store the results
+            calTbl['outFile'] = [
+                os.path.join(outDirs["calibration"], thisCal["outVariable"], fName)
+                for fName in f"{thisCal["outVariable"]}_" + calTbl["srcID"] + "_" + refDict['gridID']+"_"+calTbl["expt"]+"_"+calTbl["stems"]
+            ]
+
+            # Add to output dict
+            for idx, rw in calTbl.iterrows():
+                calDict[rw['outFile']] = {'histSim':rw['path'],'ref':refDict['path']}
+
+            # Add to variable palette
+            varPal = pd.concat([varPal,
+                               parseFilelist(calTbl['outFile'].to_list())])
+
 
     # Indicators -----------------------------------------------------
     # Loop over indicators and get required files
@@ -324,6 +374,7 @@ def getWorkflow(config):
     rtn = {
         "primVars": pvDict,
         "secondaryVars": svDict,
+        "calibratedVars":calDict,
         "indicators": indDict,
         "regridded": rgDict,
         "ensstats": ensDict,

@@ -3,67 +3,62 @@
 import os
 print(os.getcwd())
 import KAPy
-os.chdir("..")
+os.chdir("KAPy")
+import helpers as helpers
+os.chdir("../..")
 config=KAPy.getConfig("./config/config.yaml")  
-calibrateThis=['./results/1.variables/tas/tas_CORDEX_AFR-44_rcp85_NCC-NorESM1-M_r1i1p1_SMHI-RCA4_v1_mon_AFR-44.nc.pkl']
-refFile=["./results/1.variables/tas/tas_ERA5_ERA5-grid_no-expt_t2m_ERA5_monthly.nc.pkl"]
-refFile=["./results/1.variables/tas/tas_ERA5_ERA5-grid_no-expt_era5_tmax.nc.pkl"]
-thisCal='tas'
-%matplotlib inline
+histSimFile='./results/1.variables/tas/tas_CORDEX_AFR-22_rcp85_MPI-M-MPI-ESM-LR_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_mon_AFR-22.nc'
+refFile="./results/1.variables/tas/tas_ERA5_ERA5-grid_no-expt_t2m_ERA5_monthly.nc"
+thisCal='tas-CAL'
+%matplotlib qt
 import matplotlib.pyplot as plt
 """
 
-# TODO: We have a good framework here but it needs to be generalised 
-# quite a bit as well. Adding a grid metadata table could be a good idea here
-# There also seems to be a problem with the calendar for the test file, at least
-# in part.
-
 import xarray as xr
-from . import helpers
 from cdo import Cdo
+from . import helpers
 
-def calibrate(config,calibrateThis,refFile,outFile, thisCal) {
+def calibrate(config,histSimFile,refFile,outFile, thisCal):
+    #Import when we need the function
+#    import cmethods as cmethods
+    from xclim import sdba 
+
+    # We choose to follow here the Xclim typology of ref / hist / sim, with the
+    # assumption that the hist and sim part are contained in the same file
     #Import files - enforce loading, to avoid dask issues
-    simDat=readFile(calibrateThis[0]).compute()
-    obsDat=readFile(refFile[0]).compute()
+    histSimDat=helpers.readFile(histSimFile).compute()
+    refDat=helpers.readFile(refFile).compute()
     calCfg=config['calibration'][thisCal]
 
-    #Truncate time slice to a common period. Ensure synchronisation
+    # Regrid calibration data to the refData set 
+    # First a write a single time slice of the reference data out, to use as the 
+    # grid descriptor for the reference data set, then regrid using
+    # CDO nearest neighbour interpolation
+    cdo=Cdo()
+    refGriddes=cdo.seltimestep('1/1',input=refDat)
+    histSimNNFname=cdo.remapnn(refGriddes,input=histSimDat)
+    histSimNN=helpers.readFile(histSimNNFname,format=".nc").compute()
+
+    #Truncate time slice to the common calibration period (CP). Ensure synchronisation
     #between times and grids using nearest neighbour interpolation of
     #the sim data to the obs data
-    calObs=timeslice(obsDat,
+    histNN=helpers.timeslice(histSimNN,
                      calCfg['calPeriodStart'],
                      calCfg['calPeriodEnd'])
-    calSim=timeslice(simDat,
+    refDatCP=helpers.timeslice(refDat,
                      calCfg['calPeriodStart'],
                      calCfg['calPeriodEnd'])
+
 
     #Match calendars between observations and simulations
-    calSim=calSim.convert_calendar(calObs.time.dt.calendar)                     
-    calSim=calSim.interp(time=calObs['time'],method='nearest')
-
-    #If the time dimensions for the calibration period are the same length
-    #and cover the same timespace, it is a reasonable enough assumption that
-    #they also represent the same values - hence a direct copy of one to the other
-    #is probably ok. This may break down at some point though so check it
-    # if calSim.time.size==calObs.time.size:
-    #     calSim['time']=calObs.time
-    # else:
-    #     ValueError('Cannot match calendars between observations and simulations.')
-
-    #Manually align dimension naming
-    #If this works, we should probably define some grid metadata
-    calObs=calObs.rename({'longitude':'x','latitude':'y'})
-    calObs=calObs.drop_vars(['expver'])
-    calSim=calSim.rename({'rlon':'x','rlat':'y'})
-    calSim=calSim.drop_vars(['lon','lat','expver','height'])
-    simDat=simDat.rename({'rlon':'x','rlat':'y'})
-    simDat=simDat.drop_vars(['lon','lat','height'])
-
-    #Now apply nearest-neighbour regridding, so that there is a 
-    #spatial match
-    calSim=calSim.interp_like(calObs,method='nearest')
-    simDat=simDat.interp(x=calObs.x,y=calObs.y,method='nearest')
+    #Note that here we have chosen here to align on year when converting to/from
+    #a 360 day calendar. This follows the recommendation in the xarray documentaion,
+    #under the assumption that we are primarily going to be working with daily data.
+    #See here for details:
+    #https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html
+    histNN=histNN.convert_calendar(refDatCP.time.dt.calendar,
+                                   use_cftime=True,
+                                   align_on="year")                     
 
     #Setup mapping to methods
     cmethodsAdj={"cmethods-linear":'linear_scaling',
@@ -71,63 +66,40 @@ def calibrate(config,calibrateThis,refFile,outFile, thisCal) {
               "cmethods-delta":"delta_method",
               "cmethods-quantile":'quantile_mapping',
               "cmethods-quantile-delta":'quantile_delta_mapping'}
+    
 
     #Apply method
-    if calCfg['method'] in cmethodsAdj.keys():
-        #Use the adjust function from python cmethods
-        from cmethods import adjust
-        res=adjust(method=cmethodsAdj[calCfg['method']],
-                    obs=calObs,
-                    simh=calSim,
-                    simp=simDat,
-                    **calCfg['additionalArgs'])
+    # if calCfg['method'] in cmethodsAdj.keys():
+    #     #Use the adjust function from python cmethods
+    #     res=cmethods.adjust(method=cmethodsAdj[calCfg['method']],
+    #                 obs=refDatCP,
+    #                 simh=calThisNNCP,
+    #                 simp=calThisNN,
+    #                 **calCfg['additionalArgs'])
 
-    elif calCfg['method']=="cmethods-detrended":
-        # Distribution methods from cmethods
-        from cmethods.distribution import detrended_quantile_mapping
-        ValueError('Shouldnt be here')
+    # elif calCfg['method']=="cmethods-detrended":
+    #     # Distribution methods from cmethods
+    #     from cmethods.distribution import detrended_quantile_mapping
+    #     ValueError('Shouldnt be here')
 
-    elif calCfg['method']=="custom":
+    if calCfg['method']=="xclim":
+        #Empirical quantile mapping
+        EQM = sdba.EmpiricalQuantileMapping.train(refDatCP, 
+                                                 histNN, 
+                                                 group="time."+calCfg['grouping'],
+                                                 **calCfg['additionalArgs'])
+        res = EQM.adjust(histSimNN, extrapolation="constant", interp="nearest")
+
+        #Correct output
+        res = res.transpose(*refDatCP.dims)
+
+    else:
         #Custom defined function
-        ValueError('Shouldnt be here')
+        raise ValueError(f'Unsupported calibration method "{calCfg['method']}".')
 
 
     #Finished
+    res.name=calCfg['outVariable']
     res.to_netcdf(outFile[0])
 
-}
 
-
-
-import xarray as xr
-import cftime
-import pandas as pd
-
-# Create two datasets with different time calendars
-# Dataset 1: Gregorian calendar (standard)
-time_gregorian = pd.date_range("2000-01-01", periods=10, freq="ME")
-ds1 = xr.Dataset(
-    {
-        "var1": ("time", range(10))
-    },
-    coords={
-        "time": time_gregorian
-    }
-)
-
-# Dataset 2: 360-day calendar (non-standard)
-time_360_day = xr.cftime_range("2000-01-01", periods=8, freq="360D", calendar="360_day")
-ds2 = xr.Dataset(
-    {
-        "var2": ("time", range(8))
-    },
-    coords={
-        "time": time_360_day
-    }
-)
-
-# Interpolate ds2 onto ds1's time axis using nearest-neighbor interpolation
-# Ensure that 'method' is set to 'nearest'
-ds2_interp = ds2.interp(time=ds1["time"], method="nearest")
-
-print(ds2_interp)

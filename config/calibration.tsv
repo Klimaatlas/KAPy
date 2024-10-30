@@ -1,2 +1,2 @@
-id	outVariable	calibrationVariable	calibSource	refSource	calPeriodStart	calPeriodEnd	method	additionalArgs	customScriptPath	customScriptFunction
-tas	tas-CAL	tas	CORDEX	ERA5	1981	2010	cmethods-linear	{'kind':'+','group':'time.month'}		
+id	outVariable	calibrationVariable	calibSource	refSource	calPeriodStart	calPeriodEnd	method	grouping	additionalArgs	customScriptPath	customScriptFunction
+tas-CAL	tas-CAL	tas	CORDEX	ERA5	1981	2010	xclim	month	{'kind':'+'}		

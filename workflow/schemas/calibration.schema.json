@@ -57,8 +57,17 @@
         "cmethods-quantile",
         "cmethods-detrended",
         "cmethods-quantile-delta",
+        "xclim",
         "custom"
     ]
+    },
+    "grouping": {
+      "type": "string",
+      "description": "Apply calibration independently of each time grouping selected here.",
+      "enum": [
+        "month",
+        "season",
+        "none"]
     },
     "additionalArgs": {
       "type": "string",

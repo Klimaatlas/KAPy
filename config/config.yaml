@@ -9,15 +9,17 @@
 configurationTables:
     inputs:  'config/inputs.tsv'
     indicators: 'config/indicators.tsv'
+    calibration: 'config/calibration.tsv'
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
 dirs:
     variables: 'results/1.variables'
-    indicators: 'results/2.indicators'
-    regridded: 'results/3.commmon_grid'
-    ensstats: 'results/4.ensstats'
-    arealstats: 'results/5.areal_statistics'
-    plots: 'results/6.plots'
+    calibration: 'results/2.calibration'
+    indicators: 'results/3.indicators'
+    regridded: 'results/4.commmon_grid'
+    ensstats: 'results/5.ensstats'
+    arealstats: 'results/6.areal_statistics'
+    plots: 'results/7.plots'
 
 # Configuration options------------------------------------
 arealstats:
@@ -27,17 +29,18 @@ arealstats:
     # shapefile: 'resources/shapefiles/Ghana_regions.shp'
     # idColumn: 'ADM1_PCODE'
 cutouts:
-    method: 'none'
-    # method: 'lonlatbox'
-    # xmin: -4
-    # xmax: 2
-    # ymin: 4
-    # ymax: 12
+        #method: 'none'
+    method: 'lonlatbox'
+    xmin: -4
+    xmax: 2
+    ymin: 4
+    ymax: 12
 ensembles:
     upperPercentile: 90
     centralPercentile: 50
     lowerPercentile: 10
 outputGrid:
+    #regriddingEngine: 'none'
     regriddingEngine: 'cdo'
     gridName: 'Ghana025'
     cdoGriddes: './config/griddes.txt'
