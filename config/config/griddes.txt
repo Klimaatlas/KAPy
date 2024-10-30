@@ -1,0 +1,22 @@
+#
+# CDO Grid Descriptor for Ghana.
+# This grid mirrors the ERA5 data, and is at the same 0.25 degree resource
+# For more info on grid definitions, see the CDO documentation, especially Appendix D
+# and section 2.12 on Interpolation functions
+#
+gridtype  = lonlat
+gridsize  = 825
+datatype  = float
+xsize     = 25
+ysize     = 33
+xname     = longitude
+xlongname = "longitude"
+xunits    = "degrees_east"
+yname     = latitude
+ylongname = "latitude"
+yunits    = "degrees_north"
+xfirst    = -4
+xinc      = 0.25
+yfirst    = 12
+yinc      = -0.25
+scanningMode = 64
