@@ -7,6 +7,8 @@
  * `cmethods-quantile` - [Quantile Mapping](https://python-cmethods.readthedocs.io/en/latest/methods.html#quantile-mapping) 
  * `cmethods-detrended` - [Detrended Quantile Mapping](https://python-cmethods.readthedocs.io/en/latest/methods.html#detrended-quantile-mapping) 
  * `cmethods-quantile-delta` - [Quantile Delta Mapping](https://python-cmethods.readthedocs.io/en/latest/methods.html#quantile-delta-mapping) 
+ * `xclim-eqm` - [Empirical Quantile Mapping](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package. 
+ * `xclim-scaling` - [Scaling bias-adjustment](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package.
  * `custom` - Use a custom script, as specified in the `customScriptPath` and `customScriptFunction` arguments. 
  
  For more information, see the documentation on the relevant packages: 
@@ -22,7 +24,7 @@
 - **`refSource`** *(string)*: The ID of the data source that will be used as the reference  data source to calibrate against, such as `ERA5`. Most commonly this will be an observational data set, a reanalysis or similar but it need not be. However, the combination of climate variable and data source ID should uniquely identify a single file within the variable palette of KAPy - if not, an error will be raised.
 - **`calPeriodStart`** *(string)*: Start year of the calibration period. Data after and including 1 Jan of this year will be used for calibration.
 - **`calPeriodEnd`** *(string)*: End year of the calibration period. Data before and including 31 Dec of this year will be used for calibration.
-- **`method`** *(string)*: Calibration method to be used. See above for a clarification of options. Must be one of: `["cmethods-linear", "cmethods-variance", "cmethods-delta", "cmethods-quantile", "cmethods-detrended", "cmethods-quantile-delta", "xclim", "custom"]`.
+- **`method`** *(string)*: Calibration method to be used. See above for a clarification of options. Must be one of: `["cmethods-linear", "cmethods-variance", "cmethods-delta", "cmethods-quantile", "cmethods-detrended", "cmethods-quantile-delta", "xclim-eqm", "xclim-scaling", "custom"]`.
 - **`grouping`** *(string)*: Apply calibration independently of each time grouping selected here. Must be one of: `["month", "season", "none"]`.
 - **`additionalArgs`** *(string)*: Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'kind'='+', group='time.month'}`. Can be an empty dict or empty string if no there are no additional parameters. e.g. `{}` .
 - **`customScriptPath`** *(string)*: If `method` is set to `custom`, this field is used to identify the path to a custom script, if applicable.

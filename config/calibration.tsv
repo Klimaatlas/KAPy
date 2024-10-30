@@ -1,2 +1,3 @@
 id	outVariable	calibrationVariable	calibSource	refSource	calPeriodStart	calPeriodEnd	method	grouping	additionalArgs	customScriptPath	customScriptFunction
-tas-CAL	tas-CAL	tas	CORDEX	ERA5	1981	2010	xclim	month	{'kind':'+'}		
+tas-EQM	tas-EQM	tas	CORDEX	ERA5	1981	2010	xclim-eqm	month	{'kind':'+'}		
+tas-scaling	tas-scaling	tas	CORDEX	ERA5	1981	2010	xclim-scaling	month	{'kind':'+'}		

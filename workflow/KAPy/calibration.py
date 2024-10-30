@@ -19,10 +19,6 @@ from cdo import Cdo
 from . import helpers
 
 def calibrate(config,histSimFile,refFile,outFile, thisCal):
-    #Import when we need the function
-#    import cmethods as cmethods
-    from xclim import sdba 
-
     # We choose to follow here the Xclim typology of ref / hist / sim, with the
     # assumption that the hist and sim part are contained in the same file
     #Import files - enforce loading, to avoid dask issues
@@ -69,36 +65,50 @@ def calibrate(config,histSimFile,refFile,outFile, thisCal):
     
 
     #Apply method
-    # if calCfg['method'] in cmethodsAdj.keys():
-    #     #Use the adjust function from python cmethods
-    #     res=cmethods.adjust(method=cmethodsAdj[calCfg['method']],
-    #                 obs=refDatCP,
-    #                 simh=calThisNNCP,
-    #                 simp=calThisNN,
-    #                 **calCfg['additionalArgs'])
+    if calCfg['method'] in cmethodsAdj.keys():
+        raise ValueError('"cmethods" methods are currently disabled')
+        from cmethods import adjust        #Use the adjust function from python cmethods
+        res=adjust(method=cmethodsAdj[calCfg['method']],
+                    obs=refDatCP,
+                    simh=histNN,
+                    simp=histSimNN,
+                    group="time."+calCfg['grouping'],
+                    **calCfg['additionalArgs'])
 
-    # elif calCfg['method']=="cmethods-detrended":
-    #     # Distribution methods from cmethods
-    #     from cmethods.distribution import detrended_quantile_mapping
-    #     ValueError('Shouldnt be here')
+    elif calCfg['method']=="cmethods-detrended":
+        # Distribution methods from cmethods
+        from cmethods.distribution import detrended_quantile_mapping
+        raise ValueError('"cmethods-detrended" method is currently not implemented')
 
-    if calCfg['method']=="xclim":
-        #Empirical quantile mapping
-        EQM = sdba.EmpiricalQuantileMapping.train(refDatCP, 
+    elif calCfg['method']=="xclim-eqm":
+        #Empirical quantile mapping -----------------------------
+        from xclim.sdba import EmpiricalQuantileMapping
+        EQM = EmpiricalQuantileMapping.train(refDatCP, 
                                                  histNN, 
                                                  group="time."+calCfg['grouping'],
                                                  **calCfg['additionalArgs'])
         res = EQM.adjust(histSimNN, extrapolation="constant", interp="nearest")
 
-        #Correct output
-        res = res.transpose(*refDatCP.dims)
+    elif calCfg['method']=="xclim-scaling":
+        #Xclim - Scaling--------------------------------
+        from xclim.sdba.adjustment import Scaling
+        this = Scaling.train(refDatCP, 
+                                   histNN,
+                                   group="time."+calCfg['grouping'],
+                                   **calCfg['additionalArgs'])
+        res = this.adjust(histSimNN, interp="nearest")
 
+
+    elif calCfg['method']=="custom":
+        raise ValueError('"custom" calibration is currently not implemented')
+    
     else:
         #Custom defined function
         raise ValueError(f'Unsupported calibration method "{calCfg['method']}".')
 
 
-    #Finished
+    #Finish
+    res = res.transpose(*refDatCP.dims)
     res.name=calCfg['outVariable']
     res.to_netcdf(outFile[0])
 
