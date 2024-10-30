@@ -40,7 +40,11 @@ snakemake --cores 1
 7. Ok. So let's say then that something needs to be done - maybe we have, for example, updated our input data with a new version. Part of the way that Snakemake monitors changes and dependencies is via the modification time of the files - a downstream file should be "younger" (i.e. have a more recent modification date) than an "older" upstream file. We can throw the pipeline out of balance by modifying the time of one of the source files with the `touch`command to make it appear brandnew:
 
 ```
+<<<<<<< HEAD
+touch resources/CORDEX/tas_AFR-22-GHANA_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v1_mon_209101-210012.nc 
+=======
 touch resources/CORDEX/tas_AFR-22-GHANA_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v1_mon_209101-210012.nc
+>>>>>>> e55f0f8f4150285c7cde3408611e2c6d627b4614
 ```
 
 8. Snakemake will recognise this and want to update the pipeline. But, because it is smart (and lazy), it will only update the downstream files that are dependent on the input file. Try this:

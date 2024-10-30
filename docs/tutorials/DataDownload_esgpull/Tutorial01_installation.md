@@ -30,11 +30,11 @@ Enter optional name:
 Name (optional): John Doe
 ```
 
-Then you will get something like:
-Creating install directory and files at /home/WDIR/ESGpull
-Install config added to /home/WDIR/.config/esgpull/installs.json
+4. Then you will get something like:\
+`Creating install directory and files at` "The-folder-you-specified-in-the-directory-are-currently-in" \
+`Install config added to /home/WDIR/.config/esgpull/installs.json`
 
-5. Lastly, check if `esgpull` was installed properly and it's ready for use using the following command which should give out the version of esgpull installed.
+5. Lastly, check if everything is setup well and `esgpull` is ready for use using the following command :
 
 ```
 esgpull --version

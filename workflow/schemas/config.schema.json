@@ -88,7 +88,8 @@
             "required": [
                 "useAreaWeighting",
                 "shapefile",
-                "idColumn"
+                "idColumn",
+                "areaName"
             ],
             "additionalProperties": false,
             "type": "object",
@@ -104,6 +105,10 @@
                 "idColumn": {
                     "description": "Name of the column in the above shapefile to be used as a unique identifier code for the area.",
                     "type": ["string","null"]
+                },
+                "areaName": {
+                    "description": "Specific name under  the column in the above shapefile to be used as a unique identifier code for the area.",
+                    "type": ["string","null"]
                 }
             }
         },
@@ -116,12 +121,12 @@
                         "method"
                     ],
                     "additionalProperties": false,
-                    "description": "**none**. Omit the cutout step. All available data in the input files is processed.",
+                    "description": "**shapefile**. Omit the cutout step. All available data in the input files is processed.",
                     "properties": {
                         "method": {
                             "type": "string",
                             "enum": [
-                                "none"
+                                "shapefile"
                             ]
                         }
                     }

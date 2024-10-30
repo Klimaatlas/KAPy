@@ -22,7 +22,7 @@ import pickle
 import sys
 import importlib
 from cdo import Cdo
-
+import geopandas as gpd
 
 def buildPrimVar(config, inFiles, outFile, inpID):
     """
@@ -95,8 +95,13 @@ def buildPrimVar(config, inFiles, outFile, inpID):
         # Apply masking to data array object
         da=da.where(cutoutMask.notnull(),drop=True)
 
-    elif config["cutouts"]["method"] != "none":
+    elif config["cutouts"]["method"] != "shapefile":
+  #  elif config["cutouts"]["method"] == "shapefile":
         #problem
+  #      shapefile = gpd.GeoDataFrame.from_file(config['arealstats']['shapefile'])
+  #      da.rio.set_spatial_dims(x_dim="rlon", y_dim="rlat", inplace=True)
+  #      da.rio.write_crs("EPSG:4326", inplace=True)
+  #      da = da.rio.clip(shapefile.geometry, shapefile.crs, drop=True)
         sys.exit(f"Unsupported cutout option '{config['cutouts']['method']}'.")
 
     # # Apply additional preprocessing scripts

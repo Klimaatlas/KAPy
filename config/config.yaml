@@ -22,17 +22,16 @@ dirs:
 # Configuration options------------------------------------
 arealstats:
     useAreaWeighting: True
-    shapefile: ''
-    idColumn: ''
-    # shapefile: 'resources/shapefiles/Ghana_regions.shp'
-    # idColumn: 'ADM1_PCODE'
+    shapefile: 'resources/GHA_ADM_shapefile/GHA_ADM0.shp'
+    idColumn: 'Name'
+    areaName: 'Ghana'
 cutouts:
-    method: 'none'
+    method: 'shapefile'
     # method: 'lonlatbox'
-    # xmin: -4
-    # xmax: 2
-    # ymin: 4
-    # ymax: 12
+    #xmin: -4
+    #xmax: 2
+    #ymin: 4
+    #ymax: 12
 ensembles:
     upperPercentile: 90
     centralPercentile: 50
