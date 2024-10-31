@@ -9,7 +9,7 @@ os.chdir("../..")
 config=KAPy.getConfig("./config/config.yaml")  
 histSimFile='./results/1.variables/tas/tas_CORDEX_AFR-22_rcp85_MPI-M-MPI-ESM-LR_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_mon_AFR-22.nc'
 refFile="./results/1.variables/tas/tas_ERA5_ERA5-grid_no-expt_t2m_ERA5_monthly.nc"
-thisCal='tas-CAL'
+thisCal='tas-eqm'
 %matplotlib qt
 import matplotlib.pyplot as plt
 """
@@ -88,6 +88,15 @@ def calibrate(config,histSimFile,refFile,outFile, thisCal):
                                                  group="time."+calCfg['grouping'],
                                                  **calCfg['additionalArgs'])
         res = EQM.adjust(histSimNN, extrapolation="constant", interp="nearest")
+
+    elif calCfg['method']=="xclim-dqm":
+        #Detrended quantile mapping -----------------------------
+        from xclim.sdba import DetrendedQuantileMapping
+        DQM = DetrendedQuantileMapping.train(refDatCP, 
+                                                 histNN, 
+                                                 group="time."+calCfg['grouping'],
+                                                 **calCfg['additionalArgs'])
+        res = DQM.adjust(histSimNN, extrapolation="constant", interp="nearest")
 
     elif calCfg['method']=="xclim-scaling":
         #Xclim - Scaling--------------------------------
