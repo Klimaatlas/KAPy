@@ -48,7 +48,7 @@ snakemake --cores 1
 
 12. Now have a look in `./results` and the subdirectories there. You will see that they have all be filled out with the corresponding files.
 
-13. KAPy produces a set of of "quick-look" plots that can be used to give a quick overview of the results. Note that these are intended to be generic and work for all possible configurations - the plot that you actually want is most likely not there. Nevertheless, it does still provide a way to get a quick overview of the results. Open the directory `./results/6.plots/` and browser through the files with an image viewer e.g. :
+13. KAPy produces a set of of "quick-look" plots that can be used to give a quick overview of the results. Note that these are intended to be generic and work for all possible configurations - the plot that you actually want is most likely not there. Nevertheless, it does still provide a way to get a quick overview of the results. Open the directory `./results/7.plots/` and browse through the files with an image viewer e.g. :
 
 ```
 eog .

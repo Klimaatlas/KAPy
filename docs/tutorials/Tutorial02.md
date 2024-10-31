@@ -40,7 +40,7 @@ snakemake --cores 1
 7. Ok. So let's say then that something needs to be done - maybe we have, for example, updated our input data with a new version. Part of the way that Snakemake monitors changes and dependencies is via the modification time of the files - a downstream file should be "younger" (i.e. have a more recent modification date) than an "older" upstream file. We can throw the pipeline out of balance by modifying the time of one of the source files with the `touch`command to make it appear brandnew:
 
 ```
-touch resources/CORDEX/tas_AFR-22-GHANA_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v1_mon_209101-210012.nc
+touch resources/CORDEX/tas_Ghana-22_NCC-NorESM1-M_rcp85_r1i1p1_GERICS-REMO2015_v1_mon_209101_209512.nc 
 ```
 
 8. Snakemake will recognise this and want to update the pipeline. But, because it is smart (and lazy), it will only update the downstream files that are dependent on the input file. Try this:
@@ -56,7 +56,7 @@ snakemake --cores 1
 
 10. We can illustrate this point further by damaging the state of the pipeline. Let's remove an individual file in the middle of the pipeline.
 ```
-rm results/4.ensstats/101_CORDEX_rcp26_ensstats.nc 
+rm results/5.ensstats/101_CORDEX_Ghana025_rcp26_ensstats.nc
 ```
 11. What's going to happen when we run snakemake now? Try and form a hypothesis.
 
@@ -66,7 +66,7 @@ rm results/4.ensstats/101_CORDEX_rcp26_ensstats.nc
 snakemake -n
 ```
 
-13. *Answer*: Snakemake will only run the necessary parts of the pipeline, recreating the missing indicator file (the `ensstats_file` rule is going to be run). However, recreating this file creates a version of `101_CORDEX_rcp26_ensstats.nc` that is younger than the rest of the downstream dependencies, triggering a rebuild of the arealstats and plots as well.
+13. *Answer*: Snakemake will only run the necessary parts of the pipeline, recreating the missing indicator file (the `ensstats_file` rule is going to be run). However, recreating this file creates a version of `101_CORDEX_Ghana025_rcp26_ensstats.nc` that is younger than the rest of the downstream dependencies, triggering a rebuild of the arealstats and plots as well.
 
 14. Run the pipeline to completion to finish. 
 
