@@ -176,11 +176,12 @@ if config['outputGrid']['regriddingEngine']!='none':
         output:
             this=os.path.join(outDirs['regridded'],"{indID}","{fname}")
         input:
-            lambda wildcards: wf['regridded'][os.path.join(outDirs['regridded'],
+            inputFile=lambda wildcards: wf['regridded'][os.path.join(outDirs['regridded'],
                                                            wildcards.indID,
-                                                           wildcards.fname)]
+                                                           wildcards.fname)],
+            grid=config['outputGrid']["cdoGriddes"]
         run:
-            KAPy.regrid(config,input,output)
+            KAPy.regrid(config,input.inputFile,output)
 
 
 # Enssemble Statistics ---------------------------------
