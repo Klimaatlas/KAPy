@@ -1,7 +1,7 @@
 id	varID	srcID	gridID	path	internalVarName	fieldSeparator	experimentField	commonExperimentID	ensMemberFields	importScriptPath	importScriptFunction
-CORDEX-tas-22	tas	CORDEX	AFR-22	resources/CORDEX/tas_GHANA_AFR-22_*	tas	_	5	historical	4,6,7,8,9,3		
-CORDEX-tas-44	tas	CORDEX	AFR-44	resources/CORDEX/tas_GHANA_AFR-44_*	tas	_	5	historical	4,6,7,8,9,3		
-ERA5-tas	tas	ERA5	ERA5-grid	resources/ERA5_monthly/t2m_ERA5_monthly.nc	t2m						
-CORDEX-pr-22	pr	CORDEX	AFR-22	resources/CORDEX/pr_GHANA_AFR-22_*	pr	_	5	historical	4,6,7,8,9,3		
-CORDEX-pr-44	pr	CORDEX	AFR-44	resources/CORDEX/pr_GHANA_AFR-44_*	pr	_	5	historical	4,6,7,8,9,3		
-ERA5-pr	pr	ERA5	ERA5-grid	resources/ERA5_monthly/pr_ERA5_monthly.nc	tp						
+CORDEX-tas-22	tas	CORDEX	AFR-22	inputs/CORDEX/tas_Ghana-22_*	tas	_	5	historical	4,6,7,8,9,3		
+CORDEX-tas-44	tas	CORDEX	AFR-44	inputs/CORDEX/tas_Ghana-44_*	tas	_	5	historical	4,6,7,8,9,3		
+ERA5-tas	tas	ERA5	ERA5-grid	inputs/ERA5_monthly/t2m_ERA5_monthly.nc	t2m						
+CORDEX-pr-22	pr	CORDEX	AFR-22	inputs/CORDEX/pr_Ghana-22_*	pr	_	5	historical	4,6,7,8,9,3		
+CORDEX-pr-44	pr	CORDEX	AFR-44	inputs/CORDEX/pr_Ghana-44_*	pr	_	5	historical	4,6,7,8,9,3		
+ERA5-pr	pr	ERA5	ERA5-grid	inputs/ERA5_monthly/pr_ERA5_monthly.nc	tp						
