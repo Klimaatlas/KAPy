@@ -60,6 +60,7 @@
       "type": "string",
       "description": "Apply calibration independently of each time grouping selected here.",
       "enum": [
+        "dayofyear",
         "month",
         "season",
         "none"]
