@@ -81,7 +81,7 @@ def generateArealstats(config, inFile, outFile):
 
         # Save files pandas
         dfOut = xr.merge([spMean,spSd]).to_dataframe()
-        dfOut["area"] = "All"  
+        dfOut["area"] = "all"  
 
     #Write out date without time for easier handling
     dfOut=dfOut.reset_index()
