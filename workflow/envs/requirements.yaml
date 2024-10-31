@@ -20,15 +20,16 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python
-  - pandas
   - geopandas
+  - netcdf4
+  - pandas
+  - plotnine
+  - python
+  - python-cdo
+  - python_cmethods
+  - regionmask
   - snakemake
   - xarray
-  - regionmask
-  - netcdf4
-  - zarr
   - xclim
-  - python-cdo
-  - plotnine
   - yaml
+  - zarr
