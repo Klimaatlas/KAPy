@@ -215,14 +215,27 @@ rule arealstats:
 
 
 #Singular rule
-rule arealstats_file:
-    output:
-        os.path.join(outDirs['arealstats'],'{fname}')
-    input:
-        lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],
-                                                        wildcards.fname)]
-    run:
-        KAPy.generateArealstats(config,input,output)
+#Depending on whether we are using a shapefile or not, we may want to include the shapefile
+#as a dependency
+if config['arealstats']['shapefile']!='':
+    rule arealstats_file:
+        output:
+            os.path.join(outDirs['arealstats'],'{fname}')
+        input:
+            inputFile=lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],
+                                                            wildcards.fname)],
+            shapefile=config['arealstats']['shapefile'] 
+        run:
+            KAPy.generateArealstats(config,input.inputFile,output)
+else:  #No dependency on the shapefile
+    rule arealstats_file:
+        output:
+            os.path.join(outDirs['arealstats'],'{fname}')
+        input:
+            inputFile=lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],
+                                                            wildcards.fname)]
+        run:
+            KAPy.generateArealstats(config,input.inputFile,output)
 
 # Outputs ---------------------------------
 # Plots, amongst other things
