@@ -28,7 +28,7 @@
 - **`calPeriodStart`** *(string)*: Start year of the calibration period. Data after and including 1 Jan of this year will be used for calibration.
 - **`calPeriodEnd`** *(string)*: End year of the calibration period. Data before and including 31 Dec of this year will be used for calibration.
 - **`method`** *(string)*: Calibration method to be used. See above for a clarification of options. Must be one of: `["xclim-scaling", "xclim-eqm", "xclim-dqm"]`.
-- **`grouping`** *(string)*: Apply calibration independently of each time grouping selected here. Must be one of: `["month", "season", "none"]`.
+- **`grouping`** *(string)*: Apply calibration independently of each time grouping selected here. Must be one of: `["dayofyear", "month", "season", "none"]`.
 - **`additionalArgs`** *(string)*: Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'kind'='+', group='time.month'}`. Can be an empty dict or empty string if no there are no additional parameters. e.g. `{}` .
 - **`customScriptPath`** *(string)*: If `method` is set to `custom`, this field is used to identify the path to a custom script, if applicable.
 - **`customScriptFunction`** *(string)*: Name of the function in `customScriptPath` to be used for bias correction,  if applicable.
