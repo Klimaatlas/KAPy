@@ -13,13 +13,13 @@ configurationTables:
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
 dirs:
-    variables: 'results/1.variables'
-    calibration: 'results/2.calibration'
-    indicators: 'results/3.indicators'
-    regridded: 'results/4.commmon_grid'
-    ensstats: 'results/5.ensstats'
-    arealstats: 'results/6.areal_statistics'
-    plots: 'results/7.plots'
+    variables: 'outputs/1.variables'
+    calibration: 'outputs/2.calibration'
+    indicators: 'outputs/3.indicators'
+    regridded: 'outputs/4.commmon_grid'
+    ensstats: 'outputs/5.ensstats'
+    arealstats: 'outputs/6.areal_statistics'
+    plots: 'outputs/7.plots'
 
 # Configuration options------------------------------------
 arealstats:
@@ -43,7 +43,7 @@ outputGrid:
     #regriddingEngine: 'none'
     regriddingEngine: 'cdo'
     gridName: 'Ghana025'
-    cdoGriddes: './config/griddes.txt'
+    cdoGriddes: 'config/griddes.txt'
 processing:
     picklePrimaryVariables: True
     

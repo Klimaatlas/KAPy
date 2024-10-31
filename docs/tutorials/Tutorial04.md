@@ -12,10 +12,10 @@ This tutorial follows on directly from the end of [Tutorial 1](Tutorial01.md).
 
 1. In Tutorial 1, you performed a complete run of a `KAPy` pipeline, starting from a fresh installation. This configuration only used a single data source (`CORDEX tas`) whereas, in a real setting, we will want to work with more than that. Here we will add precipitation to the original tas dataset, and then define new indicators to exploit it.
 
-2. First, we need to get some more data. Download the [precipitation data](https://download.dmi.dk/Research_Projects/KAPy/pr_example_dataset.zip) for the same Ghana domain into a temporary directory, unzip it, and copy the contents into `./resources/CORDEX` as before. Check the contents of this directory - you should see files starting with both `tas_*`and `pr_*` now.
+2. First, we need to get some more data. Download the [precipitation data](https://download.dmi.dk/Research_Projects/KAPy/pr_example_dataset.zip) for the same Ghana domain into a temporary directory, unzip it, and copy the contents into `./inputs/CORDEX` as before. Check the contents of this directory - you should see files starting with both `tas_*`and `pr_*` now.
 
 ```
-ls resources/CORDEX/*
+ls inputs/CORDEX/*
 ```
 
 3. Input data sources are defined via the input configuration table `./config/inputs.tsv`. Open this file in a text editor (e.g. `vi`). Each row corresponds to an input file type. You should be able to identify one row for CORDEX tas inputs and one for ERA5 inputs.
@@ -55,7 +55,7 @@ snakemake --cores 1
 9.  The difference will be most apparent in the output files. Try browsing through them now in a graphics viewer e.g.
 
 ```
-eog ./results/7.plots/
+eog ./outputs/7.plots/
 ```
 
 10. That concludes this tutorial. KAPy is designed to handle multiple different data sources within the same framework. For example, applying the same processing chains to data from ERA5, CMIP5, and CMIP6 is  possible within the same workflow.
