@@ -8,6 +8,7 @@ os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")
+pd.set_option('display.max_colwidth', None)
 """
 
 import sys
@@ -152,7 +153,7 @@ def getWorkflow(config):
         thisTbl["srcID"] = thisTbl["fname"].str.extract("^[^_]+_([^_]+)_.*$")
         thisTbl["gridID"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_([^_]+)_.*$")
         thisTbl["expt"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$")
-        thisTbl["stems"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+)$")
+        thisTbl["stems"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+).nc(?:.pkl)$")
         return thisTbl
 
     varPal = parseFilelist([k for v in pvDict.values() for k in v.keys()])
@@ -225,7 +226,7 @@ def getWorkflow(config):
             # Now we have a list of valid files that can be made. Store the results
             calTbl['outFile'] = [
                 os.path.join(outDirs["calibration"], thisCal["outVariable"], fName)
-                for fName in f"{thisCal["outVariable"]}_" + calTbl["srcID"] + "_" + refDict['gridID']+"_"+calTbl["expt"]+"_"+calTbl["stems"]
+                for fName in f"{thisCal["outVariable"]}_" + calTbl["srcID"] + "_" + refDict['gridID']+"_"+calTbl["expt"]+"_"+calTbl["stems"]+".nc"
             ]
 
             # Add to output dict
