@@ -1,6 +1,7 @@
 # KAPy calibration configuration
 
-*Calibration is the process by which the outputs of a climate model are post-processed so that they match specific characteristics of the observed climate during a common period of time. In KAPy we wrap methods in two existing packages to enable model calibration - `python-cmethods` and `xclim`. The method employed is chosen via the `method` field, with the following valid options: * `xclim-scaling` - [Scaling bias-adjustment](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package.
+*Calibration is the process by which the outputs of a climate model are post-processed so that they match specific characteristics of the observed climate during a common period of time. In KAPy we wrap methods in two existing packages to enable model calibration - `python-cmethods` and `xclim`. The method employed is chosen via the `method` field, with the following valid options: 
+ * `xclim-scaling` - [Scaling bias-adjustment](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package.
  * `xclim-eqm` - [Empirical Quantile Mapping](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package. 
  * `xclim-dqm` - [Detrended Quantile Mapping](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package. 
   
@@ -22,7 +23,7 @@
 - **`id`** *(string)*: Unique identifier for the calibration procedure.
 - **`outVariable`** *(string)*: Variable name that will be associated with calibrated output. Note that this must not be a duplicate of other variable names found in the configuration of KAPy. A few suggested practices for referring to the raw and calibrated variables could be e.g. 1. `tas-RAW` and `tas` 2. `tas` and `tas-CAL` or 3. `tas` and `TAS`. The exact choice is not important, but it is recommended to adopt a consistent approach throughout the project.
 - **`calibrationVariable`** *(string)*: The name of the variable to calibrate, drawn from the list of primary and secondary variables. If the variable cannot be found, an error will be raised. KAPy assumes that the same variable name is used for both the model and observational data sources.
-- **`calibSource`** *(string)*: The ID of the data source that will be calibrated e.g.  'CORDEX'. This is most commonly the output of a climate model, but need not be. Multiple files within the same climate variable and data source are allowed. .
+- **`calibSource`** *(string)*: The ID of the data source that will be calibrated e.g.  'CORDEX'. This is most commonly the output of a climate model, but need not be. Multiple files within the same climate variable and data source are allowed.
 - **`refSource`** *(string)*: The ID of the data source that will be used as the reference  data source to calibrate against, such as `ERA5`. Most commonly this will be an observational data set, a reanalysis or similar but it need not be. However, the combination of climate variable and data source ID should uniquely identify a single file within the variable palette of KAPy - if not, an error will be raised.
 - **`calPeriodStart`** *(string)*: Start year of the calibration period. Data after and including 1 Jan of this year will be used for calibration.
 - **`calPeriodEnd`** *(string)*: End year of the calibration period. Data before and including 31 Dec of this year will be used for calibration.
