@@ -4,7 +4,7 @@
 
 ## Properties
 
-- **`id`** *(['string', 'integer'])*: Identifier for the indicators. Must be unique.
+- **`id`** *(string)*: Identifier for the indicators. Must be unique.
 - **`name`** *(string)*: Name of the indicator.
 - **`units`** *(string)*: Units of measurement for the indicator.
 - **`variables`**: List of input variables required to calculate the indicator. Must be at least one specified.

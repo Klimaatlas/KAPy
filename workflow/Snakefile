@@ -27,17 +27,18 @@ wf=KAPy.getWorkflow(config)
 # Primary Variables---------------------------------
 #Primary variable singular rule
 def primaryVar_singular_rule(thisID):
-    thisVarName=config['inputs'][thisID]['varName']
+    thisVarName=config['inputs'][thisID]['varID']
     rule:  
         name: f'primaryVar_{thisID}_files'
         output:
-            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
-                   varName=thisVarName)
+            os.path.join(outDirs['variables'],
+                         f"{thisVarName}",
+                         f"{{fname}}")
         input:
             lambda wildcards: 
                 wf['primVars'][thisID][ os.path.join(outDirs['variables'],
                                                      thisVarName,
-                                                     f"{thisVarName}_{wildcards.stem}.nc")]
+                                                     wildcards.fname)]
         run:
             KAPy.buildPrimVar(config=config,
                               inFiles=input,
@@ -51,9 +52,9 @@ def primaryVar_plural_rule(thisID):
         input:
             list(wf['primVars'][thisID].keys())
             
-for inpID in wf['primVars'].keys():
-    primaryVar_singular_rule(inpID)
-    primaryVar_plural_rule(inpID)
+for pvID in wf['primVars'].keys():
+    primaryVar_singular_rule(pvID)
+    primaryVar_plural_rule(pvID)
 
 #Run all indicators    
 rule primaryVars:
@@ -70,11 +71,13 @@ def secVar_singular_rule(thisID):
     rule:  
         name: f'secondaryVar_{thisID}_files'
         output:
-            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
-                   varName=thisVar['outputVars'])
+            os.path.join(outDirs['variables'],
+                         f"{thisVar['outputVars']}",
+                         f"{thisVar['outputVars']}_{{stem}}")
         input:
-            expand(os.path.join(outDirs['variables'],"{varName}","{varName}_{{stem}}.nc"),
-                   varName=thisVar['inputVars'])
+            os.path.join(outDirs['variables'],
+                         f"{thisVar['inputVars']}",
+                         f"{thisVar['inputVars']}_{{stem}}")
         run:
             KAPy.buildDerivedVar(config=config,
                                      inFiles=input, 
@@ -97,58 +100,28 @@ rule secondaryVars:
     input:
         [item for thisVar in wf['secondaryVars'].values() for item in thisVar['files'] ]
         
-
-"""
-#Variables---------------------------------
-#Rules for primary and secondary variables can be generated using a generic set of rules
-#Singular rule
-def var_singular_rule(varType,thisID):
-    rule:  
-        name: f'{varType}_{thisID}_files'
-        output:
-            os.path.join(outDirs[varType],"{varFname}")
-        input:
-            lambda wildcards: 
-                wf[varType][thisID][ os.path.join(outDirs[varType],wildcards.varFname)] \
-                if varType=="primVar" else \
-                wf[varType][thisID][ os.path.join(outDirs[varType],wildcards.varFname)].values()
-        run:
-            if varType=="primVar":
-                KAPy.buildPrimVar(config=config,
-                                         inFiles=input,
-                                         outFile=output,
-                                         inpID=thisID)
-            else:
-                KAPy.buildDerivedVar(config=config,
-                                         inFiles=input,
-                                         outFile=output,
-                                         inpID=config[varType][thisID])
-
-#Plural rule
-def var_plural_rule(varType,thisID):
-    rule:
-        name: f'{varType}_{thisID}'
-        input:
-            list(wf[varType][thisID].keys())
-            
-#Lumped rule
-def var_lumped(varType):
-    rule:  
-        name: f'{varType}'
-        input:
-            [list(thisVar.keys()) for thisVar in wf[varType].values()]
-            
-for varType in ['primVars','secVars']:
-    var_lumped(varType)
-    for varID in wf[varType].keys():
-        var_singular_rule(varType,varID)
-        var_plural_rule(varType,varID)
-
-"""
         
-# Bias correction -------------------
-# TODO
+# Calibration -------------------
+# Aka bias-correction. Only run if we need to
+if 'calibratedVars' in wf:
+    rule calibration:
+        input:
+            list(wf['calibratedVars'].keys())
 
+    rule calibration_file:
+        output:
+            os.path.join(outDirs['calibration'],"{varID}","{fname}")
+        input:
+            unpack(lambda wildcards:
+                wf['calibratedVars'][os.path.join(outDirs['calibration'],
+                                      wildcards.varID,
+                                      wildcards.fname)])
+        run:
+            KAPy.calibrate(config,
+                           histSimFile=input.histSim,
+                           refFile=input.ref,
+                           outFile=output,
+                           thisCal=wildcards.varID)
 
 # Indicators ---------------------------------
 # Create a loop over the indicators that defines the singular and plural rules
@@ -161,12 +134,13 @@ def ind_singular_rule(thisID):
         name: f'indicator_{thisID}_files'
         output:
             os.path.join(outDirs['indicators'],
-                         f"{thisID}",f"{thisID}_{{stem}}.nc")
+                         f"{thisID}",
+                         f"{thisID}_{{stem}}")
         input:
-            expand(os.path.join(outDirs['variables'],
-                                "{varName}",
-                                "{varName}_{{stem}}.nc"),
-                   varName=thisInd['variables'])
+            lambda wildcards: 
+                wf['indicators'][thisID][ os.path.join(outDirs['indicators'],
+                                                     thisID,
+                                                     f"{thisID}_{wildcards.stem}")]
         run:
             KAPy.calculateIndicators(config=config,
                                      inFile=input,
@@ -187,24 +161,28 @@ for indID in config['indicators'].keys():
 #Run all indicators    
 rule indicators:
     input:
-        [f for thisInd in wf['indicators'].values() for f in thisInd['files']]
+        [f for thisInd in wf['indicators'].values() for f in thisInd.keys()]
 
 # Regridding  ---------------------------------
 # Combining everything into an ensemble requires that they are all on a common grid
 # This step is optional but if the models are not on a common grid, this will cause failure 
 # when we come to the ensstats generation
-if config['outputGrid']['regriddingEngine']!='None':
+if config['outputGrid']['regriddingEngine']!='none':
     rule regrid:
         input:
-            wf['regridded']['files']
+            list(wf['regridded'].keys())
 
     rule regrid_file:
         output:
-            os.path.join(outDirs['regridded'],"{indID}","{stem}.nc")
+            this=os.path.join(outDirs['regridded'],"{indID}","{fname}")
         input:
-            os.path.join(outDirs['indicators'],"{indID}","{stem}.nc")
+            inputFile=lambda wildcards: wf['regridded'][os.path.join(outDirs['regridded'],
+                                                           wildcards.indID,
+                                                           wildcards.fname)],
+            grid=config['outputGrid']["cdoGriddes"]
         run:
-            KAPy.regrid(config,input,output)
+            KAPy.regrid(config,input.inputFile,output)
+
 
 # Enssemble Statistics ---------------------------------
 # Now we can combine them into ensembles
@@ -224,22 +202,40 @@ rule ensstats_file:
 
 
 #Areal statistics------------------
-#Areal statistics can be calculated for both the enssemble statistics and the
-#individual ensemble members - these options can be turned on and off as required
-#via the configuration options. 
-#Plural rule
+#Areal statistics are calculated for both the enssemble statistics and individual members
+#Note that we don't include the combined statistics in the workflow, as we would to be able to
+#overwrite the naming of this output file from e.g. another project.
 rule arealstats:
     input:
         list(wf['arealstats'].keys())
+    output:
+        os.path.join(outDirs['arealstats'],'Areal_statistics.csv')
+    run:
+        KAPy.combineArealstats(config,input,output)
+
 
 #Singular rule
-rule arealstats_file:
-    output:
-        os.path.join(outDirs['arealstats'],'{arealstats}')
-    input:
-        lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],wildcards.arealstats)]
-    run:
-        KAPy.generateArealstats(config,input,output)
+#Depending on whether we are using a shapefile or not, we may want to include the shapefile
+#as a dependency
+if config['arealstats']['shapefile']!='':
+    rule arealstats_file:
+        output:
+            os.path.join(outDirs['arealstats'],'{fname}')
+        input:
+            inputFile=lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],
+                                                            wildcards.fname)],
+            shapefile=config['arealstats']['shapefile'] 
+        run:
+            KAPy.generateArealstats(config,input.inputFile,output)
+else:  #No dependency on the shapefile
+    rule arealstats_file:
+        output:
+            os.path.join(outDirs['arealstats'],'{fname}')
+        input:
+            inputFile=lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],
+                                                            wildcards.fname)]
+        run:
+            KAPy.generateArealstats(config,input.inputFile,output)
 
 # Outputs ---------------------------------
 # Plots, amongst other things
@@ -280,6 +276,7 @@ rule plots_spatial:
 #All-------------------
 rule all:
     input:
-        wf['all']
+        wf['all'],
+        rules.arealstats.output
     default_target: True
 

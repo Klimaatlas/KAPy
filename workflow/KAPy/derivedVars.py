@@ -16,7 +16,7 @@ from helpers import readFile
 
 import xarray as xr
 import importlib
-from .helpers import readFile
+from . import helpers
 import os
 
 
@@ -26,10 +26,8 @@ def buildDerivedVar(config, inFiles, outFile, thisVar):
     inDict = {os.path.basename(os.path.dirname(f)): f for f in inFiles}
 
     # Load input files
-    if thisVar[
-        "passXarrays"
-    ]:  # Then load the paths into xarrays. Otherwise just pass the path.
-        inDict = {thisKey: readFile(thisPath) for thisKey, thisPath in inDict.items()}
+    if thisVar["passXarrays"]:  # Then load the paths into xarrays. Otherwise just pass the path.
+        inDict = {thisKey: helpers.readFile(thisPath) for thisKey, thisPath in inDict.items()}
 
     # Now get the function to call
     if thisVar["processorType"] == "module":

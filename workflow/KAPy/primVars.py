@@ -1,15 +1,19 @@
 """
-#Setup for debugging with a Jupyterlab console
+#Setup for debugging with VSCode
 import os
+print(os.getcwd())
 os.chdir("..")
 import KAPy
 os.chdir("..")
+os.chdir("..")
+print(os.getcwd())
 config=KAPy.getConfig("./config/config.yaml")  
 wf=KAPy.getWorkflow(config)
 inpID=next(iter(wf['primVars'].keys()))
 outFile=[next(iter(wf['primVars'][inpID]))]
 inFiles=wf['primVars'][inpID][outFile[0]]
-
+%matplotlib qt
+import matplotlib.pyplot as plt
 """
 
 # Given a set of input files, create objects that can be worked with
@@ -30,39 +34,24 @@ def buildPrimVar(config, inFiles, outFile, inpID):
     # Get input configuration
     thisInp = config["inputs"][inpID]
 
-    # Make dataset object. We do this manually, so as to explictly avoid
-    # dask getting involved. This may change in the future
-    # We also do the cutouts at this point, so as to minimise the amount of
-    # data that is actually loaded into memory
-    dsList = []
-    for f in inFiles:
-        if config["cutouts"]["method"] == "lonlatbox":
-            # Do cutouts using cdo sellonlatbox
-            cdo = Cdo()
-            thisDs = cdo.sellonlatbox(
-                config["cutouts"]["xmin"],
-                config["cutouts"]["xmax"],
-                config["cutouts"]["ymin"],
-                config["cutouts"]["ymax"],
-                input=f,
-                returnXDataset=True,
-            )
-            dsList += [thisDs]
-        elif config["cutouts"]["method"] == "none":
-            # Load everything using xarray
-            dsList += [xr.open_dataset(f)]
-        else:
-            sys.exit(f"Unsupported cutout option '{config['cutouts']['method']}'.")
-
-    # Now combine into one object
-    dsIn = xr.combine_by_coords(dsList, combine_attrs="drop_conflicts")
+    # Make dataset object using xarray lazy load approach.
+    # Apply a manual sort ensures that the time axis is correct
+    # Use the join="override" argument to handle the case where
+    # there are small numerical differences in the values of the
+    # coordinates - in this case, we take the coordinates from the first file
+    dsIn =xr.open_mfdataset(inFiles,
+                            combine='nested',
+                            use_cftime=True, 
+                            join="override", 
+                            concat_dim='time')
+    dsIn=dsIn.sortby('time')
 
     # Select the desired variable and rename it
-    ds = dsIn.rename({thisInp["internalVarName"]: thisInp["varName"]})
-    da = ds[thisInp["varName"]]  # Convert to dataarray
+    ds = dsIn.rename({thisInp["internalVarName"]: thisInp["varID"]})
+    da = ds[thisInp["varID"]]  # Convert to dataarray
 
     # Drop degenerate dimensions. If any remain, throw an error
-    da = da.squeeze()
+    da = da.squeeze(drop=True)
     if len(da.dims) != 3:
         sys.exit(
             f"Extra dimensions found in processing '{inpID}' - there should be only "
@@ -70,16 +59,59 @@ def buildPrimVar(config, inFiles, outFile, inpID):
             + f"found {len(da.dims)} i.e. {da.dims}."
         )
 
-    # Apply additional preprocessing scripts
-    if thisInp["applyPreprocessor"]:
-        thisSpec = importlib.util.spec_from_file_location(
-            "customScript", thisInp["preprocessorPath"]
-        )
-        thisModule = importlib.util.module_from_spec(thisSpec)
-        thisSpec.loader.exec_module(thisModule)
-        ppFn = getattr(thisModule, thisInp["preprocessorFunction"])
-        da = ppFn(da)  # Assume no input arguments
+    # Drop coordinates that are not associated with a dimension. Often you seen
+    # height or level coming in as a coordinate, when it is perhaps more appropriate as
+    # an attribute. However, different models handle this differently, and some have
+    # already dropped it. The different between the two can cause problems when we
+    # come to the point of merging ensemble members.
+    for thisCoord in da.coords.keys():
+        if len(da[thisCoord].dims)==0:
+            da.attrs[thisCoord]=da[thisCoord].values
+            da= da.drop_vars(thisCoord)
+
+    #Apply cutout functionality
+    if config["cutouts"]["method"] == "lonlatbox":
+        # The processing chain here is to first take
+        # a slide, and then do a cdo cutoout on it. This
+        # can be used as a mask on the xarray object - this
+        # way we can maintain the lazy-loading and storage benefits
+        # associated with pickling
+        
+        # Extract first time step. This avoids having to work
+        # with the entire dataset
+        firstTS=da.isel(time=0)
+
+        # Do cutouts using cdo sellonlatbox. Make sure that we
+        # return a dataarray and not a dataset
+        cdo = Cdo()
+        cutoutMask = cdo.sellonlatbox(
+            config["cutouts"]["xmin"],
+            config["cutouts"]["xmax"],
+            config["cutouts"]["ymin"],
+            config["cutouts"]["ymax"],
+            input=firstTS,
+            returnXArray=thisInp["varID"])
+        
+        # Apply masking to data array object
+        da=da.where(cutoutMask.notnull(),drop=True)
+
+    elif config["cutouts"]["method"] != "none":
+        #problem
+        sys.exit(f"Unsupported cutout option '{config['cutouts']['method']}'.")
+
+    # # Apply additional preprocessing scripts
+    # if thisInp["importScriptPath"]!='':
+    #     thisSpec = importlib.util.spec_from_file_location(
+    #         "customScript", thisInp["importScriptPath"]
+    #     )
+    #     thisModule = importlib.util.module_from_spec(thisSpec)
+    #     thisSpec.loader.exec_module(thisModule)
+    #     ppFn = getattr(thisModule, thisInp["importScriptFunction"])
+    #     da = ppFn(da)  # Assume no input arguments
 
     # Write the dataset object to disk, depending on the configuration
-    # Currently write the whole lot. Could potentially pickle in the future
-    da.to_netcdf(outFile[0])
+    if config['processing']['picklePrimaryVariables']:
+        with open(outFile[0],'wb') as f:
+            pickle.dump(da,f,protocol=-1)
+    else:
+        da.to_netcdf(outFile[0])

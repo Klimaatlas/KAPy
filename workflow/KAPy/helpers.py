@@ -10,15 +10,25 @@ import xarray as xr
 import os
 
 
-def readFile(thisPath):
+def readFile(thisPath,format=None):
     # Reads a dataset from disk, determining dynmaically whether it is
     # pickled or NetCDF based on the file extension
-    inExt = os.path.splitext(os.path.basename(thisPath))[1]
-    if inExt == ".nc":
-        thisDat = xr.open_dataarray(thisPath)
-    elif inExt == ".pkl":  # Read pickle
+    if format==None:
+        format = os.path.splitext(os.path.basename(thisPath))[1]
+    if format == ".nc":
+        thisDat = xr.open_dataarray(thisPath,
+                                    use_cftime=True)
+    elif format == ".pkl":  # Read pickle
         with open(thisPath, "rb") as f:
             thisDat = pickle.load(f)
     else:
-        raise IOError(f"Unknown file format, {inExt} in {thisPath}")
+        raise IOError(f"Unknown file format, '{format}' inferred from: '{thisPath}'.")
     return thisDat
+
+
+def timeslice(this,startYr,endYr):
+    # Slice dataset
+    timemin = this.time.dt.year >= int(startYr)
+    timemax = this.time.dt.year <= int(endYr)
+    sliced = this.sel(time=timemin & timemax)
+    return sliced

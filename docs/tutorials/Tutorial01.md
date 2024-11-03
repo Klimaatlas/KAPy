@@ -26,7 +26,7 @@ conda activate KAPy
 
 6. Unzip the .zip file. You should get two directories: `CORDEX` and `ERA5_monthly`.
 
-7. Move the two directories (and their contents) into the KAPy folder `./resources/`. The `resources` folder is generally used for input files and files that don't change, while outputs are written to `./results`. These directories can be configured in `./config/config.yaml`. 
+7. Move the two directories (and their contents) into the KAPy folder `./inputs/`. The `inputs` folder is generally used for input files and files that don't change, while outputs are written to `./outputs`. These directories can be configured in `./config/config.yaml`. 
 
 8. We are now actually ready to roll. KAPy is run via the `snakemake` command - you can get lots of help directly from snakemake using
 
@@ -46,9 +46,9 @@ snakemake --cores 1
 
 11. Snakemake will take a few minutes to run - take note of the outputs, which detail what is being done at each step, together with the input and output files.
 
-12. Now have a look in `./results` and the subdirectories there. You will see that they have all be filled out with the corresponding files.
+12. Now have a look in `./outputs` and the subdirectories there. You will see that they have all be filled out with the corresponding files.
 
-13. KAPy produces a set of of "quick-look" plots that can be used to give a quick overview of the results. Note that these are intended to be generic and work for all possible configurations - the plot that you actually want is most likely not there. Nevertheless, it does still provide a way to get a quick overview of the results. Open the directory `./results/6.plots/` and browser through the files with an image viewer e.g. :
+13. KAPy produces a set of of "quick-look" plots that can be used to give a quick overview of the results. Note that these are intended to be generic and work for all possible configurations - the plot that you actually want is most likely not there. Nevertheless, it does still provide a way to get a quick overview of the results. Open the directory `./outputs/7.plots/` and browse through the files with an image viewer e.g. :
 
 ```
 eog .

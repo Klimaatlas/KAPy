@@ -23,3 +23,4 @@ dependencies:
   - black   #Linting
   - ipykernel  #Used by vscode to enable interactive debugging
   - jsonschema2md #Convert jsonschema to markdown documentation
+  - pyqt   #Interactive plotting in vscode

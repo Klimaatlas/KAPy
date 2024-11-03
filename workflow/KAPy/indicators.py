@@ -1,21 +1,26 @@
 """
 #Setup for debugging with VS code
 import os
+print(os.getcwd())
 os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
-inFile=['./results/1.variables/tas/tas_CORDEX_rcp85_AFR-44_MPI-M-MPI-ESM-LR_r1i1p1_SMHI-RCA4_v1_mon.nc']
-inFile=["./results/1.variables/tas/tas_ERA5_t2m_ERA5_monthly.nc"]
-indID='101'
+wf=KAPy.getWorkflow(config)
+indID='101y'
+outFile=[next(iter(wf['indicators'][indID]))]
+inFile=wf['indicators'][indID][outFile[0]]
+import matplotlib.pyplot as plt
+%matplotlib inline
+
 """
 
 import xarray as xr
 import numpy as np
 import pandas as pd
 import sys
-from .helpers import readFile
-
+from . import helpers 
+import cftime
 
 def calculateIndicators(config, inFile, outFile, indID):
 
@@ -23,7 +28,7 @@ def calculateIndicators(config, inFile, outFile, indID):
     thisInd = config["indicators"][indID]
 
     # Read the dataset object back from disk, depending on the configuration
-    thisDat = readFile(inFile[0])
+    thisDat = helpers.readFile(inFile[0])
 
     # Filter by season first (should always work)
     theseMonths = config["seasons"][thisInd["season"]]["months"]
@@ -34,9 +39,7 @@ def calculateIndicators(config, inFile, outFile, indID):
         slices = []
         for thisPeriod in config["periods"].values():
             # Slice dataset
-            timemin = datSeason.time.dt.year >= thisPeriod["start"]
-            timemax = datSeason.time.dt.year <= thisPeriod["end"]
-            datPeriodSeason = datSeason.sel(time=timemin & timemax)
+            datPeriodSeason=helpers.timeslice(datSeason,thisPeriod["start"],thisPeriod["end"])
             timebounds = pd.to_datetime(
                 [f"{thisPeriod['start']}-01-01", f"{thisPeriod['end']}-12-31"]
             )
@@ -65,11 +68,11 @@ def calculateIndicators(config, inFile, outFile, indID):
 
     # Time binning by defined units
     elif thisInd["time_binning"] in ["years", "months"]:
-        # Then group by time
+        # Then group by time. Could consider using groupby as an alternative
         if thisInd["time_binning"] == "years":
-            datGroupped = datSeason.resample(time="1Y", label="right")
+            datGroupped = datSeason.resample(time="YE", label="right")
         elif thisInd["time_binning"] == "months":
-            datGroupped = datSeason.resample(time="1M", label="right")
+            datGroupped = datSeason.resample(time="ME", label="right")
         else:
             sys.exit("Shouldn't be here")
 
@@ -82,7 +85,10 @@ def calculateIndicators(config, inFile, outFile, indID):
         # Round time to the middle of the month. This ensures that everything
         # has an identical datetime, regardless of the calendar being used.
         # Kudpos to ChatGPT for this little work around
-        dout["time"] = pd.to_datetime(dout.time.dt.strftime("%Y-%m-15"))
+        # Note that we need to ensure cftime representation, for runs that
+        # go out paste 2262
+        dout["time"] = [cftime.DatetimeGregorian(x.dt.strftime("%Y"),x.dt.strftime("%m"),15)
+                                                for x in dout.time]
 
     else:
         sys.exit("Unknown time_binning method, '" + thisInd["time_binning"] + "'")

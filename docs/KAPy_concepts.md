@@ -4,9 +4,17 @@ KAPy is intented to be a generic and modular tool for the production of climate 
 
 In this document we describe the core concepts and definitions that KAPy is built up around.
 
+## Some boundaries
+
+First, lets define a few basic principles to live by.
+
+* No hardcoding. All parameters, text strings and configurations must be handled by external configuration files. The user should not have to edit Python code.
+* Document, document, document. 
+* KAPy is a tool for the backend of a climate service, not the front-end. KAPy is intended to process the data to be used in a climate service - production of figures and reports etc is to be handled by the user, external to KAPy. 
+
 ## Some defintions
 
-To start with a few key definitions around the types of data that we can potentially deal with
+Next, a few key definitions around the types of data that we can potentially deal with
 * *Climate variable* We refer to gridded climate data in its native time resolution as a "climate variable". This can include the output produced directly by a climate model (either global or regional) or observations. It can also included derived variables, that are produced as a combination of other variables from the same data source, or in interaction with other data sources (e.g. as in bias correction). Examples include temperature, maximum temperature, precipitation etc.
 * *Climate indicator* Climate variables can then be translated into climate indicators via a processing scheme involving the generation of some form of summary statistic (e.g. a mean) over time. Examples include annual mean temperature, frequency of extreme rain events, and drought indices. 
 
@@ -27,7 +35,7 @@ We also consider two gradations of climate indicators:
 An example of where bias-corrected indicators come into play is in projections of return periods of e.g. extreme rainfall. As used in the Danish National Climate Atlas, *Klimaatlas*, return periods are first calculated directly from primary variables from both climate model and observational datasets - a time-averaging process, making the outputs indicators in this taxonomy. These primary indicators are then bias-corrected to produce the bias-corrected indicators that are actually presented in the climate service.
 
 KAPy also has a number of key user-configurable concepts that shape the way the analysis is performed.
-* *Datasets* form a single time-series of a climate or derived variable that can be used as the basis for calculating indicators. Datasets can often aggregate across multiple "experiments" in CMIP terminology, e.g. joining "hist" and "rcp26" into one timeseries. However, the requirement for only one timeseries per dataset means that e.g. "rcp26" and "rcp85" cannot be represented in the same dataset, as they have overlapping timeseries - instead, these are best represented as separate datasets.
+* *Dataseries* form a single time-series of a climate or derived variable that can be used as the basis for calculating indicators. Dataseries can often aggregate across multiple "experiments" in CMIP terminology, e.g. joining "hist" and "rcp26" into one timeseries. However, KAPy also processes one timeseries at a time, meaning that e.g. "rcp26" and "rcp85" cannot be represented in the same dataseries, as there would be more than one datapoint per timestep - instead, these are best represented as separate dataseries.
 * *Periods* are discrete time windows over which indicators are calculated and/or averaged. Multiple periods can be defined in a configuration, and can be overlapping. Minimum period length is 1 year.
 * *Seasons* represent a grouping of one or more months over which indicators are calculated e.g. winter precipitation. Multiple seasons are permitted in a configuration, and they need not be mutually exclusive.
 
@@ -46,12 +54,32 @@ The KAPy workflow involves a set of discrete steps to process climate data, cove
   * Indicators are calculated for each dataset. 
   * Individual indicators can be built by using their id code as a target e.g. `101`
 
+* `regrid` : Regridded files
+  * Indicators are regridded to a common grid
+
 * `ensstats` : Ensemble statistics
   * Indicators on a common grid can then be merged into a single object and ensemble statistics (e.g. median, mean 10th percentile, 90th percentile) calculated
 
 * `arealstats` : Areal statistics
-  * Indicator statistics are calculated for all polygons areas defined in `config.yaml`. 
+  * Indicator statistics are calculated for all polygons area defined in `config.yaml`. 
  
 * `plots` : Outputs
-  * Produce ouput plots summarising all indicators
+  * Produce output plots summarising all indicators
 
+* `all` : Make everything
+  * Produce all outputs.
+  * The default target - if no target is defined when calling snakemake, everything will be produced.
+
+
+## Filenaming conventions
+
+KAPy is a tool that works from file to file, and therefore requires a systematic naming convention to make sense of the many outputs and inputs. The convention is inspired by that seem commonly in climate data, but also reflects the specific needs for KAPy. All KAPy files are therefore named as follows:
+
+`<variable ID / indicator ID>_<data source ID>_<grid>_<experiment ID>_<ensemble member identifiers>.nc`
+
+where
+  * `<variable ID / indicator ID>` is the unique identifier of either the *climate variable* or *climate indicator*, as defined above. Generally, the suggested convention is that variables get letter-based identifiers (e.g. `tasmin`), while indicators get numeric indicators (e.g. `151`). However, this is not enforced by KAPy.
+  * `<data source ID>` is the identifier of the data source that the variable or indicator is derived from (e.g. `CORDEX`).
+  * `<grid>` is an identifier for the grid (including both the resolution and spatial domain) that the data is presented on.
+  * `<experiment ID>` is an identifier used to identify *dataseries* formed from multiple experiments from the same data source (e.g. `RCP2.6` within the `CORDEX` data source).
+  * `<ensemble member identifiers>` is a series of codes used to identify the ensemble member that the *dataseries* is associated with. Can contain further fields separated by `_`, as defined in the input filenames, but individual fields beyond this point are not parsed by KAPy, but rather handled as one block.
