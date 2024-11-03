@@ -1,0 +1,7 @@
+id	name	units	variables	season	statistic	time_binning
+101-nocal	Annual mean temperature	K	tas	annual	mean	years
+102-nocal	Annual mean precipitation	kg m-2 s-1	pr	annual	mean	years
+101-scaling	Annual mean temperature	K	tas-scaling	annual	mean	years
+102-scaling	Annual mean precipitation	kg m-2 s-1	pr-scaling	annual	mean	years
+101-eqm	Annual mean temperature	K	tas-eqm	annual	mean	years
+102-eqm	Annual mean precipitation	kg m-2 s-1	pr-eqm	annual	mean	years
