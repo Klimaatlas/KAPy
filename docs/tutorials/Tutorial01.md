@@ -14,7 +14,7 @@ A configured fresh version of KAPy. See the "Getting Started" section of [README
   
 2. Open `./config/config.yaml` in a text viewer (e.g. `vi`, `less`) and browse through it. Note in particular the definition of the cutouts and grids, directories, and other miscellaneous options, together with links to the other configuration tables defining inputs, indicators etc.
 
-3. Now open one of these configuration tables e.g `./config/inputs.tsv`. You will see a range of options configured as columns, while each row corresponds to an individual input data source. Details of all options can be found in the [configuration documentation](./docs/Configuration.md). Open some of the other configuration tables as well to see the differences.
+3. Now open one of these configuration tables e.g `./config/inputs.tsv`. You will see a range of options configured as columns, while each row corresponds to an individual input data source. Details of all options can be found in the [configuration documentation](../Configuration.md). Open some of the other configuration tables as well to see the differences.
 
 4. Ok, before we get going, make sure that you have the KAPy environment activated - you should see `(KAPy)` in your command prompt. If you have `(base)` or similar activate it with the following command. If you're unsure, it doesn't hurt to activate it again.
 
