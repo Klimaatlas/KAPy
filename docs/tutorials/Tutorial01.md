@@ -4,6 +4,10 @@
 
 To familiarise yourself with KAPy via a minimum working example of setting up and running an analysis.
 
+## What are we going to do?
+
+This tutorial works with monthly temperature data from a subset of the CORDEX Africa ensemble over Ghana under two future emissions scenarios. The data is used to generate a single indicator, the average annual temperature in the region.
+
 ## Point of departure
 
 A configured fresh version of KAPy. See the "Getting Started" section of [README.md](../../README.md) for more on this.
@@ -14,7 +18,7 @@ A configured fresh version of KAPy. See the "Getting Started" section of [README
   
 2. Open `./config/config.yaml` in a text viewer (e.g. `vi`, `less`) and browse through it. Note in particular the definition of the cutouts and grids, directories, and other miscellaneous options, together with links to the other configuration tables defining inputs, indicators etc.
 
-3. Now open one of these configuration tables e.g `./config/inputs.tsv`. You will see a range of options configured as columns, while each row corresponds to an individual input data source. Details of all options can be found in the [configuration documentation](./docs/Configuration.md). Open some of the other configuration tables as well to see the differences.
+3. Now open one of these configuration tables e.g `./config/inputs.tsv` using a spreadsheet such as LibreOffice or Excel (editing these files with `vi`or similar is not recommended, as it is easy to loose track of the tabs separating each column). You will see a range of options configured as columns, while each row corresponds to an individual input data source. Details of all options can be found in the [configuration documentation](./docs/Configuration.md). Open some of the other configuration tables as well to see the differences.
 
 4. Ok, before we get going, make sure that you have the KAPy environment activated - you should see `(KAPy)` in your command prompt. If you have `(base)` or similar activate it with the following command. If you're unsure, it doesn't hurt to activate it again.
 
@@ -24,9 +28,12 @@ conda activate KAPy
 
 5. Now, before running anything, we need some data to work on. Download the [example working dataset](https://download.dmi.dk/Research_Projects/KAPy/tas_example_dataset.zip) into a temporary directory. This dataset provides a small set of CORDEX Africa monthly temperature outputs over Ghana for two different climate emissions scenarios, together with corresponding data from ERA5.
 
-6. Unzip the .zip file. You should get two directories: `CORDEX` and `ERA5_monthly`.
+6. Move the .zip file into `./inputs/` and unzip it with the following command:
+```
+unzip tas_example_dataset.zip
+```
 
-7. Move the two directories (and their contents) into the KAPy folder `./inputs/`. The `inputs` folder is generally used for input files and files that don't change, while outputs are written to `./outputs`. These directories can be configured in `./config/config.yaml`. 
+7. You will now see a few hundred files appear in this directory. In KAPy the `inputs` folder is generally used for input files and files that don't change, while outputs are written to `./outputs`. These directories can be configured in `./config/config.yaml`. 
 
 8. We are now actually ready to roll. KAPy is run via the `snakemake` command - you can get lots of help directly from snakemake using
 
