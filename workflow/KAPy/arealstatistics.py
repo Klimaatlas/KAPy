@@ -10,7 +10,7 @@ wf=KAPy.getWorkflow(config)
 ensID=next(iter(wf['ensstats'].keys()))
 inFile=wf['ensstats'][ensID]
 #Enable inline plotting in vscode
-%matplotlib inline
+%matplotlib qt
 """
 
 import xarray as xr
@@ -20,18 +20,21 @@ import regionmask
 import numpy as np
 import os
 from cdo import Cdo
+from . import helpers
 
 def generateArealstats(config, inFile, outFile):
     # Generate statistics over an area by applying a polygon mask and averaging
     # Setup xarray
     # Note that we need to use open_dataset here, as the ensemble files have
     # multiple data variables in them
-    thisDat = xr.open_dataset(inFile[0],use_cftime=True).indicator
+    thisDataSet = xr.open_dataset(inFile[0],
+                              use_cftime=True)
+    thisDat=thisDataSet.indicator
 
     #Identify the time / period coordinate first
-    if 'time' in thisDat.coords:
+    if 'time' in thisDat.dims:
         tCoord='time'
-    elif 'periodID' in thisDat.coords:
+    elif 'periodID' in thisDat.dims:
         tCoord='periodID'
     else:
         raise ValueError(f'Cannot find time or periodID coordinate in "{inFile[0]}".')

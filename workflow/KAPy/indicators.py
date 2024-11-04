@@ -2,16 +2,17 @@
 #Setup for debugging with VS code
 import os
 print(os.getcwd())
+import helpers as helpers
 os.chdir("..")
 import KAPy
 os.chdir("..")
 config=KAPy.getConfig("./config/config.yaml")  
 wf=KAPy.getWorkflow(config)
-indID='101y'
+indID='201'
 outFile=[next(iter(wf['indicators'][indID]))]
 inFile=wf['indicators'][indID][outFile[0]]
 import matplotlib.pyplot as plt
-%matplotlib inline
+%matplotlib qt
 
 """
 
@@ -19,8 +20,8 @@ import xarray as xr
 import numpy as np
 import pandas as pd
 import sys
-from . import helpers 
 import cftime
+from . import helpers 
 
 def calculateIndicators(config, inFile, outFile, indID):
 

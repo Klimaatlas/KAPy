@@ -1,2 +1,2 @@
 id	name	units	variables	season	statistic	time_binning
-101	Annual mean temperature	K	tas-cal	annual	mean	years
+101	Annual mean temperature	K	tas	annual	mean	periods
