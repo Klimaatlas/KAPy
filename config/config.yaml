@@ -24,10 +24,10 @@ dirs:
 # Configuration options------------------------------------
 arealstats:
     useAreaWeighting: True
-    shapefile: 'docs/tutorials/Tutorial05_files/Ghana_regions.shp'
-    idColumn: 'ADM1_PCODE'
-    #shapefile: ''
-    #idColumn: ''
+    #shapefile: 'docs/tutorials/Tutorial05_files/Ghana_regions.shp'
+    #idColumn: 'ADM1_PCODE'
+    shapefile: ''
+    idColumn: ''
 cutouts:
         #method: 'none'
     method: 'lonlatbox'
