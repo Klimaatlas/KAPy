@@ -6,7 +6,7 @@ To familiarise yourself with KAPy via a minimum working example of setting up an
 
 ## What are we going to do?
 
-This tutorial works with monthly temperature data from a subset of the CORDEX Africa ensemble over Ghana under two future emissions scenarios. The data is used to generate a single indicator, the average annual temperature in the region.
+This tutorial works with two data sets of monthly temperature data over Ghana. One data set comes from a subset of the CORDEX Africa ensemble  under two future emissions scenarios, while the second comes from the ERA5 reanalysis. KAPy generates a single indicator (the annual temperature averaged over 30 year periods) for both datasets without calibration or bias correction.
 
 ## Point of departure
 
