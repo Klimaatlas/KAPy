@@ -4,6 +4,11 @@
 
 To learn how indicators are configured in KAPy.
 
+## What are we going to do?
+
+In this tutorial we will define a new indicator and rerun the KAPy pipeline to get a second set of results. The second indicator is the annual average temperature in each year, as in Tutorials 1 and 2, is calculated for both two emissions scenarios from CORDEX and from ERA5 data over Ghana.
+
+
 ## Point of departure
 
 This tutorial follows on directly from the end of [Tutorial 1](Tutorial01.md).
@@ -17,7 +22,7 @@ This tutorial follows on directly from the end of [Tutorial 1](Tutorial01.md).
 ls ./outputs/3.indicators/*
 ```
 
-3. Indicators are defined and configured via `./config/indicators.tsv`. Open this file in a text editor (e.g. `vi`) and have a look at the indicators section. Here you will see that indicator `101` is defined as the first row, and that it is based on time-binning over `periods`. 
+3. Indicators are defined and configured via `./config/indicators.tsv`. Open this file in a spreadsheet (e.g. LibreOffice) and have a look at the indicators section. Here you will see that indicator `101` is defined as the first row, and that it is based on time-binning over `periods`. 
 
 4. The periods are defined in `./config/periods.tsv`. Open this file and you will see that they are declared as consecutive 30 year blocks with a start-year and end-year.
 
@@ -61,5 +66,5 @@ head outputs/6.areal_statistics/ensstats/102_CORDEX_Ghana025_rcp26_ensstats.csv
 eog ./outputs/7.plots/
 ```
 
-11. That concludes this tutorial. KAPy is currently only limited to calculating means over a time window, but within a short time, more functions will be added, including the ability to define custom functions.
+11. That concludes this tutorial. KAPy is currently only limited to calculating means, but within a short time, more functions will be added, including the ability to define custom functions.
 
