@@ -26,7 +26,7 @@ However, for the sake of this tutorial in consistency with the domain used in th
 ls ./docs/tutorials/Tutorial05_files/*
 ```
 
-3. The shapefile is coupled into KAPy via arguments in the config file `./config/config.yaml`. Open this file in a text editor (e.g. `vi`). The path of the shapefile is specified under the `arealstats` category. The `shapefile` option gives the path to the shapefile (normally by pointing to the `*.shp` file. The `idColumn` option gives the name of the unique identifier of each polygon stored in the shapefile - you can find the name of this column by opening the shapefile in a GIS client or by using GeoPandas. You will see something like this:
+3. The shapefile is coupled into KAPy via arguments in the config file `./config/config.yaml`. Open this file in a text editor (e.g. `vi`). The path of the shapefile is specified under the `arealstats` category. The `shapefile` option gives the path to the shapefile (normally by pointing to the `*.shp` file. The `idColumn` option gives the name of the unique identifier of each polygon stored in the shapefile - you can find the name of this column by opening the shapefile in a GIS client or by using GeoPandas. A shapefile for Ghana is stored in the helper files for Tutorial05 - edit the configuration file to include these options, so that it looks like this:
 
 ```
 # Configuration options------------------------------------
@@ -59,4 +59,11 @@ snakemake --cores 1
 
 7.  The averages over each area are stored in the `outputs/6.areal_statistics/ArealStatistics.csv` output file. Open this in a spreadsheet to see the results for each region in Ghana. You can also try plotting the results by combining them with the shapefile.
 
-8. That concludes this tutorial. 
+8. You can perform a more detailed analysis on your own using e.g. `Python`, `R` or your programming language of choice. We have included a Python example, that can be downloaded from [here](Tutorial05_files/plot_regions.py). You can run the script as follows:
+```
+python docs/tutorials/Tutorial05_files/plot_regions.py
+```
+
+9. The output file from the script can be found in `Tutorial05.png`. Opening it in a graphics viewer, you will see how the temperature changes across regions in Ghana under climate change.
+
+10. That concludes this tutorial. 
