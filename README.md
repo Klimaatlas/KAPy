@@ -5,7 +5,6 @@ KAPy is an open-source and flexible framework that can be used to generate clima
 ## Getting started
 
 Here we describe the basic steps to install and configure KAPy. First, you need to get a copy of the KAPy source code onto the machine where you want to work. This is most easily done using git to clone the latest version of the code directly from the repository:
-
 ```
 git clone git@github.com:Klimaatlas/KAPy.git
 ```
@@ -79,7 +78,6 @@ The development of KAPy is financed via a grant from the Danish Central Governme
 KAPy takes its name from joining the `KA` from DMI's *Klimaatlas* with the `Py` from Python, in the style of many Python libraries. 
 
 More importantly, the name is also a homonym for the phrase *ka pai* from *Te Reo Māori*, the language of the Māori people, the *tangata whenua* (indigenous people) of Aotearoa New Zealand. The phrase means simply "good", but can also be used as praise, as in "well done". e.g.
-
 ```
 Son: Look Dad! I made a Klimaatlas in Python!
 Dad: Ka pai, son, ka pai!
