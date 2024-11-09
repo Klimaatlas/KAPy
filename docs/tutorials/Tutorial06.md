@@ -10,7 +10,7 @@ This tutorial follows on directly from the end of [Tutorial05](Tutorial05.md).
 
 ## Brief introduction on the 
 
-This tutorial is based on three calibration methods from `xclim python` package. These are:
+This tutorial is based on three calibration methods from a `xclim python` package. These are:
 
 `Empirical Quantile Mapping (EQM)`:Adjusts data by aligning the quantiles of modeled and observed distributions, allowing for a more tailored correction across the range of data values.
 
@@ -47,11 +47,11 @@ pr-eqm	pr-eqm	pr	CORDEX	ERA5	1981	2010	xclim-eqm	month	{'kind':'*'}
 ```
 id	name	units	variables	season	statistic	time_binning
 101-nocal	Annual mean temperature	K	tas	annual	mean	years
-102-nocal	Annual mean precipitation	kg m-2 s-1	pr	annual	mean	years
+201-nocal	Annual mean precipitation	kg m-2 s-1	pr	annual	mean	years
 101-scaling	Annual mean temperature	K	tas-scaling	annual	mean	years
-102-scaling	Annual mean precipitation	kg m-2 s-1	pr-scaling	annual	mean	years
+201-scaling	Annual mean precipitation	kg m-2 s-1	pr-scaling	annual	mean	years
 101-eqm	Annual mean temperature	K	tas-eqm	annual	mean	years
-102-eqm	Annual mean precipitation	kg m-2 s-1	pr-eqm	annual	mean	years
+201-eqm	Annual mean precipitation	kg m-2 s-1	pr-eqm	annual	mean	years
 ```
 7. So now we are ready to go. Firstly, let's see how snakemake responds to this new configuration.
 ```
