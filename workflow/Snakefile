@@ -29,7 +29,7 @@ wf=KAPy.getWorkflow(config)
 def primaryVar_singular_rule(thisID):
     thisVarName=config['inputs'][thisID]['varID']
     rule:  
-        name: f'primaryVar_{thisID}_files'
+        name: f'{thisID}_files'
         output:
             os.path.join(outDirs['variables'],
                          f"{thisVarName}",
@@ -48,7 +48,7 @@ def primaryVar_singular_rule(thisID):
 #Plural rule
 def primaryVar_plural_rule(thisID):
     rule:
-        name: f'primaryVar_{thisID}'
+        name: f'{thisID}'
         input:
             list(wf['primVars'][thisID].keys())
             
@@ -69,7 +69,7 @@ rule primaryVars:
 def secVar_singular_rule(thisID):
     thisVar=config['secondaryVars'][thisID]
     rule:  
-        name: f'secondaryVar_{thisID}_files'
+        name: f'{thisID}_files'
         output:
             os.path.join(outDirs['variables'],
                          f"{thisVar['outputVars']}",
@@ -87,7 +87,7 @@ def secVar_singular_rule(thisID):
 #Plural rule
 def secVar_plural_rule(thisID):
     rule:
-        name: f'secondaryVar_{thisID}'
+        name: f'{thisID}'
         input:
             wf['secondaryVars'][thisID]['files']
             
@@ -131,7 +131,7 @@ if 'calibratedVars' in wf:
 def ind_singular_rule(thisID):
     thisInd=config['indicators'][thisID]
     rule:  
-        name: f'indicator_{thisID}_files'
+        name: f'{thisID}_files'
         output:
             os.path.join(outDirs['indicators'],
                          f"{thisID}",
@@ -150,7 +150,7 @@ def ind_singular_rule(thisID):
 #Indicator plural rule
 def ind_plural_rule(thisID):
     rule:
-        name: f'indicator_{thisID}'
+        name: f'{thisID}'
         input:
             list(wf['indicators'][thisID].keys())
             
