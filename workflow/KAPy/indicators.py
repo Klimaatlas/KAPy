@@ -41,17 +41,14 @@ def calculateIndicators(config, inFile, outFile, indID):
         for thisPeriod in config["periods"].values():
             # Slice dataset
             datPeriodSeason=helpers.timeslice(datSeason,thisPeriod["start"],thisPeriod["end"])
-            timebounds = pd.to_datetime(
-                [f"{thisPeriod['start']}-01-01", f"{thisPeriod['end']}-12-31"]
-            )
-            timestamp = timebounds.mean()
             # If there is nothing left, we want a result all the same so that we
             # can put it in the outputs. We copy the structure and populate
             # it with NaNs
             if datPeriodSeason.time.size == 0:
                 res = datSeason.isel(time=0)
+                res=res.drop_vars("time")
                 res.data[:] = np.nan
-            # Apply the operator
+            # Else apply the operator
             elif thisInd["statistic"] == "mean":
                 res = datPeriodSeason.mean("time", keep_attrs=True)
             else:
