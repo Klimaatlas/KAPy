@@ -9,7 +9,20 @@ config=KAPy.getConfig("./config/config.yaml")
 wf=KAPy.getWorkflow(config)
 """
 
-from plotnine import *
+from plotnine import (
+    ggplot,
+    geom_boxplot,
+    geom_line,
+    aes,
+    scale_x_discrete,
+    labs,
+    scale_fill_manual,
+    theme_bw,
+    theme,
+    coord_cartesian,
+    element_blank,
+    scale_colour_manual
+    )
 import pandas as pd
 import os
 import matplotlib
@@ -67,6 +80,11 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         index=["scenario", "periodID"], columns="ptileLbl", values="indicator"
     ).reset_index()
 
+    if config["region"]:
+        limits = [-5, 25]
+    else:
+        limits = [2.7e-05, 5.7e-05]
+
     # Now plot
     p = (
         ggplot(pltDatWide)
@@ -93,7 +111,7 @@ def makeBoxplot(config, indID, srcFiles, outFile=None):
         + scale_fill_manual(values=scColourDict)
         + theme_bw()
         + theme(legend_position="bottom", panel_grid_major_x=element_blank())
-        + coord_cartesian(ylim=[2.7e-05, 5.7e-05])
+        + coord_cartesian(ylim=limits)
     )
 
     # Output

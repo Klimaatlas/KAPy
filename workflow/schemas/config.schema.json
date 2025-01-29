@@ -19,7 +19,8 @@
                 "indicators",
                 "scenarios",
                 "periods",
-                "seasons"
+                "seasons",
+                "region"
             ],
             "additionalProperties": false,
             "properties": {
@@ -46,20 +47,33 @@
                 "seasons": {
                     "description": "Path to season configuration table, relative to working directory. See [seasons.md](seasons.md) for more detail.",
                     "type": "string"
+                },
+                "region": {
+                    "description": "Path to region specificatio, relative to working directory.",
+                    "type": "string"
                 }
             }
         },
         "dirs": {
             "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items",
             "type": "object",
-            "required": [
-                "variables",
-                "indicators",
-                "regridded",
-                "ensstats",
-                "arealstats",
-                "plots",
-                "netcdf"
+            "oneOf": [
+                {
+                    "required": [
+                        "variables",
+                        "indicators",
+                        "regridded",
+                        "ensstats",
+                        "arealstats",
+                        "plots",
+                        "netcdf"
+                    ]
+                },
+                {
+                    "required": [
+                        "region"
+                    ]
+                }
             ],
             "additionalProperties": false,
             "properties": {
@@ -89,6 +103,10 @@
                 },
                 "netcdf": {
                     "description": "Directory for storing output netcdfs.",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Directory for storing output netcdfs for region cutouts.",
                     "type": "string"
                 }
             }

@@ -63,15 +63,12 @@ def validateConfig(config):
         },
         "periods": {"listCols": [], "dictCols": [], "schema": "periods"},
         "seasons": {"listCols": ["months"], "dictCols": [], "schema": "seasons"},
-        "secondaryVars": {
-            "listCols": ["inputVars", "outputVars"],
-            "dictCols": ["additionalArgs"],
-            "schema": "derivedVars",
-        },
+        "region": {"listCols": [], "dictCols": [], "schema": ""},
+
     }
     for thisTblKey, theseVals in tabularCfg.items():
         # Load the variables that are defined as tabular configurations (if they exist)
-        if not thisTblKey in config["configurationTables"]:
+        if thisTblKey not in config["configurationTables"]:
             break
         thisCfgFile = config["configurationTables"][thisTblKey]
         thisTbl = pd.read_csv(thisCfgFile, sep="\t", comment="#")
@@ -84,7 +81,8 @@ def validateConfig(config):
         # We therefore need to drop the list columns from the validation scheme
         valThis = thisTbl.drop(columns=theseVals["listCols"])
         # Validate against the appropriate schema.
-        validate(valThis, os.path.join(schemaDir, f"{theseVals['schema']}.schema.json"))
+        if theseVals["schema"]:
+            validate(valThis, os.path.join(schemaDir, f"{theseVals['schema']}.schema.json"))
         # Dict columns also need to be parsed
         for col in theseVals["dictCols"]:
             try:

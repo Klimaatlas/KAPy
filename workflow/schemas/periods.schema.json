@@ -23,6 +23,10 @@
       "description": "A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long!",
       "type": "string"
     },
+    "short_name": {
+      "description": "A short name for the period to use in netcdf file name",
+      "type": "string"
+    },
     "start": {
       "description": "The start year of the period. The full year is included in the calculation.",
       "type": "integer"

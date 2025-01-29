@@ -1,0 +1,2 @@
+id	name	units	variables	season	statistic	time_binning
+102	Annual mean precipitation by period	kg m-2 s-1	pr	annual	mean	periods
