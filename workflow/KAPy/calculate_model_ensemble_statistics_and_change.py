@@ -6,8 +6,8 @@ import xarray as xr
 from xclim import ensembles as xe
 import yaml
 
-from save_change_to_netcdf import save_change_to_netcdf
-from plots import makeBoxplot
+from KAPy.save_change_to_netcdf import save_change_to_netcdf
+from KAPy.plots import makeBoxplot
 
 
 def calculate_ensemble_mean(
