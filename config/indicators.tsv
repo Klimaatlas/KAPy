@@ -1,2 +1,0 @@
-id	name	units	variables	seasons	time_binning	statistic	deltaType	additionalArgs	customScriptPath	customScriptFunction
-101	Annual mean temperature	K	tas-cal	all	periods	mean	subtract	{}		
