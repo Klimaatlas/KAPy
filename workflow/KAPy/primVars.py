@@ -31,7 +31,7 @@ from . import helpers
 from . import workflow
 
 #-----------------------------------------------------------------
-def defaultImport(inFiles,varID,internalVarName ):
+def defaultImport(inFiles,varCode,internalVarName ):
 	# Make dataset object using xarray lazy load approach.
 	# Apply a manual sort ensures that the time axis is correct
 	# Use the join="override" argument to handle the case where
@@ -51,8 +51,8 @@ def defaultImport(inFiles,varID,internalVarName ):
 	dsIn=dsIn.sortby('time')
 
 	# Select the desired variable and rename it
-	ds = dsIn.rename({internalVarName: varID})
-	da = ds[varID]  # Convert to dataarray
+	ds = dsIn.rename({internalVarName: varCode})
+	da = ds[varCode]  # Convert to dataarray
 
 	# Drop degenerate dimensions. If any remain, throw an error
 	da = da.squeeze(drop=True)
@@ -77,7 +77,7 @@ def defaultImport(inFiles,varID,internalVarName ):
 
 
 #-----------------------------------------------------------------
-def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varID,**kwargs):
+def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varCode,**kwargs):
 	"""
 	Apply cutout based on lonlat
 
@@ -97,7 +97,7 @@ def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varID,**kwargs):
 		Minimum coordinate in the y direction
 	ymax : _type_
 		Maximum coordinate in the y direction
-	varID : _type_
+	varCode : _type_
 		Name of the variable ID contained in the dataset
 	kwargs:
 		Absorb any extra arguments
@@ -112,7 +112,7 @@ def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varID,**kwargs):
 	cdo = Cdo()
 	cutoutMask = cdo.sellonlatbox(xmin, xmax, ymin, ymax,
 								  input=firstTS,
-								  returnXArray=varID)
+								  returnXArray=varCode)
 	
 	# Apply masking to data array object
 	da=thisDat.where(cutoutMask.notnull(),drop=True)
@@ -122,22 +122,22 @@ def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varID,**kwargs):
 
 
 #-----------------------------------------------------------------	
-def buildPrimVar(outFile, inFiles,varID,internalVarName,importScriptPath,importScriptFunction,
+def buildPrimVar(outFile, inFiles,varCode,internalVarName,importScriptPath,importScriptFunction,
 				 units, picklePrimaryVariables,cutoutArgs,**kwargs):
 	# If an import function is defined, use that. Otherwise use the default
 	if importScriptPath=='':
 		#Use default import
 		da= defaultImport(inFiles=inFiles, 
-					varID=varID,
+					varCode=varCode,
 					internalVarName=internalVarName)
 		#Apply cutout functionality
 		if cutoutArgs["method"] == "lonlatbox":
-			da=cutout_lonlat(da,**cutoutArgs,varID=varID)
+			da=cutout_lonlat(da,**cutoutArgs,varCode=varCode)
 
 	else:
 		#Use a custom import
 		imptFn=helpers.getExternalFunction(importScriptPath, importScriptFunction)
-		da = imptFn(inFiles,varID=varID,internalVarName=internalVarName,
+		da = imptFn(inFiles,varCode=varCode,internalVarName=internalVarName,
 			  		units=units, picklePrimaryVariables=picklePrimaryVariables,
 					cutoutArgs=cutoutArgs)  
 
@@ -179,7 +179,7 @@ def buildPrimVar(outFile, inFiles,varID,internalVarName,importScriptPath,importS
 		#Now use the chunking scheme as the basis for writing out the encoding
 		try:
 			daFloat.to_netcdf(outFile[0],
-						encoding={varID:{'chunksizes':chunkThisWay,
+						encoding={varCode:{'chunksizes':chunkThisWay,
 								'zlib': True,
 								'complevel':1}})
 		except Exception as e:
@@ -202,9 +202,9 @@ def VariableOverview(config):
 	pklFiles=glob.glob(config['dirs']['variables']+"/**/*.pkl",recursive=True)
 	tbl= pd.DataFrame(sorted(set(wfFiles+ncFiles+pklFiles)),columns=["path"])
 	tbl['filename']=[os.path.basename(f) for f in tbl["path"]]
-	tbl["varID"] = tbl["filename"].str.extract("^([^_]+)_.*$")
-	tbl["datasetID"] = tbl["filename"].str.extract("^[^_]+_([^_]+)_.*$")
-	tbl["gridID"] = tbl["filename"].str.extract("^[^_]+_[^_]+_([^_]+)_.*$")
+	tbl["var"] = tbl["filename"].str.extract("^([^_]+)_.*$")
+	tbl["dataset"] = tbl["filename"].str.extract("^[^_]+_([^_]+)_.*$")
+	tbl["grid"] = tbl["filename"].str.extract("^[^_]+_[^_]+_([^_]+)_.*$")
 	tbl["expt"] = tbl["filename"].str.extract("^[^_]+_[^_]+_[^_]+_([^_.]+).*$")
 	tbl["ensemble_member"] = tbl["filename"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+).nc(?:.pkl)?$")
 	tbl['in_workflow']=[f in wfFiles for f in tbl["path"]]
@@ -260,7 +260,7 @@ def VariableOverview(config):
 	cols = out.columns.tolist()
 	reordered_cols = cols[2:] + cols[:2]
 	out = out[reordered_cols]
-	out=out.sort_values(by=['varID','datasetID','gridID',"expt","ensemble_member"])
+	out=out.sort_values(by=['var','dataset','grid',"expt","ensemble_member"])
 	outFname=os.path.join(config['dirs']['variables'],"Variable_overview.csv")
 	print(f"\nWriting output to '{outFname}'.\n")
 	out.to_csv(outFname,index=False)

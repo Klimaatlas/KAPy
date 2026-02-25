@@ -159,10 +159,10 @@ def validateConfig(config):
 
     #Require that units are consistent across a variable
     inputvarDf=pd.DataFrame.from_dict(config["inputs"],orient="index")
-    unitCount=inputvarDf.groupby('varID')['units'].nunique()
+    unitCount=inputvarDf.groupby('varCode')['units'].nunique()
     if any(unitCount>1):
         multiUnits = unitCount[unitCount > 1].index
-        raise ValueError(f"Variable '{multiUnits[0]}' has {unitCount[multiUnits[0]]} different units defined. Please ensure consistency between units in the same varID.")
+        raise ValueError(f"Variable '{multiUnits[0]}' has {unitCount[multiUnits[0]]} different units defined. Please ensure consistency between units in the same varCode.")
 
     # Season selected in the indicator table must be valid
     # Currently allow only one season per indicator. This needs to be fixed in the future

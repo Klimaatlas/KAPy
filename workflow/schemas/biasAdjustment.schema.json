@@ -5,10 +5,10 @@
   "type": "object",
   "required": [
     "id",
-    "outDatasetID",
+    "outDatasetCode",
     "baVariable",
-    "targetDatasetID",
-    "refDatasetID",
+    "targetDataset",
+    "refDataset",
     "trainPeriodStart",
     "trainPeriodEnd",
     "method",
@@ -21,21 +21,21 @@
       "pattern": "^[^ ]+$",
       "description": "Unique identifier for the bias adjustment task."
     },
-    "outDatasetID": {
+    "outDatasetCode": {
       "type": "string",
-      "description": "DatasetID that will be associated with bias-adjusted output. Note that the cominbation of variable name and DatasetID  must not be a duplicate of other combinations names found in the configuration of KAPy. This variable primarily serves to distinguish between raw and bias-adjusted variables e.g.  `CORDEX` and `CORDEX-cal` The exact choice is not important, but it is recommended to adopt a consistent approach throughout the project."
+      "description": "DatasetCode that will be associated with bias-adjusted output. Note that the cominbation of variable name and DatasetCode must not be a duplicate of other combinations names found in the configuration of KAPy. This variable primarily serves to distinguish between raw and bias-adjusted variables e.g. `CORDEX` and `CORDEX-cal` The exact choice is not important, but it is recommended to adopt a consistent approach throughout the project."
     },
     "baVariable": {
       "type": "string",
       "description": "The name of the variable to bias adjust, drawn from the list of primary and secondary variables. If the variable cannot be found, an error will be raised. KAPy assumes that the same variable name is used for both the model and observational data sources."
     },
-    "targetDatasetID": {
+    "targetDataset": {
       "type": "string",
-      "description": "The ID of the dataset that will be bias adjusted e.g.  'CORDEX'. This is most commonly the output of a climate model, but need not be."
+      "description": "The dataset that will be bias adjusted e.g.  'CORDEX'. This is most commonly the output of a climate model, but need not be."
     },
-    "refDatasetID": {
+    "refDataset": {
       "type": "string",
-      "description": "The ID of the dataset that will be used as the reference  data source to bias-adjust against, such as `ERA5`. Most commonly this will be an observational data set, a reanalysis or similar but it need not be. However, the combination of climate variable and datasetID should uniquely identify a single file within the variable palette of KAPy - if not, an error will be raised."
+      "description": "The dataset that will be used as the reference  data source to bias-adjust against, such as `ERA5`. Most commonly this will be an observational data set, a reanalysis or similar but it need not be. However, the combination of climate variable and dataset code should uniquely identify a single file within the variable palette of KAPy - if not, an error will be raised."
     },
     "trainPeriodStart": {
       "type": "string",

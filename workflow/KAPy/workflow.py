@@ -47,7 +47,7 @@ def getWorkflow(config):
             #Set output filename, setting the file extension manually.
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-                    f"{thisInp['varID']}_{thisInp['datasetID']}_{thisInp['gridID']}_noExpt_noEnsID.nc"
+                    f"{thisInp['varCode']}_{thisInp['datasetCode']}_{thisInp['gridCode']}_noExpt_noEnsID.nc"
 
         # A similar case also exists where there is a single ensemble member, but it
         # is spread across multiple files. This is indicated when the ensMemberFields and 
@@ -55,7 +55,7 @@ def getWorkflow(config):
         elif thisInp['ensMemberFields']==[''] and thisInp['experimentField']=='' and len(inpTbl)>1:
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-                    f"{thisInp['varID']}_{thisInp['datasetID']}_{thisInp['gridID']}_noExpt_noEnsID.nc"
+                    f"{thisInp['varCode']}_{thisInp['datasetCode']}_{thisInp['gridCode']}_noExpt_noEnsID.nc"
         # elif thisInp['ensMemberFields']==['']:
         #     raise ValueError("Unhandled case. Please file a bug")
         # elif thisInp['experimentField']==['']:
@@ -65,7 +65,7 @@ def getWorkflow(config):
             # Handling multiple files requires some information from the filenames, 
             # and therefore the fieldSeparator needs to be defined. If not, throw an error
             if thisInp['fieldSeparator']=='':
-                raise ValueError(f'fieldSeparator is not defined for "{thisInp['varID']}-{thisInp['datasetID']}" ' + \
+                raise ValueError(f'fieldSeparator is not defined for "{thisInp['varCode']}-{thisInp['datasetCode']}" ' + \
                          f'but {len(inpTbl)} files were detected.')
 
             # Split filenames into columns and extract predefined elements
@@ -75,12 +75,12 @@ def getWorkflow(config):
             inpTbl['ensMemberID']=["_".join([f[i] for i in ensMemberFieldsIdxs]) for f in inpTbl['split']]
 
             # Deal with the issue around the definition of a common experiment
-            if thisInp["commonExperimentID"]=='':
+            if thisInp["commonExperiment"]=='':
                 #If a commonExperiment is not defined, then we just handle each
                 #experiment individually
                 #Form the corresponding filename. Don't forget to add the .nc
                 inpTbl['pvFname']= \
-                    f"{thisInp['varID']}_{thisInp['datasetID']}_{thisInp['gridID']}_" + \
+                    f"{thisInp['varCode']}_{thisInp['datasetCode']}_{thisInp['gridCode']}_" + \
                     inpTbl['experiment'] + "_" + \
                     inpTbl['ensMemberID'] +".nc"
 
@@ -90,8 +90,8 @@ def getWorkflow(config):
             # Else, handle the more complex case where we have defined a common experiment
             else:
                 #Split table into commonExperiment and other Experiments
-                commonExptTable=inpTbl[inpTbl['experiment'].isin([thisInp['commonExperimentID']])].copy()
-                otherExptTable=inpTbl[~inpTbl['experiment'].isin([thisInp['commonExperimentID']])]
+                commonExptTable=inpTbl[inpTbl['experiment'].isin([thisInp['commonExperiment']])].copy()
+                otherExptTable=inpTbl[~inpTbl['experiment'].isin([thisInp['commonExperiment']])]
 
                 #Get list of other experiments
                 otherExptList=otherExptTable['experiment'].unique()
@@ -105,12 +105,12 @@ def getWorkflow(config):
                     #Forming the corresponding filenames. Don't forget to add the .nc
                     #Experiment naming is the sum of the commonExpt and thisExpt
                     theseExptFiles['pvFname']= \
-                        f"{thisInp['varID']}_{thisInp['datasetID']}_{thisInp['gridID']}" + \
-                        f"_{thisInp["commonExperimentID"]}+{thisExpt}_" + \
+                        f"{thisInp['varCode']}_{thisInp['datasetCode']}_{thisInp['gridCode']}" + \
+                        f"_{thisInp["commonExperiment"]}+{thisExpt}_" + \
                         theseExptFiles['ensMemberID'] +".nc"
                     commonExptTable['pvFname']= \
-                        f"{thisInp['varID']}_{thisInp['datasetID']}_{thisInp['gridID']}" + \
-                        f"_{thisInp["commonExperimentID"]}+{thisExpt}_" + \
+                        f"{thisInp['varCode']}_{thisInp['datasetCode']}_{thisInp['gridCode']}" + \
+                        f"_{thisInp["commonExperiment"]}+{thisExpt}_" + \
                         commonExptTable['ensMemberID'] +".nc"
                     
                     #Now select the files from the commonExpt that are also in the
@@ -159,9 +159,9 @@ def getWorkflow(config):
     def parseFilelist(flist):
         thisTbl = pd.DataFrame(flist,columns=["path"])
         thisTbl["fname"] = [os.path.basename(p) for p in thisTbl["path"]]
-        thisTbl["varID"] = thisTbl["fname"].str.extract("^([^_]+)_.*$")
-        thisTbl["datasetID"] = thisTbl["fname"].str.extract("^[^_]+_([^_]+)_.*$")
-        thisTbl["gridID"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_([^_]+)_.*$")
+        thisTbl["var"] = thisTbl["fname"].str.extract("^([^_]+)_.*$")
+        thisTbl["dataset"] = thisTbl["fname"].str.extract("^[^_]+_([^_]+)_.*$")
+        thisTbl["grid"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_([^_]+)_.*$")
         thisTbl["expt"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_.]+).*$")
         thisTbl["stems"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+).nc(?:.pkl)?$")
         return thisTbl
@@ -173,14 +173,14 @@ def getWorkflow(config):
     if "secondaryVars" in config:
         for thisKey,thisSV in config["secondaryVars"].items():
             # Now filter by the input variables needed for this derived variable
-            selThese = [v in thisSV["inputVars"] for v in varPal["varID"]]
+            selThese = [v in thisSV["inputVars"] for v in varPal["var"]]
             longSVTbl = varPal[selThese]
             if longSVTbl.size == 0:
                     raise ValueError(f"Cannot find any input variables for {thisSV['id']}. ")
 
             # Pivot and retain only those in common
             svTbl = longSVTbl.pivot(
-                index=["datasetID","gridID","expt", "stems"], columns="varID", values="path"
+                index=["dataset","grid","expt", "stems"], columns="var", values="path"
             )
             svTbl = svTbl.dropna().reset_index()
             if svTbl.size == 0:
@@ -189,7 +189,7 @@ def getWorkflow(config):
             # Now we have a list of valid files that can be made. Store the results
             svTbl['outFile'] = [
                 os.path.join(outDirs["secondaryVariables"], thisKey, fName)
-                for fName in f"{thisSV["outputVars"][0]}_" + svTbl["datasetID"] + "_" + svTbl['gridID']+"_"+svTbl["expt"]+"_"+svTbl["stems"]+".nc"
+                for fName in f"{thisSV["outputVars"][0]}_" + svTbl["dataset"] + "_" + svTbl['grid']+"_"+svTbl["expt"]+"_"+svTbl["stems"]+".nc"
             ]
 
             # Add to output dict
@@ -212,8 +212,8 @@ def getWorkflow(config):
     if "biasAdjustment" in config:
         for thisKey,thisBA in config["biasAdjustment"].items():
             # Now filter by the input variables needed for this bias adjustment 
-            selThese = (varPal["varID"] ==thisBA['baVariable']) & \
-                        (varPal["datasetID"]==thisBA['targetDatasetID'])
+            selThese = (varPal["var"] ==thisBA['baVariable']) & \
+                        (varPal["dataset"]==thisBA['targetDataset'])
             BAtbl = varPal[selThese].copy()
             try:
                 if BAtbl.size == 0:
@@ -226,17 +226,17 @@ def getWorkflow(config):
 
             # The workflow also requires that the reference dataset is present, so this becomes
             # a prerequisite for making the output
-            selThese = (varPal["varID"] ==thisBA['baVariable']) & \
-                        (varPal["datasetID"]==thisBA['refDatasetID'])
+            selThese = (varPal["var"] ==thisBA['baVariable']) & \
+                        (varPal["dataset"]==thisBA['refDataset'])
             if sum(selThese)!=1:
                 raise ValueError("Cannot find a unique data variable to use as the reference "
-                                 + f'for bias adjustment of "{thisBA['baVariable']}_{thisBA['targetDatasetID']}"')
+                                 + f'for bias adjustment of "{thisBA['baVariable']}_{thisBA['targetDataset']}"')
             refDict = varPal[selThese].to_dict(orient="records")[0]
 
             # Now we have a list of valid files that can be made. Store the results
             BAtbl['outFile'] = [
                 os.path.join(outDirs["biasAdjustment"], thisKey, fName)
-                for fName in f"{thisBA["baVariable"]}_" + thisBA["outDatasetID"] + "_" + refDict['gridID']+"_"+BAtbl["expt"]+"_"+BAtbl["stems"]+".nc"
+                for fName in f"{thisBA["baVariable"]}_" + thisBA["outDatasetCode"] + "_" + refDict['grid']+"_"+BAtbl["expt"]+"_"+BAtbl["stems"]+".nc"
             ]
 
             # Add to output dict
@@ -262,14 +262,14 @@ def getWorkflow(config):
         postBAPal = parseFilelist([k for v in BADict.values() for k in v.keys()])
         for thisKey,thisTV in config["tertiaryVars"].items():
             # Filter by the input variables needed for this derived variable
-            selThese = [v in thisTV["inputVars"] for v in postBAPal["varID"]]
+            selThese = [v in thisTV["inputVars"] for v in postBAPal["var"]]
             longTVTbl = postBAPal[selThese]
             if longTVTbl.size == 0:
                     raise ValueError(f"Cannot find any input variables for tertiary variable '{thisTV['id']}'. ")
 
             # Pivot and retain only those in common
             tvTbl = longTVTbl.pivot(
-                index=["datasetID","gridID","expt", "stems"], columns="varID", values="path"
+                index=["dataset","grid","expt", "stems"], columns="var", values="path"
             )
             tvTbl = tvTbl.dropna().reset_index()
             if tvTbl.size == 0:
@@ -278,7 +278,7 @@ def getWorkflow(config):
             # Now we have a list of valid files that can be made. Store the results
             tvTbl['outFile'] = [
                 os.path.join(outDirs["tertiaryVariables"], thisKey, fName)
-                for fName in f"{thisTV["outputVars"][0]}_" + tvTbl["datasetID"] + "_" + tvTbl['gridID']+"_"+tvTbl["expt"]+"_"+tvTbl["stems"]+".nc"
+                for fName in f"{thisTV["outputVars"][0]}_" + tvTbl["dataset"] + "_" + tvTbl['grid']+"_"+tvTbl["expt"]+"_"+tvTbl["stems"]+".nc"
             ]
 
             # Add to output dict
@@ -313,8 +313,8 @@ def getWorkflow(config):
         ]
         #Only extract the dict for the part that we are actually
         #interested in, including both variables and datasets
-        varPal['hasVars'] = varPal["varID"] == thisInd["variables"]
-        varPal['correctDataset'] = [v in thisInd['datasets']  for v in varPal['datasetID']]
+        varPal['hasVars'] = varPal["var"] == thisInd["variables"]
+        varPal['correctDataset'] = [v in thisInd['datasets']  for v in varPal['dataset']]
         if "all" in thisInd['datasets']:
             useThese = varPal['hasVars']
         else:
