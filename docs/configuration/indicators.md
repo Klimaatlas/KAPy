@@ -12,7 +12,7 @@
     - *string*
     - *array*
       - **Items** *(string)*
-- **`datasets`** *(string, required)*: Comma-separated list of dataset IDs for which the indicator is to be calculated. IDs should match those defined as primary (input), secondary, calibration or tertiary variables. In addition, `all` selects all datasets.
+- **`datasets`** *(string, required)*: Comma-separated list of dataset IDs for which the indicator is to be calculated. IDs should match those defined as primary (input), secondary, bias adjusted or tertiary variables. In addition, `all` selects all datasets.
 - **`seasons`** *(string, required)*: Comma-separated lists of season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons.
 - **`time_binning`** *(string, required)*: Time bins over which indicators are calculated. In the case of choosing `periods`, the indicator will be calculated for all periods defined in the [periods configuration](periods.md) table. Indicators can also be calculated across a whole year, using the `years`options. Months were previously available, but have been removed. Must be one of: `["periods", "years"]`.
 - **`deltaType`** *(string, required)*: How to calculate the change in variables (the *delta*) relative to the reference period. Two options are permitted: `subtract`, where changes in the indicator relative to the mean over the reference period are calculated by subtraction, and `divide` where the change is expressed as the ratio of the indicator to the mean over the reference period. In both cases, the first period defined in the periods table is used as the reference period. Must be one of: `["subtract", "divide"]`.

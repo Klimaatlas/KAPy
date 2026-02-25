@@ -50,8 +50,8 @@ The KAPy workflow involves a set of discrete steps to process climate data, cove
 * `secondaryVars` : Secondary variables  
   * Additional variables are generated based on new combinations or further processing of primary variables
 
-* `calibration` : Calibrated variables
-  * Generates new datasets by applying calibration (bias correction) techniques to the primary and secondary variables.
+* `biasAdjustment` : Bias adjustment variables
+  * Generates new datasets by applying bias adjustment techniques to the primary and secondary variables.
   
 * `indicators` : Indicator calculation
   * Indicators are calculated for each dataset. 

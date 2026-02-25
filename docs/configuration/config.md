@@ -7,7 +7,7 @@
 - **`configurationTables`**: Paths to configuration tables. See the documentation for each table separately. Cannot contain additional properties.
   - **`inputs`** *(string, required)*: Path to input configuration table, relative to working directory. See [inputs.md](inputs.md) for more detail. Required table.
   - **`secondaryVars`** *(string, required)*: Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '', no secondary variables will be generated.
-  - **`calibration`** *(string, required)*: Path to calibration configuration table, relative to working directory. See [calibration.md](calibration.md) for more detail. Optional - if set to '', no calibration will be performed.
+  - **`biasAdjustment`** *(string, required)*: Path to bias adjustment configuration table, relative to working directory. See [biasAdjustment.md](biasAdjustment.md) for more detail. Optional - if set to '', no bias adjustment will be performed.
   - **`tertiaryVars`** *(string, required)*: Path to configuration table for tertiary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '', no tertiary variables will be generated.
   - **`indicators`** *(string, required)*: Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail. Optional - if set to '', no indicators will be generated.
   - **`periods`** *(string, required)*: Path to period configuration table, relative to working directory. See [periods.md](periods.md) for more detail. Required table.
@@ -15,7 +15,7 @@
 - **`dirs`** *(object, required)*: Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items. Cannot contain additional properties.
   - **`primaryVariables`** *(string, required)*: Directory for storing primary variables.
   - **`secondaryVariables`** *(string, required)*: Directory for storing secondary variables.
-  - **`calibration`** *(string, required)*: Directory for storing calibrated variables.
+  - **`biasAdjustment`** *(string, required)*: Directory for storing bias adjusted variables.
   - **`tertiaryVariables`** *(string, required)*: Directory for storing tertiary variables.
   - **`indicators`** *(string, required)*: Directory for storing indicators.
   - **`regridded`** *(string, required)*: Directory for storing indicators regridded to a common grid.

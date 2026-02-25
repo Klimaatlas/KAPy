@@ -49,7 +49,7 @@
       ]
     },
     "datasets": {
-      "description": "Comma-separated list of dataset IDs for which the indicator is to be calculated. IDs should match those defined as primary (input), secondary, calibration or tertiary variables. In addition, `all` selects all datasets.",
+      "description": "Comma-separated list of dataset IDs for which the indicator is to be calculated. IDs should match those defined as primary (input), secondary, bias-adjusted or tertiary variables. In addition, `all` selects all datasets.",
       "type": "string"
     },
     "seasons": {

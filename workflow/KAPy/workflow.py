@@ -203,22 +203,22 @@ def getWorkflow(config):
             varPal = pd.concat([varPal,
                                parseFilelist(svTbl['outFile'].to_list())])
 
-    # Calibration -------------------------------------------------------
-    # Calibrated variables and secondary variables share a very similar logic
+    # Bias Adjustment -------------------------------------------------------
+    # Bias adjusted variables and secondary variables share a very similar logic
     # They only kick in if requested, draw upon the variable palette, and feed back
     # into when complete
-    calDict = {}
+    BADict = {}
     # Iterate over secondary variables if they are request
-    if "calibration" in config:
-        for thisKey,thisCal in config["calibration"].items():
-            # Now filter by the input variables needed for this calibration 
-            selThese = (varPal["varID"] ==thisCal['calibrationVariable']) & \
-                        (varPal["datasetID"]==thisCal['targetDatasetID'])
-            calTbl = varPal[selThese].copy()
+    if "biasAdjustment" in config:
+        for thisKey,thisBA in config["biasAdjustment"].items():
+            # Now filter by the input variables needed for this bias adjustment 
+            selThese = (varPal["varID"] ==thisBA['baVariable']) & \
+                        (varPal["datasetID"]==thisBA['targetDatasetID'])
+            BAtbl = varPal[selThese].copy()
             try:
-                if calTbl.size == 0:
+                if BAtbl.size == 0:
                     raise ValueError(
-                        f"Cannot find any matching input files for {thisCal['id']}. "
+                        f"Cannot find any matching input files for {thisBA['id']}. "
                         + "Check the definition again. Also check the order of definition."
                     )
             except ValueError as e:
@@ -226,44 +226,44 @@ def getWorkflow(config):
 
             # The workflow also requires that the reference dataset is present, so this becomes
             # a prerequisite for making the output
-            selThese = (varPal["varID"] ==thisCal['calibrationVariable']) & \
-                        (varPal["datasetID"]==thisCal['refDatasetID'])
+            selThese = (varPal["varID"] ==thisBA['baVariable']) & \
+                        (varPal["datasetID"]==thisBA['refDatasetID'])
             if sum(selThese)!=1:
                 raise ValueError("Cannot find a unique data variable to use as the reference "
-                                 + f'for calibration of "{thisCal['calibrationVariable']}_{thisCal['targetDatasetID']}"')
+                                 + f'for bias adjustment of "{thisBA['baVariable']}_{thisBA['targetDatasetID']}"')
             refDict = varPal[selThese].to_dict(orient="records")[0]
 
             # Now we have a list of valid files that can be made. Store the results
-            calTbl['outFile'] = [
-                os.path.join(outDirs["calibration"], thisKey, fName)
-                for fName in f"{thisCal["calibrationVariable"]}_" + thisCal["outDatasetID"] + "_" + refDict['gridID']+"_"+calTbl["expt"]+"_"+calTbl["stems"]+".nc"
+            BAtbl['outFile'] = [
+                os.path.join(outDirs["biasAdjustment"], thisKey, fName)
+                for fName in f"{thisBA["baVariable"]}_" + thisBA["outDatasetID"] + "_" + refDict['gridID']+"_"+BAtbl["expt"]+"_"+BAtbl["stems"]+".nc"
             ]
 
             # Add to output dict
             outDict={}
-            for idx, rw in calTbl.iterrows():
+            for idx, rw in BAtbl.iterrows():
                 outDict[rw['outFile']] = {'histsim':rw['path'],'ref':refDict['path']}
-            calDict[thisCal['id']]=outDict
+            BADict[thisBA['id']]=outDict
 
             # Add to variable palette
             varPal = pd.concat([varPal,
-                               parseFilelist(calTbl['outFile'].to_list())])
+                               parseFilelist(BAtbl['outFile'].to_list())])
 
 
     # Tertiary Variables---------------------------------------------
     # Iterate over tertiary variables if they are requested. The approach
     # here is very similar to secondary variables, but we only draw on
-    # the variables in the post-calibration palette (postcalPal) instead of the full variable
+    # the variables in the post-BA palette (postBAPal) instead of the full variable
     # palette. Ideally this should be merged into a function.
-    # Note that tertiary variables can only be created if there are calibration variables 
+    # Note that tertiary variables can only be created if there are bias adjusted variables 
     # created first
     tvDict = {}
-    if ("tertiaryVars" in config) and ("calibration" in config):
-        postcalPal = parseFilelist([k for v in calDict.values() for k in v.keys()])
+    if ("tertiaryVars" in config) and ("biasAdjustment" in config):
+        postBAPal = parseFilelist([k for v in BADict.values() for k in v.keys()])
         for thisKey,thisTV in config["tertiaryVars"].items():
             # Filter by the input variables needed for this derived variable
-            selThese = [v in thisTV["inputVars"] for v in postcalPal["varID"]]
-            longTVTbl = postcalPal[selThese]
+            selThese = [v in thisTV["inputVars"] for v in postBAPal["varID"]]
+            longTVTbl = postBAPal[selThese]
             if longTVTbl.size == 0:
                     raise ValueError(f"Cannot find any input variables for tertiary variable '{thisTV['id']}'. ")
 
@@ -289,7 +289,7 @@ def getWorkflow(config):
             tvDict[thisTV['id']] = outDict
 
             # Add to variable palette
-            postcalPal=pd.concat([postcalPal,
+            postBAPal=pd.concat([postBAPal,
                                parseFilelist(tvTbl['outFile'].to_list())])
             varPal = pd.concat([varPal,
                                parseFilelist(tvTbl['outFile'].to_list())])
@@ -447,7 +447,7 @@ def getWorkflow(config):
     rtn = {
         "primVars": pvDict,
         "secondaryVars": svDict,
-        "calibratedVars":calDict,
+        "baVars":BADict,
         "tertiaryVars": tvDict,
         "indicators": indDict,
         "regridded": rgDict,
@@ -462,7 +462,7 @@ def getWorkflow(config):
     for k, v in rtn.items():
         if k in ["primVars",
                  "secondaryVars",
-                 "calibratedVars",
+                 "baVars",
                  "tertiaryVars",
                  "indicators"]:  # Requires special handling, as these are nested lists
             for x in v.values():

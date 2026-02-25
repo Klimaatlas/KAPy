@@ -72,25 +72,24 @@ rule _02_secondaryVar:
                              inFiles=dict(input),
                              **config['secondaryVars'][wildcards.secVarID])
 
-# Calibration 
-# Aka bias-correction. 
-rule _03_calibration:
+# Bias Adjustment 
+rule _03_biasAdjustment:
     input:
-        unpack(lambda wildcards: wf['calibratedVars'][wildcards.calID][os.path.join(outDirs['calibration'],
-                                                                        wildcards.calID,
+        unpack(lambda wildcards: wf['baVars'][wildcards.baID][os.path.join(outDirs['biasAdjustment'],
+                                                                        wildcards.baID,
                                                                         wildcards.outfile)])
     output:
-        os.path.join(outDirs['calibration'],"{calID}","{outfile}")
+        os.path.join(outDirs['biasAdjustment'],"{baID}","{outfile}")
     run:
-        KAPy.calibrate(outFile=output,
+        KAPy.biasAdjust(outFile=output,
                         histsimFile=input.histsim,
                         refFile=input.ref,
                         tempDir=config['dirs']['tempDir'],
-                        **config['calibration'][wildcards.calID])
+                        **config['biasAdjustment'][wildcards.baID])
 
 # Tertiary variables 
 # "Tertiary variables" are calculated as new variables derived from variables created
-# by calibration. Good examples include FWI, PoteEvap and SPI, but based on calibrated
+# by bias adjustment. Good examples include FWI, PoteEvap and SPI, but based on bias-adjusted
 # variables, rather than raw input variables.
 rule _04_tertiaryVar:
     input:
@@ -275,10 +274,10 @@ rule secondaryVars:
     input:
         [k for thisInp in wf['secondaryVars'].values() for k in thisInp.keys()]
 
-#Calibration
-rule calibration:
+#Bias adjustment
+rule biasAdjustment:
     input:
-        [k for thisInp in wf['calibratedVars'].values() for k in thisInp.keys()]
+        [k for thisInp in wf['baVars'].values() for k in thisInp.keys()]
 
 #Tertiary variables
 rule tertiaryVars:

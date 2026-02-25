@@ -52,6 +52,7 @@ dependencies:
   - xarray
   - xesmf
   - xclim
+  - xsdba
   - yaml
   - zarr
   # ----- Dev packages below this line ----------

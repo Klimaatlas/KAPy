@@ -19,7 +19,7 @@
             "required": [
                 "inputs",
                 "secondaryVars",
-                "calibration",
+                "biasAdjustment",
                 "tertiaryVars",
                 "indicators",
                 "periods",
@@ -35,8 +35,8 @@
                     "description": "Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '', no secondary variables will be generated",
                     "type": "string"
                 },
-                "calibration": {
-                    "description": "Path to calibration configuration table, relative to working directory. See [calibration.md](calibration.md) for more detail. Optional - if set to '', no calibration will be performed",
+                "biasAdjustment": {
+                    "description": "Path to bias adjustment configuration table, relative to working directory. See [biasAdjustment.md](biasAdjustment.md) for more detail. Optional - if set to '', no bias adjustment will be performed",
                     "type": "string"
                 },
                 "tertiaryVars": {
@@ -63,7 +63,7 @@
             "required": [
                 "primaryVariables",
                 "secondaryVariables",
-                "calibration",
+                "biasAdjustment",
                 "tertiaryVariables",
                 "indicators",
                 "regridded",
@@ -82,8 +82,8 @@
                     "description": "Directory for storing secondary variables.",
                     "type": "string"
                 },
-                "calibration": {
-                    "description": "Directory for storing calibrated variables.",
+                "biasAdjustment": {
+                    "description": "Directory for storing bias-adjusted variables.",
                     "type": "string"
                 },
                 "tertiaryVariables": {

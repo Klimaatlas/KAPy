@@ -80,9 +80,9 @@ def validateConfig(config):
             "dictCols": ["additionalArgs"],
             "schema": "derivedVars",
             "optional": True},
-        "calibration": {"listCols": [], 
+        "biasAdjustment": {"listCols": [], 
                         "dictCols": ["additionalArgs"],
-                        "schema": "calibration",
+                        "schema": "biasAdjustment",
                         "optional": True},
         "tertiaryVars": {
             "listCols": ["inputVars", "outputVars"],

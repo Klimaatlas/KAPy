@@ -7,7 +7,7 @@ The primary configuration file in KAPy is the `config.yaml`file, found in `./con
 Configuration options are validated using JSON schemas, which can be found in the directory `./workflow/schemas/`. These files specify the allowed configuration options and also  contain the corresponding documentation. Human-readbile versions of these schema, including description of what each option does, can be found in the following files:
 
 * [config.md](./configuration/config.md) Options for the primary configuration file, `config.yaml`
-* [calibration.md](./configuration/calibration.md) Configuration of calibrated variables
+* [biasAdjustment.md](./configuration/biasAdjustment.md) Configuration of bias adjustment
 * [derivedVars.md](./configuration/derivedVars.md) Derived (secondary and tertiary) variable configuration
 * [indicators.md](./configuration/indicators.md) Indicator configuration table
 * [inputs.md](./configuration/inputs.md) Input configuration table
