@@ -429,7 +429,7 @@ def getWorkflow(config):
         # * Period-based indicators should plot the spatial map and the plots, derived
         #   from the ensemble statistics
         # * Yearly (or monthly) based indicators show a time series, also for ensemble statistcs
-        if thisInd["time_binning"] == "periods":
+        if thisInd["timeBinning"] == "periods":
             # Box plot - requires ensemble csv files
             bxpFname = os.path.join(outDirs["outputs"],'plots', f"{thisInd['id']}_boxplot.png")
             pltDict[bxpFname] = csvDict[str(thisInd["id"])]
@@ -438,7 +438,7 @@ def getWorkflow(config):
             spFname = os.path.join(outDirs["outputs"],'plots', f"{thisInd['id']}_spatial.png")
             pltDict[spFname] = ncDict[str(thisInd["id"])]
 
-        elif thisInd["time_binning"] in ["years", "months"]:
+        elif thisInd["timeBinning"] in ["years", "months"]:
             # Time series plot - requires ensemble csv files
             lpFname = os.path.join(outDirs["outputs"],'plots', f"{thisInd['id']}_lineplot.png")
             pltDict[lpFname] = csvDict[str(thisInd["id"])]

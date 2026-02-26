@@ -10,7 +10,7 @@
     "variables",
     "datasets",
     "seasons",
-    "time_binning",
+    "timeBinning",
     "deltaType",
     "statistic",
     "additionalArgs",
@@ -56,7 +56,7 @@
       "description": "Comma-separated lists of season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons.",
       "type": "string"
     },
-    "time_binning": {
+    "timeBinning": {
       "description": "Time bins over which indicators are calculated. In the case of choosing `periods`, the indicator will be calculated for all periods defined in the [periods configuration](periods.md) table. Indicators can also be calculated across a whole year, using the `years`options. Months were previously available, but have been removed.",
       "type": "string",
       "enum": [

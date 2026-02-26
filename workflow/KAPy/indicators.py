@@ -22,7 +22,7 @@ import json
 import pandas as pd
 from . import helpers 
 
-def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,time_binning,statistic,deltaType,
+def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,timeBinning,statistic,deltaType,
                         additionalArgs,customScriptPath,customScriptFunction,**kwargs):
 
     #Setup seasons
@@ -70,7 +70,7 @@ def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,time_b
 
     # Time binning over periods
     # ----------------------------------
-    if time_binning == "periods":
+    if timeBinning == "periods":
         periodSlices = []
         for thisPeriod in periodsTable.values():
             # Slice dataset by time
@@ -122,7 +122,7 @@ def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,time_b
 
     # Time binning by years
     # ----------------------------
-    elif time_binning in ["years"]:
+    elif timeBinning in ["years"]:
         #Loop over seasons
         seasonTimeseries=[]
         for thisSeason in indSeasons:
@@ -159,23 +159,23 @@ def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,time_b
                                                  1)
                                                 for x in dout.time]
     else:
-        raise ValueError(f"Unknown time_binning method, '{time_binning}'.")
+        raise ValueError(f"Unknown time binning method, '{timeBinning}'.")
 
 
     # Calculation of changes
     # ------------------------
     # First we need the values for the reference period. That's easy for
     # period binning, but we need to calculate it for annual binning
-    if time_binning == "periods":
+    if timeBinning == "periods":
         # We use the first periodID as the reference here
         ref=dout.isel(periodID=0)
-    elif time_binning in ["years"]:
+    elif timeBinning in ["years"]:
         # Again use the first time period, but average
         refPeriod=list(periodsTable.values())[0]
         refDat=helpers.timeslice(dout,refPeriod["start"],refPeriod["end"])
         ref=refDat.mean(dim='time')
     else:
-        raise ValueError(f"Unknown time_binning method, '{time_binning}'.")
+        raise ValueError(f"Unknown time binning method, '{timeBinning}'.")
 
     #Calculate change
     if deltaType=='subtract':
@@ -191,14 +191,14 @@ def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,time_b
     #Merge into one object. Add attributes
     ds=xr.Dataset({'indicator':dout,'delta':deltaOut})
     ds.attrs = {}
-    ds.attrs['time_binning']=time_binning
+    ds.attrs['timeBinning']=timeBinning
     ds.attrs['statistic']=statistic
     ds.attrs['deltaType']=deltaType
     ds.attrs['additionalArgs']=str(additionalArgs)
     ds.attrs['customScriptPath']=customScriptPath
     ds.attrs["customScriptFunction"]=customScriptFunction
     ds.attrs["seasonID_dict"] = json.dumps(seasonsTable)
-    if time_binning == "periods":
+    if timeBinning == "periods":
         ds.attrs["periodID_dict"]= json.dumps(periodsTable)
 
     # Write out
