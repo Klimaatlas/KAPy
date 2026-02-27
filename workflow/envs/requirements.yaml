@@ -60,3 +60,5 @@ dependencies:
   - ipykernel  #Used by vscode to enable interactive debugging
   - jsonschema2md #Convert jsonschema to markdown documentation
   - nc-time-axis   #Plotting of cftime-axes in matplotlib
+  - pip:
+    - snakemake-logger-plugin-snkmt  
