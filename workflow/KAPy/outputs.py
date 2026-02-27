@@ -65,12 +65,12 @@ def writeToDatabase(outFile, ensstats, members):
     # Create ensemble members table
     conn.execute("""
         CREATE TABLE Ensemble_members (
-            datasetID TEXT NOT NULL,
             indID TEXT NOT NULL,
-            areaID TEXT NOT NULL,
-            memberID TEXT NOT NULL,
-            expt TEXT NOT NULL,
+            datasetID TEXT NOT NULL,
             gridID TEXT NOT NULL,
+            expt TEXT NOT NULL,
+            memberID TEXT NOT NULL,
+            areaID TEXT NOT NULL,
             seasonID TEXT NOT NULL,
             periodID TEXT NOT NULL,
             arealStatistic TEXT NOT NULL,
@@ -87,12 +87,12 @@ def writeToDatabase(outFile, ensstats, members):
     # Create ensemble statistics table
     conn.execute("""
         CREATE TABLE Ensemble_statistics (
-            datasetID TEXT NOT NULL,
             indID TEXT NOT NULL,
-            areaID TEXT NOT NULL,
-            memberID TEXT NOT NULL,
-            expt TEXT NOT NULL,
+            datasetID TEXT NOT NULL,
             gridID TEXT NOT NULL,
+            expt TEXT NOT NULL,
+            memberID TEXT NOT NULL,
+            areaID TEXT NOT NULL,
             seasonID TEXT NOT NULL,
             periodID TEXT NOT NULL,
             percentiles REAL,

@@ -5,6 +5,7 @@
   "type": "object",
   "required": [
     "id",
+    "enabled",
     "varCode", 
     "datasetCode", 
     "gridCode",
@@ -23,6 +24,10 @@
       "type": "string",
       "description": "A unique id for this dataset.",
       "uniqueItems": true
+    },
+    "enabled": {
+      "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
+      "type": ["string","null"]
     },
     "datasetCode": {
       "type": "string",

@@ -5,6 +5,7 @@
   "type": "object",
   "required": [
     "id",
+    "enabled",
     "name",
     "units",
     "variables",
@@ -23,6 +24,10 @@
       "description": "Identifier for the indicators. Must be unique.",
       "type": "string",
       "uniqueItems": true
+    },
+    "enabled": {
+      "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
+      "type": ["string","null"]
     },
     "name": {
       "description": "Name of the indicator.",

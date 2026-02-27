@@ -107,9 +107,13 @@ def validateConfig(config):
                               comment="#",
                               dtype='str',
                               keep_default_na=False)
+        #Drop rows that are disabled
+        if "enabled" in thisTbl:
+            enabledRows=thisTbl['enabled']!=""
+            thisTbl=thisTbl[enabledRows]
         # Require a non-zero length
         if len(thisTbl)==0:
-            raise ValueError(f"'{thisTblKey}' configuration table at {thisCfgFile} is empty.")
+            raise ValueError(f"'{thisTblKey}' configuration table at {thisCfgFile} is empty or all rows are disabled.")
         # Load the schema to validate against 
         with open(os.path.join(schemaDir, f"{theseVals['schema']}.schema.json")) as f:
             thisSchema = yaml.safe_load(f)

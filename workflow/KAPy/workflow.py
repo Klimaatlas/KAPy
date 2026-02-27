@@ -320,7 +320,7 @@ def getWorkflow(config):
         else:
             useThese = varPal['hasVars'] & varPal['correctDataset']
         if not any(useThese):
-            raise ValueError(f"Cannot find variable(s) {thisInd["variables"]} for datasets '{thisInd['datasets']}' to calculate indicators from.")
+            raise ValueError(f"Cannot find variable(s) '{thisInd["variables"]}' for datasets '{thisInd['datasets']}' to calculate indicators from.")
         indDict[indKey] = {rw["indPath"]: [rw["path"]] \
                                     for idx, rw in varPal[useThese].iterrows()}
 
