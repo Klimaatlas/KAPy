@@ -97,7 +97,7 @@ def validateConfig(config):
     for thisTblKey, theseVals in tabularCfg.items():
         # Load the tablular configuration table (if it  exists)
         thisCfgFile = config["configurationTables"][thisTblKey]
-        if (thisCfgFile =='') & theseVals['optional']:
+        if ((thisCfgFile =='') | (thisCfgFile==None)) & theseVals['optional']:
             continue  #Not using this option
         elif (thisCfgFile =='') & theseVals['optional']:
             raise ValueError(f"'{thisTblKey}' configuration table must be specified.")            

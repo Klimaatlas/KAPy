@@ -32,20 +32,20 @@
                     "type": "string"
                 },
                 "secondaryVars": {
-                    "description": "Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '', no secondary variables will be generated",
-                    "type": "string"
+                    "description": "Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '' or undefined, no secondary variables will be generated",
+                    "type": ["string","null"]
                 },
                 "biasAdjustment": {
-                    "description": "Path to bias adjustment configuration table, relative to working directory. See [biasAdjustment.md](biasAdjustment.md) for more detail. Optional - if set to '', no bias adjustment will be performed",
-                    "type": "string"
+                    "description": "Path to bias adjustment configuration table, relative to working directory. See [biasAdjustment.md](biasAdjustment.md) for more detail. Optional - if set to '' or undefined, no bias adjustment will be performed",
+                    "type": ["string","null"]
                 },
                 "tertiaryVars": {
-                    "description": "Path to configuration table for tertiary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '', no tertiary variables will be generated",
-                    "type": "string"
+                    "description": "Path to configuration table for tertiary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '' or undefined, no tertiary variables will be generated",
+                    "type": ["string","null"]
                 },
                 "indicators": {
-                    "description": "Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail. Optional - if set to '', no indicators will be generated",
-                    "type": "string"
+                    "description": "Path to indicator configuration table, relative to working directory. See [indicators.md](indicators.md) for more detail. Optional - if set to '' or undefined, no indicators will be generated",
+                    "type": ["string","null"]
                 },
                 "periods": {
                     "description": "Path to period configuration table, relative to working directory. See [periods.md](periods.md) for more detail. Required table",
