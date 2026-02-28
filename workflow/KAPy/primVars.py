@@ -33,26 +33,35 @@ from . import workflow
 #-----------------------------------------------------------------
 def defaultImport(inFiles,varCode,internalVarName ):
 	# Make dataset object using xarray lazy load approach.
-	# Apply a manual sort ensures that the time axis is correct
-	# Use the join="override" argument to handle the case where
-	# there are small numerical differences in the values of the
+	#
+	# Here we use join="exact" to enforce coordinate matching - use the join="override" 
+	# argument to handle the case where there are small numerical differences in the values of the
 	# coordinates - in this case, we take the coordinates from the first file
 	time_coder=xr.coders.CFDatetimeCoder(use_cftime=True)
+	inFiles = sorted(inFiles)  #Helps ensure monotonic time
+
 	try:
 		dsIn =xr.open_mfdataset(inFiles,
-								combine='nested',
+								combine='by_coords',
 								decode_times=time_coder, 
-								join="override", 
-								chunks={'time':256},
-								concat_dim='time')
+								join="exact", 
+								compat="no_conflicts",
+								coords="minimal",
+								data_vars="minimal",
+						        preprocess=lambda ds: ds[[internalVarName]])
+
 	except Exception as e:
-		raise RuntimeError(f"Opening following NetCDF files failed: '{inFiles}'\n{e}")
+		raise RuntimeError(f"Opening following NetCDF files:\n '{inFiles}'\n failed with error:\n{e}")
 
-	dsIn=dsIn.sortby('time')
+	# Apply some checkes on the results
+	if not dsIn.indexes["time"].is_monotonic_increasing:
+		raise ValueError(f"Time coordinate is not monotonic in file set: '{inFiles}'.")
+	if dsIn.indexes["time"].has_duplicates:
+		raise ValueError(f"Duplicate timestamps detected file set: '{inFiles}'.")
 
-	# Select the desired variable and rename it
-	ds = dsIn.rename({internalVarName: varCode})
-	da = ds[varCode]  # Convert to dataarray
+	# Select the desired variable to give a and rename to the variable code
+	da = dsIn[internalVarName]
+	da.name= varCode
 
 	# Drop degenerate dimensions. If any remain, throw an error
 	da = da.squeeze(drop=True)
