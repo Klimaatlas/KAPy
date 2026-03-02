@@ -1,2 +1,2 @@
-id	inputVars	outputVars	processorType	processorPath	processorFunction	passXarrays	additionalArgs
-e_sat_ba	tas	e-sat	module	xclim.indicators.convert	saturation_vapor_pressure	True	{}
+id	enabled	inputVars	outputVars	processorType	processorPath	processorFunction	passXarrays	additionalArgs
+e_sat_ba	x	tas	e-sat	module	xclim.indicators.convert	saturation_vapor_pressure	True	{}
