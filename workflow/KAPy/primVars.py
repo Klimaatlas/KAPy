@@ -31,7 +31,7 @@ from . import helpers
 from . import workflow
 
 #-----------------------------------------------------------------
-def defaultImport(inFiles,varCode,internalVarName ):
+def defaultImport(inFiles,varCode,internalVarName,join="exact"):
 	# Make dataset object using xarray lazy load approach.
 	#
 	# Here we use join="exact" to enforce coordinate matching - use the join="override" 
@@ -44,7 +44,7 @@ def defaultImport(inFiles,varCode,internalVarName ):
 		dsIn =xr.open_mfdataset(inFiles,
 								combine='by_coords',
 								decode_times=time_coder, 
-								join="exact", 
+								join=join, 
 								compat="no_conflicts",
 								coords="minimal",
 								data_vars="minimal",
