@@ -31,33 +31,33 @@ from . import helpers
 from . import workflow
 
 #-----------------------------------------------------------------
-def defaultImport(inFiles,varCode,internalVarName,join="exact"):
+def defaultImport(inFiles,varCode,internalVarName,checks):
 	# Make dataset object using xarray lazy load approach.
 	#
-	# Here we use join="exact" to enforce coordinate matching - use the join="override" 
-	# argument to handle the case where there are small numerical differences in the values of the
-	# coordinates - in this case, we take the coordinates from the first file
+	# Setup	
 	time_coder=xr.coders.CFDatetimeCoder(use_cftime=True)
 	inFiles = sorted(inFiles)  #Helps ensure monotonic time
 
 	try:
 		dsIn =xr.open_mfdataset(inFiles,
-								combine='by_coords',
+								combine='by_coords' if checks=="all" else "nested",
+								concat_dim=None if checks=="all" else "time",
 								decode_times=time_coder, 
-								join=join, 
-								compat="no_conflicts",
+								join="exact" if checks=="all" else "override" , 
+								compat="no_conflicts" if checks=="all" else "override",
 								coords="minimal",
 								data_vars="minimal",
-						        preprocess=lambda ds: ds[[internalVarName]])
+								preprocess=lambda ds: ds[[internalVarName]])
 
 	except Exception as e:
-		raise RuntimeError(f"Opening following NetCDF files:\n '{inFiles}'\n failed with error:\n{e}")
-
-	# Apply some checkes on the results
-	if not dsIn.indexes["time"].is_monotonic_increasing:
-		raise ValueError(f"Time coordinate is not monotonic in file set: '{inFiles}'.")
-	if dsIn.indexes["time"].has_duplicates:
-		raise ValueError(f"Duplicate timestamps detected file set: '{inFiles}'.")
+		raise RuntimeError(f"Opening following NetCDF files:\n '{inFiles}'\n failed with error:\n{e}")	
+	
+	# Apply some checkes on the results (if requested)
+	if checks=="all":
+		if not dsIn.indexes["time"].is_monotonic_increasing:
+			raise ValueError(f"Time coordinate is not monotonic in file set: '{inFiles}'.")
+		if dsIn.indexes["time"].has_duplicates:
+			raise ValueError(f"Duplicate timestamps detected file set: '{inFiles}'.")
 
 	# Select the desired variable to give a and rename to the variable code
 	da = dsIn[internalVarName]
@@ -131,14 +131,15 @@ def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varCode,**kwargs):
 
 
 #-----------------------------------------------------------------	
-def buildPrimVar(outFile, inFiles,varCode,internalVarName,importScriptPath,importScriptFunction,
+def buildPrimVar(outFile, inFiles,varCode,internalVarName,checks,importScriptPath,importScriptFunction,
 				 units, picklePrimaryVariables,cutoutArgs,**kwargs):
 	# If an import function is defined, use that. Otherwise use the default
 	if importScriptPath=='':
 		#Use default import
 		da= defaultImport(inFiles=inFiles, 
 					varCode=varCode,
-					internalVarName=internalVarName)
+					internalVarName=internalVarName,
+					checks=checks)
 		#Apply cutout functionality
 		if cutoutArgs["method"] == "lonlatbox":
 			da=cutout_lonlat(da,**cutoutArgs,varCode=varCode)
@@ -146,9 +147,13 @@ def buildPrimVar(outFile, inFiles,varCode,internalVarName,importScriptPath,impor
 	else:
 		#Use a custom import
 		imptFn=helpers.getExternalFunction(importScriptPath, importScriptFunction)
-		da = imptFn(inFiles,varCode=varCode,internalVarName=internalVarName,
-			  		units=units, picklePrimaryVariables=picklePrimaryVariables,
-					cutoutArgs=cutoutArgs)  
+		da = imptFn(inFiles,
+			  varCode=varCode,
+			  internalVarName=internalVarName,
+			  units=units,
+			  checks=checks,
+			  picklePrimaryVariables=picklePrimaryVariables,
+			  cutoutArgs=cutoutArgs)  
 
 	# Unit handling -----------------------------
 	# Note that this is enforced here, even if it is already handled in the custom

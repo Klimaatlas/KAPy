@@ -14,7 +14,8 @@
     "units",
     "experimentField", 
     "ensMemberFields",
-    "commonExperiment", 
+    "commonExperiment",
+    "checks", 
     "importScriptPath",
     "importScriptFunction"
   ],
@@ -77,6 +78,13 @@
       "type": ["string","null"],
       "description": "Comma-separated list of integers representing the fields to join together to make the *ensemble member identifier*. Including the grid descriptor in this configuration is often a good idea, when the same model can be run on two different grids. If not specified, the ensemble member identifier will be set to `noEnsID`. 1-based indexing is assumed.",
       "default": null
+    },
+    "checks": {
+      "type": "string",
+      "description": "Determine the degree of checking that should to be applied upon importing files. There are three elements to the checking procedure: 1). ensure that all dimensions except time match between input files (governed by the `join='exact'` and `compat='no_conflicts'` arguments to `xarray.open_mfdataset()`) 2) ensure that the time dimension is monotonic (governed by the `is_monotonic_increasing` property of an xarray time index and 3) ensure that there are no duplicated time variables (governed by the `has_duplicates` property of an xarray time index. For more information, please see documentation for these methods. The `all` argument applies all of these checks, while `none` applies none of them. While it may be tempting to ignore this step and disable all checks, it is recommended to set it to all, and investigate files that fail checks, before they propigate further into the processing chain, where they may cause unexpected problems.",
+      "enum": [
+        "all",
+        "none"]
     },
     "importScriptPath": {
       "type": ["string", "null"],
