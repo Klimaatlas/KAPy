@@ -1,6 +1,6 @@
-id	name	months
-annual	Annual	1,2,3,4,5,6,7,8,9,10,11,12
-summer	Summer (JJA)	6,7,8
-autumn	Autumn (SON)	9,10,11
-winter	Winter (DJF)	12,1,2
-spring	Spring (MAM)	3,4,5
+id	enabled	name	months
+ann	x	Annual	1,2,3,4,5,6,7,8,9,10,11,12
+JJA	x	Boreal summer (JJA)	6,7,8
+SON	x	Boreal autumn (SON)	9,10,11
+DJF	x	Boreal winter (DJF)	12,1,2
+MAM	x	Boreal spring (MAM)	3,4,5

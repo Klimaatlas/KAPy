@@ -109,9 +109,8 @@ def validateConfig(config):
                               dtype='str',
                               keep_default_na=False)
         #Drop rows that are disabled
-        if "enabled" in thisTbl:
-            enabledRows=thisTbl['enabled']!=""
-            thisTbl=thisTbl[enabledRows]
+        enabledRows=thisTbl['enabled']!=""
+        thisTbl=thisTbl[enabledRows]
         # Require a non-zero length
         if len(thisTbl)==0:
             raise ValueError(f"'{thisTblKey}' configuration table at {thisCfgFile} is empty or all rows are disabled.")
