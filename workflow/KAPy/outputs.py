@@ -1,3 +1,8 @@
+import sqlite3
+import pandas as pd
+import os
+import xarray as xr
+
 """
 #Setup for debugging with VS code 
 import os
@@ -8,14 +13,6 @@ os.chdir("../..")
 config=KAPy.getConfig("./config/config.yaml")  
 wf=KAPy.getWorkflow(config)
 %matplotlib inline
-"""
-
-import sqlite3
-import pandas as pd
-import os
-
-
-"""
 inFiles=wf['mergedCSVs']['members']
 """
 
@@ -125,5 +122,51 @@ def writeToDatabase(outFile, ensstats, members):
     # Commit and close
     conn.commit()
     conn.close()
+
+
+
+def write_outputs(obj: xr.DataArray | xr.Dataset, path: dict[str, str]) -> None:
+    """
+    Write xarray objects to disk as NetCDF files.
+
+    Parameters
+    ----------
+    obj : xr.DataArray, xr.Dataset
+        The data to write. If a Dataset multiple files are written.
+    path : dict
+        Mapping of variable names to output file paths.
+        For a single DataArray, should have one key matching the variable name.
+        For a Dataset, keys should match dataset variables.
+    """
+
+    def write_dataarray(da: xr.DataArray,var_name: str, output_path: str):
+            # Set chunking
+            chunkThisWay=[min([256,16,16][i],da.shape[i]) for i in range(0,3)]
+
+            da.name = var_name
+            da.to_netcdf(output_path,
+                        encoding={var_name:{'chunksizes':chunkThisWay,
+                                            'zlib': True,
+                                            'complevel':1}})
+    if isinstance(obj, xr.DataArray):
+        # Expect exactly one key in path
+        if len(path) != 1:
+            raise ValueError("Expected exactly one path for a single DataArray")
+        write_dataarray(obj,
+                        var_name=next(iter(path.keys())),
+                        output_path = next(iter(path.values())))
+    
+    elif isinstance(obj, xr.Dataset):
+        for var in path.keys():
+            if var not in obj:
+                raise KeyError(f"Cannot find variable '{var}' in provided dataset")
+            da=obj[var]
+            write_dataarray(da,
+                            var_name=var,
+                            output_path = path[var])
+
+    else:
+        raise TypeError(f"Unsupported type: {type(obj)}")
+
 
 

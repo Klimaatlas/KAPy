@@ -73,9 +73,9 @@ for thisID, thisRow in WORKFLOW['secondary_vars'].items():
         output: **thisRow['output_rule']
         params: groupID=thisID
         run:
-            KAPy.buildDerivedVar(outFile=output,
-                                    inFiles=dict(input),
+            SV=KAPy.buildDerivedVar(inFiles=dict(input),
                                     **config['secondaryVars'][params.groupID])
+            KAPy.write_outputs(SV,dict(output))
 
 # Bias Adjustment 
 for thisID, thisRow in WORKFLOW['bias_adj'].items():
@@ -102,9 +102,9 @@ for thisID, thisRow in WORKFLOW['tertiary_vars'].items():
         output: **thisRow['output_rule']
         params: groupID=thisID
         run:
-            KAPy.buildDerivedVar(outFile=output,
-                                    inFiles=dict(input),
+            TV=KAPy.buildDerivedVar(inFiles=dict(input),
                                     **config['tertiaryVars'][params.groupID])
+            KAPy.write_outputs(TV,dict(output))
 
 # Indicators 
 # Create a loop over the indicators that defines the singular and plural rules

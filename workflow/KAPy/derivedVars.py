@@ -25,8 +25,8 @@ import os
 from . import helpers
 
 
-def buildDerivedVar(outFile,inFiles, inputVars,outputVars,processorType,
-                    processorPath,processorFunction,passXarrays,additionalArgs,**kwargs):
+def buildDerivedVar(inFiles, processorType, processorPath,processorFunction,
+                    passXarrays,additionalArgs,**kwargs):
 
     # Load input files
     if passXarrays=='True':  # Then load the paths into xarrays. Otherwise just pass the path.
@@ -46,11 +46,5 @@ def buildDerivedVar(outFile,inFiles, inputVars,outputVars,processorType,
     theseArgs = {**inFiles, **additionalArgs}
     out = thisFn(**theseArgs)
 
-    # Write the results to disk
-    chunkThisWay=[min([256,16,16][i],out.shape[i]) for i in range(0,3)]
-    out.name = outputVars[0]
-    out.to_netcdf(outFile[0],
-                encoding={outputVars[0]:{'chunksizes':chunkThisWay,
-                                         'zlib': True,
-                                         'complevel':1}})
+    return out
 
