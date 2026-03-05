@@ -42,6 +42,7 @@ def validateConfig(config):
     """
     # Setup debugging
     # config=readConfig("./config/config.yaml")
+    # config=readConfig("./workflow/testing/config.yaml")
 
     # Setup location of validation schemas
     # schemaDir="./workflow/schemas/"
@@ -89,7 +90,7 @@ def validateConfig(config):
             "dictCols": ["additionalArgs"],
             "schema": "derivedVars",
             "optional": True},
-        "indicators": {"listCols": ["seasons","datasets"], 
+        "indicators": {"listCols": ["indicator_codes","variables","seasons","datasets"], 
                        "dictCols": ["additionalArgs"], 
                        "schema": "indicators",
                        "optional": True},
@@ -137,6 +138,9 @@ def validateConfig(config):
                 thisTbl[col] = [ast.literal_eval(x) for x in thisTbl[col]]
             except (SyntaxError, ValueError) as e:
                 raise ValueError (f"Error occurred in parsing column '{col}' in '{thisCfgFile}' : {e}")
+        # Indicators gets special treatment, where the indicator_codes column is used to make an id
+        if thisTblKey=="indicators":
+            thisTbl['id']=["+".join(rw['indicator_codes']) for idx,rw in thisTbl.iterrows()]
         # Force id column to be a string. Set to as the index so it can be used as the key
         thisTbl["id"] = [str(x) for x in thisTbl["id"]]
         thisTbl = thisTbl.set_index("id", drop=False)

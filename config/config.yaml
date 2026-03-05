@@ -40,7 +40,7 @@ outputs:
 # Configuration options------------------------------------
 arealstats:
     useAreaWeighting: False
-    shapefile: '' 
+    shapefile: # leave empty for "none" 
     idColumn: ''  
 cutouts:
     method: 'lonlatbox'  #'none'

@@ -1,2 +1,2 @@
-id	enabled	name	units	variables	datasets	seasons	timeBinning	statistic	deltaType	additionalArgs	customScriptPath	customScriptFunction
-101	x	Annual mean temperature	K	tas	CORDEX-BA	all	periods	mean	subtract	{}		
+indicator_codes	enabled	description	variables	datasets	seasons	timeBinning	statistic	deltaType	additionalArgs	customScriptPath	customScriptFunction
+i101	x	Annual mean temperature	tas	CORDEX-BA	all	periods	mean	subtract	{}		

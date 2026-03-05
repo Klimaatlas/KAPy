@@ -57,7 +57,7 @@ def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile,idCol
         pxlSize.name="cell_area"
 
     # If we have a shapefile defined, then work with it
-    if shapefile!='':
+    if shapefile is not None:
         #Import shapefile
         shpFile = gpd.read_file(shapefile)
 

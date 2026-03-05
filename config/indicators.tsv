@@ -1,2 +1,2 @@
-id	name	units	variables	datasets	seasons	timeBinning	statistic	deltaType	additionalArgs	customScriptPath	customScriptFunction
-101	Annual mean temperature	K	tas	all	all	periods	mean	subtract	{}		
+indicator_codes	enabled	description	variables	datasets	seasons	timeBinning	statistic	deltaType	additionalArgs	customScriptPath	customScriptFunction
+101	x	Annual mean temperature	tas	all	all	periods	mean	subtract	{}		

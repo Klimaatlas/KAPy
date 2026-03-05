@@ -30,7 +30,7 @@ config=KAPy.getConfig(configfile_path)
 outDirs=config['dirs']
 
 #Generate filename dicts
-wf=KAPy.getWorkflow(config)
+WORKFLOW=KAPy.getWorkflow(config)
 
 # Wildcard rules -------------------------------------------
 # Wildcard rules are generic rules in Snakemake that deal with many files at a time -
@@ -43,83 +43,84 @@ wf=KAPy.getWorkflow(config)
 # main processing steps
 
 #Primary variables
+#This proved to be a bit tricky to setup, but thanks to ChatGPT for some big hints here
+#The rule is based on a dictionary mapping output files to input files, but we also 
+#need to keep track of the corresponding inpID, which contains the various configurations
+#relevant for that output file. 
 rule _01_primaryVar:
     input:
-        lambda wildcards: wf['primVars'][wildcards.inpID][os.path.join(outDirs['primaryVariables'],
-                                                                        wildcards.inpID,
-                                                                        wildcards.outfile)]
+        lambda wc: WORKFLOW['primary_vars'][wc.leaf]["inputs"]
     output:
-        os.path.join(outDirs['primaryVariables'],"{inpID}","{outfile}")
+        os.path.join(outDirs['primaryVariables'],"{leaf}")
+    params:
+        inpID=lambda wc: WORKFLOW['primary_vars'][wc.leaf]["groupID"]
     run:
-        KAPy.buildPrimVar(outFile=output, 
-                          inFiles=input,
-                          picklePrimaryVariables=config['processing']['picklePrimaryVariables'],
-                          cutoutArgs=config['cutouts'],
-                          **config['inputs'][wildcards.inpID])
+        KAPy.buildPrimVar(
+            outFile=output,
+            inFiles=input,
+            picklePrimaryVariables=config['processing']['picklePrimaryVariables'],
+            cutoutArgs=config['cutouts'],
+            **config['inputs'][params.inpID]
+        )                          
 
 # Secondary variables 
 # "Secondary variables" are calculated as new variables derived from primary variables.  
 # Good examples include FWI, PoteEvap and SPI. 
-rule _02_secondaryVar:
-    input:
-        unpack(lambda wildcards: wf['secondaryVars'][wildcards.secVarID][os.path.join(outDirs['secondaryVariables'],
-                                                                        wildcards.secVarID,
-                                                                        wildcards.outfile)])
-    output:
-        os.path.join(outDirs['secondaryVariables'],"{secVarID}","{outfile}")
-    run:
-        KAPy.buildDerivedVar(outFile=output,
-                             inFiles=dict(input),
-                             **config['secondaryVars'][wildcards.secVarID])
+for thisID, thisRow in WORKFLOW['secondary_vars'].items():
+    rule:
+        name: f"_02_secondaryVar_{thisID}"
+        input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
+        output: **thisRow['output_rule']
+        params: groupID=thisID
+        run:
+            KAPy.buildDerivedVar(outFile=output,
+                                    inFiles=dict(input),
+                                    **config['secondaryVars'][params.groupID])
 
 # Bias Adjustment 
-rule _03_biasAdjustment:
-    input:
-        unpack(lambda wildcards: wf['baVars'][wildcards.baID][os.path.join(outDirs['biasAdjustment'],
-                                                                        wildcards.baID,
-                                                                        wildcards.outfile)])
-    output:
-        os.path.join(outDirs['biasAdjustment'],"{baID}","{outfile}")
-    run:
-        KAPy.biasAdjust(outFile=output,
+for thisID, thisRow in WORKFLOW['bias_adj'].items():
+    rule:
+        name: f"_03_biasAdjustment_{thisID}"
+        input: unpack(lambda wc, rw=thisRow: rw['input_dict'][wc.leaf])
+        output: **thisRow['output_rule']
+        params: groupID=thisID
+        run:
+            KAPy.biasAdjust(outFile=output,
                         histsimFile=input.histsim,
                         refFile=input.ref,
                         tempDir=config['dirs']['tempDir'],
-                        **config['biasAdjustment'][wildcards.baID])
+                        **config['biasAdjustment'][params.groupID])
 
 # Tertiary variables 
 # "Tertiary variables" are calculated as new variables derived from variables created
 # by bias adjustment. Good examples include FWI, PoteEvap and SPI, but based on bias-adjusted
 # variables, rather than raw input variables.
-rule _04_tertiaryVar:
-    input:
-        unpack(lambda wildcards: wf['tertiaryVars'][wildcards.tertVarID][os.path.join(outDirs['tertiaryVariables'],
-                                                                        wildcards.tertVarID,
-                                                                        wildcards.outfile)])
-    output:
-        os.path.join(outDirs['tertiaryVariables'],"{tertVarID}","{outfile}")
-    run:
-        KAPy.buildDerivedVar(outFile=output,
-                             inFiles=dict(input),
-                             **config['tertiaryVars'][wildcards.tertVarID])
-
+for thisID, thisRow in WORKFLOW['tertiary_vars'].items():
+    rule:
+        name: f"_04_tertiaryVar_{thisID}"
+        input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
+        output: **thisRow['output_rule']
+        params: groupID=thisID
+        run:
+            KAPy.buildDerivedVar(outFile=output,
+                                    inFiles=dict(input),
+                                    **config['tertiaryVars'][params.groupID])
 
 # Indicators 
 # Create a loop over the indicators that defines the singular and plural rules
 # as well as the combined run
-rule _05_indicator:
-    input:
-        lambda wildcards: wf['indicators'][wildcards.indID][os.path.join(outDirs['indicators'],
-                                                                        wildcards.indID,
-                                                                        wildcards.outfile)]
-    output:
-        os.path.join(outDirs['indicators'],"{indID}","{outfile}")
-    run:
-        KAPy.calculateIndicators(outFile=output,
-                                 inFile=input,
-                                 seasonsTable=config['seasons'],
-                                 periodsTable=config['periods'],
-                                 **config['indicators'][wildcards.indID])
+for thisID, thisRow in WORKFLOW['indicators'].items():
+    rule:
+        name: f"_05_indicator_{thisID}"
+        input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
+        output: **thisRow['output_rule']
+        params: groupID=thisID
+        run:
+            KAPy.calculateIndicators(outFile=output,
+                                    inFile=input,
+                                    seasonsTable=config['seasons'],
+                                    periodsTable=config['periods'],
+                                    **config['indicators'][params.groupID])
 
 # Regridding  
 # Combining everything into an ensemble requires that they are all on a common grid
@@ -127,11 +128,9 @@ rule _05_indicator:
 # when we come to the ensstats generation
 rule _06_regrid:
     input:
-        lambda wildcards: wf['regridded'][os.path.join(outDirs['regridded'],
-                                                       wildcards.thisID,
-                                                       wildcards.outfile)]
+        unpack(lambda wc: WORKFLOW['regrid']["input_dict"][os.path.join(outDirs['regridded'],wc.outfile)])
     output:
-        os.path.join(outDirs['regridded'],"{thisID}","{outfile}")
+        os.path.join(outDirs['regridded'],"{outfile}")
     run:
         KAPy.regrid(outFile=output,
                     inFile=input,
@@ -144,10 +143,10 @@ rule _06_regrid:
 # Enssemble Statistics 
 # Now we can combine them into ensembles
 rule _07_ensstats:
+    input:
+        unpack(lambda wc: WORKFLOW['ensstats']["input_dict"][os.path.join(outDirs['ensstats'],wc.es)])
     output:
         os.path.join(outDirs['ensstats'],"{es}")
-    input:
-        lambda wildcards: wf['ensstats'][os.path.join(outDirs['ensstats'],wildcards.es)]
     run:
         KAPy.generateEnsstats(outFile=output,
                               inFiles=input,
@@ -159,71 +158,55 @@ rule _07_ensstats:
 #Areal statistics are calculated for both the enssemble statistics and individual members
 #Depending on whether we are using a shapefile or not, we may want to include the shapefile
 #as a dependency
-if config['arealstats']['shapefile']!='':
-    rule _08_arealstats:
-        output:
-            os.path.join(outDirs['arealstats'],'{fname}')
-        input:
-            inputFile=lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],
-                                                            wildcards.fname)],
-            shapefile=config['arealstats']['shapefile'] 
-        run:
-            KAPy.generateArealstats(outFile=output,
-                                    inFile=input.inputFile,
-                                    tempDir=config['dirs']['tempDir'],
-                                    shapefile=input.shapefile,
-                                    useAreaWeighting=config['arealstats']['useAreaWeighting'],
-                                    idColumn=config['arealstats']['idColumn'])
-
-else:  #No dependency on the shapefile
-    rule _08_arealstats:
-        output:
-            os.path.join(outDirs['arealstats'],'{fname}')
-        input:
-            inputFile=lambda wildcards: wf['arealstats'][os.path.join(outDirs['arealstats'],
-                                                            wildcards.fname)]
-        run:
-            KAPy.generateArealstats(outFile=output,
-                                    inFile=input.inputFile,
-                                    tempDir=config['dirs']['tempDir'],
-                                    shapefile="",
-                                    useAreaWeighting=config['arealstats']['useAreaWeighting'],
-                                    idColumn=config['arealstats']['idColumn'])
-
-#Plots        
-rule _09_lineplots:
-    output:
-        os.path.join(outDirs['outputs'],'plots','{indID}_lineplot.png')
+rule _08_arealstats:
     input:
-        lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
-                                                   f"{wildcards.indID}_lineplot.png")]
-    run:
-        KAPy.makeLineplot(outFile=output,
-                          srcFiles=input)
-
-rule _09_boxplots:
+        inputFile=lambda wildcards: WORKFLOW['arealstats']["input_dict"][os.path.join(outDirs['arealstats'],
+                                                                                    wildcards.fname)],
+        shapefile=lambda wildcards: config['arealstats']['shapefile'] if config['arealstats']['shapefile'] is not None else []
     output:
-        os.path.join(outDirs['outputs'],'plots','{indID}_boxplot.png')
-    input:
-        lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
-                                                   f"{wildcards.indID}_boxplot.png")]
+        os.path.join(outDirs['arealstats'],'{fname}')
     run:
-        KAPy.makeBoxplot(outFile=output,
-                         srcFiles=input)
+        KAPy.generateArealstats(outFile=output,
+                                inFile=input.inputFile,
+                                tempDir=config['dirs']['tempDir'],
+                                shapefile=config['arealstats']['shapefile'],
+                                useAreaWeighting=config['arealstats']['useAreaWeighting'],
+                                idColumn=config['arealstats']['idColumn'])
 
-rule _09_spatial_plots:
-    output:
-        os.path.join(outDirs['outputs'],'plots','{indID}_spatial.png')
-    input:
-        lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
-                                                   f"{wildcards.indID}_spatial.png")]
-    run:
-        KAPy.makeSpatialplot(outFile=output,
-                             srcFiles=input)
+# #Plots        
+# rule _09_lineplots:
+#     output:
+#         os.path.join(outDirs['outputs'],'plots','{indID}_lineplot.png')
+#     input:
+#         lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
+#                                                    f"{wildcards.indID}_lineplot.png")]
+#     run:
+#         KAPy.makeLineplot(outFile=output,
+#                           srcFiles=input)
+
+# rule _09_boxplots:
+#     output:
+#         os.path.join(outDirs['outputs'],'plots','{indID}_boxplot.png')
+#     input:
+#         lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
+#                                                    f"{wildcards.indID}_boxplot.png")]
+#     run:
+#         KAPy.makeBoxplot(outFile=output,
+#                          srcFiles=input)
+
+# rule _09_spatial_plots:
+#     output:
+#         os.path.join(outDirs['outputs'],'plots','{indID}_spatial.png')
+#     input:
+#         lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
+#                                                    f"{wildcards.indID}_spatial.png")]
+#     run:
+#         KAPy.makeSpatialplot(outFile=output,
+#                              srcFiles=input)
         
 
-# Individual targets -------------------------------
-# These are individual files that are produced, rather than a collection of files
+# # Individual targets -------------------------------
+# # These are individual files that are produced, rather than a collection of files
 
 #Make the variable overview
 rule overview:
@@ -232,18 +215,18 @@ rule overview:
 
 #Merged csvs
 rule areal_ensstats:
+    input:
+        WORKFLOW['mergedCSVs']['ensstats']
     output:
         os.path.join(outDirs['outputs'],config['outputs']["ensembleStatisticsCSV"])
-    input:
-        wf['mergedCSVs']['ensstats']
     run:
         KAPy.mergeCSVs(outFile=output,inFiles=input)
 
 rule areal_members:
+    input:
+        WORKFLOW['mergedCSVs']['members']
     output:
         os.path.join(outDirs['outputs'],config['outputs']["ensembleMembersCSV"])
-    input:
-        wf['mergedCSVs']['members']
     run:
         KAPy.mergeCSVs(outFile=output,inFiles=input)
 
@@ -267,54 +250,53 @@ rule database:
 #Primary variables
 rule primaryVars:
     input:
-        [k for thisInp in wf['primVars'].values() for k in thisInp.keys()]
-
+        [v["outputs"] for v in WORKFLOW['primary_vars'].values()]
 #Secondary variables  
 rule secondaryVars:
     input:
-        [k for thisInp in wf['secondaryVars'].values() for k in thisInp.keys()]
+        [t for v in WORKFLOW['secondary_vars'].values() for t in v['outputs']]
 
 #Bias adjustment
 rule biasAdjustment:
     input:
-        [k for thisInp in wf['baVars'].values() for k in thisInp.keys()]
+        [v['outputs'] for v in WORKFLOW['bias_adj'].values() ]
 
 #Tertiary variables
 rule tertiaryVars:
     input:
-        [k for thisInp in wf['tertiaryVars'].values() for k in thisInp.keys()]
+        [t for v in WORKFLOW['tertiary_vars'].values() for t in v['outputs']]
 
 #Indicator variables
 rule indicators:
     input:
-        [k for thisInp in wf['indicators'].values() for k in thisInp.keys()]
+        [k for thisInd in WORKFLOW['indicators'].values() for k in thisInd["outputs"]]
 
 #Regridding
 if config['outputGrid']['templateType']!='none':
     rule regrid:
         input:
-            list(wf['regridded'].keys())
+            WORKFLOW['regrid']['outputs']
 
 #Ensemble statistics
 rule ensstats:
     input:
-        list(wf['ensstats'].keys())
+        WORKFLOW['ensstats']['outputs']
 
 
 #Ensemble statistics
 rule arealstats:
     input:
-        list(wf['arealstats'].keys())
+        WORKFLOW['arealstats']['outputs']
 
-#Plots
-rule plots:
-    input:
-        list(wf['plots'].keys())
+# #Plots
+# rule plots:
+#     input:
+#         list(wf['plots'].keys())
 
 #All
 rule all:
     input:
-        wf['all'],
+        WORKFLOW['all'],
         rules.areal_members.output,
         rules.areal_ensstats.output,
         rules.database.output

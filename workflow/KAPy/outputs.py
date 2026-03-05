@@ -30,8 +30,8 @@ def mergeCSVs(outFile, inFiles):
         datIn.insert(2,'memberID',datIn['filename'].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.*).csv$"))
         datIn.insert(2,'expt',datIn['filename'].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$"))
         datIn.insert(2,'gridID',datIn['filename'].str.extract("^[^_]+_[^_]+_([^_]+)_.*$"))
-        datIn.insert(2,'datasetID',datIn['filename'].str.extract("^[^_]+_([^_]+)_.*$"))
-        datIn.insert(2,'indID',datIn['filename'].str.extract("^([^_]+)_.*$"))
+        datIn.insert(2,'datasetID',datIn['filename'].str.extract("^([^_]+)_.*$"))
+        datIn.insert(2,'indID',datIn['filename'].str.extract("^[^_]+_([^_]+)_.*$"))
 
         #Finish
         datOut=datIn.drop(columns=["filename"])
@@ -65,8 +65,8 @@ def writeToDatabase(outFile, ensstats, members):
     # Create ensemble members table
     conn.execute("""
         CREATE TABLE Ensemble_members (
-            indID TEXT NOT NULL,
             datasetID TEXT NOT NULL,
+            indID TEXT NOT NULL,
             gridID TEXT NOT NULL,
             expt TEXT NOT NULL,
             memberID TEXT NOT NULL,
@@ -87,8 +87,8 @@ def writeToDatabase(outFile, ensstats, members):
     # Create ensemble statistics table
     conn.execute("""
         CREATE TABLE Ensemble_statistics (
-            indID TEXT NOT NULL,
             datasetID TEXT NOT NULL,
+            indID TEXT NOT NULL,
             gridID TEXT NOT NULL,
             expt TEXT NOT NULL,
             memberID TEXT NOT NULL,
@@ -119,8 +119,8 @@ def writeToDatabase(outFile, ensstats, members):
 
     #Set indexing
     cursor = conn.cursor()
-    cursor.execute("CREATE INDEX idx_ensstats ON Ensemble_statistics(indID,datasetID,gridID,expt,seasonID,periodID,percentiles,areaID)")
-    cursor.execute("CREATE INDEX idx_members ON Ensemble_members(expt, gridID,datasetID,indID,areaID,seasonID,periodID)")
+    cursor.execute("CREATE INDEX idx_ensstats ON Ensemble_statistics(datasetID,indID,gridID,expt,seasonID,periodID,percentiles,areaID)")
+    cursor.execute("CREATE INDEX idx_members ON Ensemble_members(datasetID,indID,gridID,expt, areaID,seasonID,periodID)")
 
     # Commit and close
     conn.commit()

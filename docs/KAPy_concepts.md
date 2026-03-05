@@ -78,11 +78,11 @@ The KAPy workflow involves a set of discrete steps to process climate data, cove
 
 KAPy is a tool that works from file to file, and therefore requires a systematic naming convention to make sense of the many outputs and inputs. The convention is inspired by that seem commonly in climate data, but also reflects the specific needs for KAPy. All KAPy files are therefore named as follows:
 
-`<variable ID / indicator ID>_<dataset ID>_<grid ID>_<experiment ID>_<ensemble member identifiers>.nc`
+`<dataset ID>_<variable ID / indicator ID>_<grid ID>_<experiment ID>_<ensemble member identifiers>.nc`
 
 where
-  * `<variable ID / indicator ID>` is the unique identifier of either the *climate variable* or *climate indicator*, as defined above. Generally, the suggested convention is that variables get letter-based identifiers (e.g. `tasmin`), while indicators get numeric indicators (e.g. `151`). However, this is not enforced by KAPy.
   * `<dataset ID>` is the identifier of the dataset that the variable or indicator is derived from (e.g. `CORDEX`).
+  * `<variable ID / indicator ID>` is the unique identifier of either the *climate variable* or *climate indicator*, as defined above. Generally, the suggested convention is that variables get letter-based identifiers (e.g. `tasmin`), while indicators get numeric indicators (e.g. `151`). However, this is not enforced by KAPy.
   * `<grid ID>` is an identifier for the grid (including both the resolution and spatial domain) that the data is presented on.
   * `<experiment ID>` is an identifier used to identify *dataseries* formed from multiple experiments from the same data source (e.g. `RCP2.6` within the `CORDEX` data source). The code `noExpt` is used as a filler when no experiment is defined.
   * `<ensemble member identifiers>` is a series of codes used to identify the ensemble member that the *dataseries* is associated with. Can contain further fields separated by `_`, as defined in the input filenames, although individual fields beyond this point are not parsed by KAPy, but rather handled as one block. The code `noEnsID` is used when there are no other members of the ensemble e.g. when dealing with a single set of observations.
