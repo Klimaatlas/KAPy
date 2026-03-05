@@ -181,6 +181,11 @@ def validateConfig(config):
     if not os.path.exists(config['dirs']['tempDir']):
         os.makedirs(config['dirs']['tempDir'])
 
+    #Check if the configuration file is valid
+    if config['arealstats']['shapefile'] is not None:
+        if not os.path.exists(config['arealstats']['shapefile']):
+            raise FileNotFoundError(f"Cannot find shapefile declared in config/arealstats/shapefile: '{config['arealstats']['shapefile']}'.")
+
     return config
 
 def getConfig(configfile):
