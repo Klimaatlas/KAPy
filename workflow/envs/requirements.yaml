@@ -43,7 +43,7 @@ dependencies:
   - geopandas
   - netcdf4
   - pandas
-  - plotnine
+  #- plotnine
   - python
   - python-cdo
   - python_cmethods
