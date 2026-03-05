@@ -17,8 +17,9 @@
     "additionalProperties": false,
     "properties": {
         "id": {
-            "description": "Code by which to refer to the variable e.g. `tas`, `SPI`, `pr` etc",
+            "description": "Code by which to refer to the variable e.g. `tas`, `SPI`, `pr` etc. Cannont contain a space.",
             "type": "string",
+            "pattern": "^[^ ]+$",            
             "uniqueItems": true
         },
         "enabled": {

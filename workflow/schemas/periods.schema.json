@@ -7,8 +7,9 @@
   "type": "object",
   "properties": {
     "id": {
-      "description": "Unique identifier for the period. This can be numeric, but will be treated as a string",
+      "description": "Unique identifier for the period. This can be numeric, but will be treated as a string. Cannont contain space.",
       "type": "string",
+      "pattern": "^[^ ]+$",            
       "uniqueItems": true
     },
     "name": {

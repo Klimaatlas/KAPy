@@ -23,7 +23,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "A unique id for this dataset.",
+      "description": "A unique id for this processing group. Cannot contain a space",
+      "pattern": "^[^ ]+$",            
       "uniqueItems": true
     },
     "enabled": {
