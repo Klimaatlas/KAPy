@@ -1,19 +1,3 @@
-"""
-#Setup for debugging with VS code
-import os
-print(os.getcwd())
-os.chdir("..")
-import KAPy
-import KAPy.helpers as helpers
-os.chdir("../..")
-config=KAPy.getConfig("./config/config.yaml")  
-wf=KAPy.getWorkflow(config)
-indID='i010'
-outFile=list(wf['indicators'][indID])[0]
-inFile=wf['indicators'][indID][outFile]
-%matplotlib inline
-"""
-
 import xarray as xr
 import xclim as xc
 import numpy as np
@@ -22,7 +6,32 @@ import json
 import pandas as pd
 from . import helpers 
 
-def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,timeBinning,statistic,deltaType,
+"""
+#Setup for debugging with VS code
+import os
+print(os.getcwd())
+os.chdir("..")
+import workflow.KAPy as KAPy
+import workflow.KAPy.helpers as helpers
+config=KAPy.getConfig("./config/config.yaml")  
+wf=KAPy.getWorkflow(config)
+indID='i011+i012+i015'
+leaf=next(iter(wf['indicators'][indID]['input_dict']))
+inFiles=wf['indicators'][indID]['input_dict'][leaf]
+%matplotlib inline
+seasonsTable=config['seasons']
+periodsTable=config['periods']
+seasons=config['indicators'][indID]['seasons']
+timeBinning=config['indicators'][indID]['timeBinning']
+statistic=config['indicators'][indID]['statistic']
+deltaType=config['indicators'][indID]['deltaType']
+additionalArgs=config['indicators'][indID]['additionalArgs']
+customScriptPath=config['indicators'][indID]['customScriptPath']
+customScriptFunction=config['indicators'][indID]['customScriptFunction']
+"""
+
+
+def calculateIndicators(outFile, inFiles,seasonsTable,periodsTable,seasons,timeBinning,statistic,deltaType,
                         additionalArgs,customScriptPath,customScriptFunction,**kwargs):
 
     #Setup seasons
@@ -31,8 +40,13 @@ def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,timeBi
     else:
         indSeasons = seasons
 
-    # Read the dataset object back from disk, depending on the configuration
-    thisDat = helpers.readFile(inFile[0])
+    # Read the relevant datasets back from disk and build into a dataset
+    # If there is only one input variable, keep it all as a dataarray - otherwise,
+    # merge it a dataset
+    if(len(inFiles)==1):
+        thisDat=helpers.readFile(next(iter(inFiles.values())))
+    else:
+        thisDat=xr.Dataset({thisKey: helpers.readFile(thisPath) for thisKey, thisPath in inFiles.items()})
 
     #Internal function to choose and apply the indicator statistic
     def applyStat(d,thisStat,args):
@@ -55,15 +69,15 @@ def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,timeBi
             except ValueError:
                 raise ValueError(f"Cannot convert 'threshold' value in 'additionalArgs' to a float. 'Threshold' string value: {args['threshold']}")
             #Do count
-            comp = xc.indices.generic.compare(left=d,
-                                             op=args['op'],
-                                             right=float(args['threshold']))
+            comp = xc.indices.generic.compare(left=da,
+                                            op=args['op'],
+                                            right=float(args['threshold']))
             res=comp.groupby("time.year").sum().mean(dim="year")
         elif thisStat=="custom":
-            #Use a custom function
+            #Send to a custom function
             custFn=helpers.getExternalFunction(customScriptPath,
                                                customScriptFunction)
-            res = custFn(d)  
+            res = custFn(d,**additionalArgs)  
         else:
             raise ValueError(f"Unknown indicator statistic, '{thisStat}'")
         return(res)
@@ -79,34 +93,27 @@ def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,timeBi
             # that case further one, as we still want empty slices returned
             datPeriod=helpers.timeslice(thisDat,thisPeriod["start"],thisPeriod["end"])
 
+            # If datPeriod is empty e.g. due to a timeslice that is outside
+            # #of the domain, then trying to filter by months will
+            # just cause things to break. So, only proceed with the processing if there
+            # is something to filter
+            if datPeriod.time.size ==0:
+                continue
+
             #Loop over seasons
             seasonSlices=[]
             for thisSeason in indSeasons:
-                # If datPeriod is already empty, then trying to filter by months will
-                # just cause things to break. So, only filter data by season if there
-                # is something to filter
-                if datPeriod.time.size !=0:
-                    theseMonths = seasonsTable[thisSeason]["months"]
-                    datPeriodSeason = datPeriod.sel(time=np.isin(datPeriod.time.dt.month, theseMonths))
-                    #Test for an empty slice
-                    mtSlice=(datPeriodSeason.time.size == 0)
-                else:
-                    mtSlice=True
+                #Select seeason
+                theseMonths = seasonsTable[thisSeason]["months"]
+                datPeriodSeason = datPeriod.sel(time=np.isin(datPeriod.time.dt.month, theseMonths))
 
-                # If there is nothing left, we want a result all the same so that we
-                # can put it in the outputs. We copy the structure and populate
-                # it with NaNs
-                if mtSlice:
-                    res = thisDat.isel(time=0,drop=True)
-                    res.data[:] = np.nan
-                # Else apply the operator
-                else:
+                # Only attempt a calculation if there is something left
+                if datPeriodSeason.time.size != 0:
                     res=applyStat(datPeriodSeason,
                                 statistic,
                                 additionalArgs)
-                # Store output
-                res["seasonID"] = thisSeason
-                seasonSlices.append(res)
+                    res["seasonID"] = thisSeason
+                    seasonSlices.append(res)
             
             #Concatenate seasons into a dataarray and store
             outSeason= xr.concat(seasonSlices, dim='seasonID')
@@ -188,18 +195,39 @@ def calculateIndicators(outFile, inFile,seasonsTable,periodsTable,seasons,timeBi
 
     # Polish final product
     # ----------------------
-    #Merge into one object. Add attributes
-    ds=xr.Dataset({'indicator':dout,'delta':deltaOut})
-    ds.attrs = {}
-    ds.attrs['timeBinning']=timeBinning
-    ds.attrs['statistic']=statistic
-    ds.attrs['deltaType']=deltaType
-    ds.attrs['additionalArgs']=str(additionalArgs)
-    ds.attrs['customScriptPath']=customScriptPath
-    ds.attrs["customScriptFunction"]=customScriptFunction
-    ds.attrs["seasonID_dict"] = json.dumps(seasonsTable)
-    if timeBinning == "periods":
-        ds.attrs["periodID_dict"]= json.dumps(periodsTable)
+    # Firstly, we need a reshuffle. We currently have one object with the absolute values for each
+    # indicator, and one with the delta change, for each indicator. We want to rejig this so that
+    # we have object for each indcator, containing both the absolute and delta change variables.
+    # For easy handling, we store this in a dict, which is the ultimate output of the function
+    # We also need to be careful about the difference between datasets and dataarrays, which 
+    # both are legal at this point
+    def decorate_dataset(ds):
+        ds.attrs = {}
+        ds.attrs['timeBinning']=timeBinning
+        ds.attrs['statistic']=statistic
+        ds.attrs['deltaType']=deltaType
+        ds.attrs['additionalArgs']=str(additionalArgs)
+        ds.attrs['customScriptPath']=customScriptPath
+        ds.attrs["customScriptFunction"]=customScriptFunction
+        ds.attrs["seasonID_dict"] = json.dumps(seasonsTable)
+        if timeBinning == "periods":
+            ds.attrs["periodID_dict"]= json.dumps(periodsTable)
+        return ds
 
-    # Write out
-    ds.to_netcdf(outFile[0])
+
+    if isinstance(dout, xr.Dataset):
+        rtn={}
+        for v in list(dout.data_vars):
+            #Extract indicators and merge into a dataset
+            absolute_ind=dout[v]
+            delta_ind=deltaOut[v]
+            out=xr.Dataset({'indicator':absolute_ind,'delta':delta_ind})
+            #Add attributes and store
+            out=decorate_dataset(out)
+            rtn[v]=out
+
+    elif isinstance(dout, xr.DataArray):
+        out=xr.Dataset({'indicator':dout,'delta':deltaOut})
+        rtn=decorate_dataset(out)
+    
+    return rtn

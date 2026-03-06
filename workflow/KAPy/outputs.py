@@ -124,10 +124,10 @@ def writeToDatabase(outFile, ensstats, members):
     conn.close()
 
 
-
-def write_outputs(obj: xr.DataArray | xr.Dataset, path: dict[str, str]) -> None:
+def write_variables(obj: xr.DataArray | xr.Dataset | dict, 
+                  path: dict[str, str]) -> None:
     """
-    Write xarray objects to disk as NetCDF files.
+    Write variables as xarray objects to disk as NetCDF files.
 
     Parameters
     ----------
@@ -139,15 +139,15 @@ def write_outputs(obj: xr.DataArray | xr.Dataset, path: dict[str, str]) -> None:
         For a Dataset, keys should match dataset variables.
     """
 
-    def write_dataarray(da: xr.DataArray,var_name: str, output_path: str):
-            # Set chunking
-            chunkThisWay=[min([256,16,16][i],da.shape[i]) for i in range(0,3)]
-
+    def write_dataarray(da: xr.DataArray,var_name: str, 
+                        output_path: str):
             da.name = var_name
+            chunkThisWay=[min([256,16,16][i],da.shape[i]) for i in range(0,3)]
             da.to_netcdf(output_path,
                         encoding={var_name:{'chunksizes':chunkThisWay,
-                                            'zlib': True,
-                                            'complevel':1}})
+                                        'zlib': True,
+                                        'complevel':1}})
+
     if isinstance(obj, xr.DataArray):
         # Expect exactly one key in path
         if len(path) != 1:
@@ -160,13 +160,48 @@ def write_outputs(obj: xr.DataArray | xr.Dataset, path: dict[str, str]) -> None:
         for var in path.keys():
             if var not in obj:
                 raise KeyError(f"Cannot find variable '{var}' in provided dataset")
-            da=obj[var]
-            write_dataarray(da,
+            dat=obj[var]
+            write_dataarray(dat,
                             var_name=var,
                             output_path = path[var])
-
+        
     else:
         raise TypeError(f"Unsupported type: {type(obj)}")
+
+
+
+def write_indicators(obj:  xr.Dataset | dict, 
+                  path: dict[str, str]) -> None:
+    """
+    Write indicators to disk as NetCDF files.
+
+    Parameters
+    ----------
+    obj :  xr.Dataset | dict
+        The data to write, provided either as a dataset or a dict. If a dict multiple files are written.
+    path : dict
+        Mapping of indicator names to output file paths.
+    """
+
+    if isinstance(obj, xr.Dataset):
+        # Expect exactly one key in path
+        if len(path) != 1:
+            raise ValueError("Expected exactly one path for a single dataset")
+        obj.to_netcdf(next(iter(path.values())))
+    
+    elif isinstance(obj, dict):
+        for ind in path.keys():
+            if ind not in obj:
+                raise KeyError(f"Cannot find indicator '{ind}' in provided dict to write with keys {obj.keys()}")
+            dat=obj[ind]
+            dat.to_netcdf( path[ind])
+        
+    else:
+        raise TypeError(f"Unsupported type: {type(obj)}")
+
+
+
+
 
 
 

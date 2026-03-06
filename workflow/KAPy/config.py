@@ -172,14 +172,18 @@ def validateConfig(config):
         raise ValueError(f"Variable '{multiUnits[0]}' has {unitCount[multiUnits[0]]} different units defined. Please ensure consistency between units in the same varCode.")
 
     # Season selected in the indicator table must be valid
-    # Currently allow only one season per indicator. This needs to be fixed in the future
     indTbl = pd.DataFrame.from_dict(config["indicators"], orient="index")
     validSeasons = list(config["seasons"].keys()) + ["all"]
     for idx,thisrw in indTbl.iterrows():
         for requestSeason in thisrw["seasons"]:
             if not (requestSeason in validSeasons):
                 raise ValueError(f"Unknown season '{requestSeason}' requested for indicator '{thisrw["id"]}'.")
-            
+
+    # Indicators can only take multiple input variables if the statistic type is "custom"
+    for idx, rw in indTbl.iterrows():
+        if (rw['statistic'] != "custom") & (len(rw['variables'])>1):
+                raise ValueError(f"Multiple variables supplied to indicator '{rw["id"]}': in this case, the statistic chosen needs to be 'custom' but is currently '{rw["statistic"]}'.")
+
     # If the temporary directory doesn't exist, create it
     if not os.path.exists(config['dirs']['tempDir']):
         os.makedirs(config['dirs']['tempDir'])

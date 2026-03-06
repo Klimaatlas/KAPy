@@ -75,7 +75,7 @@ for thisID, thisRow in WORKFLOW['secondary_vars'].items():
         run:
             SV=KAPy.buildDerivedVar(inFiles=dict(input),
                                     **config['secondaryVars'][params.groupID])
-            KAPy.write_outputs(SV,dict(output))
+            KAPy.write_variables(SV,dict(output))
 
 # Bias Adjustment 
 for thisID, thisRow in WORKFLOW['bias_adj'].items():
@@ -104,7 +104,7 @@ for thisID, thisRow in WORKFLOW['tertiary_vars'].items():
         run:
             TV=KAPy.buildDerivedVar(inFiles=dict(input),
                                     **config['tertiaryVars'][params.groupID])
-            KAPy.write_outputs(TV,dict(output))
+            KAPy.write_variables(TV,dict(output))
 
 # Indicators 
 # Create a loop over the indicators that defines the singular and plural rules
@@ -116,11 +116,12 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
         output: **thisRow['output_rule']
         params: groupID=thisID
         run:
-            KAPy.calculateIndicators(outFile=output,
-                                    inFile=input,
+            inds=KAPy.calculateIndicators(outFile=output,
+                                    inFiles=dict(input),
                                     seasonsTable=config['seasons'],
                                     periodsTable=config['periods'],
                                     **config['indicators'][params.groupID])
+            KAPy.write_indicators(inds,dict(output))
 
 # Regridding  
 # Combining everything into an ensemble requires that they are all on a common grid
