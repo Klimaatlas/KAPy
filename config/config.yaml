@@ -41,7 +41,6 @@ outputs:
 arealstats:
     useAreaWeighting: False
     shapefile: # leave empty for "none" 
-    idColumn: ''  
 cutouts:
     method: 'lonlatbox'  #'none'
     xmin: -4

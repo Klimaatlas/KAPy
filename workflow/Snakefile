@@ -170,8 +170,7 @@ rule _08_arealstats:
                                 inFile=input.inputFile,
                                 tempDir=config['dirs']['tempDir'],
                                 shapefile=config['arealstats']['shapefile'],
-                                useAreaWeighting=config['arealstats']['useAreaWeighting'],
-                                idColumn=config['arealstats']['idColumn'])
+                                useAreaWeighting=config['arealstats']['useAreaWeighting'])
 
 # #Plots        
 # rule _09_lineplots:

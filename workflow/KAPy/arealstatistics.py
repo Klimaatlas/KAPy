@@ -1,3 +1,10 @@
+import xarray as xr
+import pandas as pd
+import geopandas as gpd
+from cdo import Cdo
+import regionmask
+import numpy as np
+
 """
 #Setup for debugging with VS code 
 import os
@@ -17,14 +24,7 @@ tempDir=config['dirs']['tempDir']
 %matplotlib inline
 """
 
-import xarray as xr
-import pandas as pd
-import geopandas as gpd
-from cdo import Cdo
-import regionmask
-import numpy as np
-
-def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile,idColumn):
+def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile):
     # Generate statistics over an area by applying a polygon mask and averaging
     # Setup xarray
     # Note that we need to use open_dataset here, as the ensemble files have
@@ -98,7 +98,7 @@ def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile,idCol
 
             #Output object
             thisOut=pd.concat([wtMeanDf,wtSdDf])
-            thisOut.insert(0,'areaID',thisArea[idColumn] )
+            thisOut.insert(0,'areaID',thisIdx )
             outList += [thisOut]
         dfOut=pd.concat(outList)
 

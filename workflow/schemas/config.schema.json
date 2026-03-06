@@ -143,8 +143,7 @@
         "arealstats": {
             "required": [
                 "useAreaWeighting",
-                "shapefile",
-                "idColumn"
+                "shapefile"
             ],
             "additionalProperties": false,
             "type": "object",
@@ -155,10 +154,6 @@
                 },
                 "shapefile": {
                     "description": "Path to shapefile to be used for defining areas. When the path is undefined, averages are calculated across the entire domain. The path should point to the .shp file.",
-                    "type": ["string","null"]
-                },
-                "idColumn": {
-                    "description": "Name of the column in the above shapefile to be used as a unique identifier code for the area.",
                     "type": ["string","null"]
                 }
             }
