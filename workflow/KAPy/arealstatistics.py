@@ -10,15 +10,13 @@ import numpy as np
 import os
 print(os.getcwd())
 os.chdir("..")
-import KAPy
-os.chdir("../..")
-config=KAPy.getConfig("./config/config.yaml") 
+import workflow.KAPy as KAPy
 config=KAPy.getConfig("./workflow/testing/config.yaml") 
+config=KAPy.getConfig("./config/config.yaml") 
 wf=KAPy.getWorkflow(config)
-asID=list(wf['arealstats'].keys())[0]
-inFile=wf['arealstats'][asID]
+asID=list(wf['arealstats']['input_dict'].keys())[0]
+inFile=wf['arealstats']['input_dict'][asID]
 shapefile=config["arealstats"]['shapefile']
-idColumn=config["arealstats"]['idColumn']
 useAreaWeighting=config["arealstats"]['useAreaWeighting']
 tempDir=config['dirs']['tempDir']
 %matplotlib inline

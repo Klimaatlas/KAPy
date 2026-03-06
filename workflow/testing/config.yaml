@@ -37,7 +37,6 @@ outputs:
 arealstats:
     useAreaWeighting: True
     shapefile: 'docs/tutorials/Tutorial05_files/Ghana_regions.shp'
-    idColumn: 'ADM1_PCODE'
 cutouts:
     method: 'lonlatbox'  #'none'
     xmin: -4
