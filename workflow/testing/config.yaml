@@ -52,6 +52,4 @@ outputGrid:
     gridName: 'Ghana025'
     method: 'bilinear'
     path: 'workflow/testing/griddes.txt'
-processing:
-    picklePrimaryVariables: False
     

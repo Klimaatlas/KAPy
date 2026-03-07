@@ -58,7 +58,6 @@ rule _01_primaryVar:
         KAPy.buildPrimVar(
             outFile=output,
             inFiles=input,
-            picklePrimaryVariables=config['processing']['picklePrimaryVariables'],
             cutoutArgs=config['cutouts'],
             **config['inputs'][params.inpID]
         )                          

@@ -22,7 +22,7 @@ def getWorkflow(config):
 
     # Primary Variables ---------------------------------------------------------------
     # PVs are the raw inputs. These need to be read into a single-file format based on
-    # xarray, and are then exported either as netcdf or as pickles.
+    # xarray, and are then exported as netcdf.
     # We loop over the individual items maintaining the dict format, as this is a touch easier to
     # work with
     pvDict = {}
@@ -133,10 +133,6 @@ def getWorkflow(config):
             for f in pvTbl["pvFname"]
         ]
 
-        # If we're pickling, name the output files accordingly
-        if config['processing']['picklePrimaryVariables']:
-            pvTbl["pvLeaf"] = pvTbl["pvLeaf"] + ".pkl"
-        
         #Prior to adding to the pvDict, check that we have unique keys
         if any(pvTbl['pvLeaf'].isin(pvDict.keys())):
             raise ValueError("Duplicate keys found in generating primary variables.")

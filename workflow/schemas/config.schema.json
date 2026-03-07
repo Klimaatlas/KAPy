@@ -9,8 +9,7 @@
         "arealstats",
         "dirs",
         "outputs",
-        "ensembles",
-        "processing"
+        "ensembles"
     ],
     "additionalProperties": true,
     "properties": {
@@ -281,19 +280,6 @@
                 "path": {
                     "description": "Path to the file to be used as a template, in the case of a `file` templateType, or the cdo grid descriptor, in the case of `cdo` templateType.",
                     "type": "string"
-                }
-            }
-        }, 
-        "processing": {
-            "required": [
-                "picklePrimaryVariables"
-            ],
-            "additionalProperties": false,
-            "type": "object",
-            "properties": {
-                "picklePrimaryVariables": {
-                    "description": "Should the the primary variables be stored as 'pickled' xarray objects (`True`) or written out to disk as NetCDF files (`False`).",
-                    "type": "boolean"
                 }
             }
         }

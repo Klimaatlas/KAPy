@@ -18,7 +18,6 @@ import KAPy.workflow as workflow
 
 # Given a set of input files, create objects that can be worked with
 import xarray as xr
-import pickle
 import sys
 import time
 from cdo import Cdo
@@ -132,7 +131,7 @@ def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varCode,**kwargs):
 
 #-----------------------------------------------------------------	
 def buildPrimVar(outFile, inFiles,varCode,internalVarName,checks,importScriptPath,importScriptFunction,
-				 units, picklePrimaryVariables,cutoutArgs,**kwargs):
+				 units, cutoutArgs,**kwargs):
 	# If an import function is defined, use that. Otherwise use the default
 	if importScriptPath=='':
 		#Use default import
@@ -152,7 +151,6 @@ def buildPrimVar(outFile, inFiles,varCode,internalVarName,checks,importScriptPat
 			  internalVarName=internalVarName,
 			  units=units,
 			  checks=checks,
-			  picklePrimaryVariables=picklePrimaryVariables,
 			  cutoutArgs=cutoutArgs)  
 
 	# Unit handling -----------------------------
@@ -176,28 +174,24 @@ def buildPrimVar(outFile, inFiles,varCode,internalVarName,checks,importScriptPat
 		da=xclim.core.units.convert_units_to(da,units)
 	
 	# Check that the unit choice is sane
-
+	
 	# Output --------------------
-	# Write the dataset object to disk, depending on the configuration
-	if picklePrimaryVariables:
-		with open(outFile[0],'wb') as f:
-			pickle.dump(da,f,protocol=-1)
-	else:
-		#We also apply a little trick here, by forcing everything to be stored as
-		#netcdf "float" types as well.
-		daFloat=da.astype(np.float32)
-		#Set chunking
-		defaultChunks=[256,16,16]
-		chunkThisWay=[min(defaultChunks[i],daFloat.shape[i]) for i in range(0,3)]
-		
-		#Now use the chunking scheme as the basis for writing out the encoding
-		try:
-			daFloat.to_netcdf(outFile[0],
-						encoding={varCode:{'chunksizes':chunkThisWay,
-								'zlib': True,
-								'complevel':1}})
-		except Exception as e:
-			raise RuntimeError(f"Writing NetCDF file '{outFile[0]}' to disk failed with error: {e}") 
+	#We also apply a little trick here, by forcing everything to be stored as
+	#netcdf "float" types as well.
+	daFloat=da.astype(np.float32)
+
+	#Set chunking
+	defaultChunks=[256,16,16]
+	chunkThisWay=[min(defaultChunks[i],daFloat.shape[i]) for i in range(0,3)]
+	
+	#Now use the chunking scheme as the basis for writing out the encoding
+	try:
+		daFloat.to_netcdf(outFile[0],
+					encoding={varCode:{'chunksizes':chunkThisWay,
+							'zlib': True,
+							'complevel':1}})
+	except Exception as e:
+		raise RuntimeError(f"Writing NetCDF file '{outFile[0]}' to disk failed with error: {e}") 
 
 
 
@@ -213,8 +207,7 @@ def VariableOverview(config):
 	#  - Calculate differences
 	wfFiles=[ g for k in wf['primVars'].keys() for g in wf['primVars'][k]]
 	ncFiles=glob.glob(config['dirs']['variables']+"/**/*.nc",recursive=True)
-	pklFiles=glob.glob(config['dirs']['variables']+"/**/*.pkl",recursive=True)
-	tbl= pd.DataFrame(sorted(set(wfFiles+ncFiles+pklFiles)),columns=["path"])
+	tbl= pd.DataFrame(sorted(set(wfFiles+ncFiles)),columns=["path"])
 	tbl['filename']=[os.path.basename(f) for f in tbl["path"]]
 	tbl["var"] = tbl["filename"].str.extract("^([^_]+)_.*$")
 	tbl["dataset"] = tbl["filename"].str.extract("^[^_]+_([^_]+)_.*$")

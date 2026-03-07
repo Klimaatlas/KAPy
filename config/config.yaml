@@ -56,6 +56,4 @@ outputGrid:
     gridName: 'Ghana025'
     method: 'bilinear'
     path: 'config/griddes.txt'
-processing:
-    picklePrimaryVariables: False
     
