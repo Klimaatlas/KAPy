@@ -31,7 +31,7 @@ customScriptFunction=config['indicators'][indID]['customScriptFunction']
 """
 
 
-def calculateIndicators(outFile, inFiles,seasonsTable,periodsTable,seasons,timeBinning,statistic,deltaType,
+def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,statistic,deltaType,
                         additionalArgs,customScriptPath,customScriptFunction,**kwargs):
 
     #Setup seasons

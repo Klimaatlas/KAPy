@@ -118,8 +118,8 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
             periodsTable=config['periods'],
             **config['indicators'][thisID]
         run:
-            inds=KAPy.calculateIndicators(outFile=output,
-                inFiles=dict(input),**params)
+            inds=KAPy.calculateIndicators(inFiles=dict(input),
+                                            **params)
             KAPy.write_indicators(inds,dict(output))
 
 # Regridding  
