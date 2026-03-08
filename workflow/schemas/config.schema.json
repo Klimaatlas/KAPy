@@ -215,29 +215,43 @@
             ]
         },
         "ensembles": {
-            "description": "Specify the percentiles [0-100] calculated from the ensemble. We allow three values, corresponding to the upper and lower confidence limits, and the central value.",
+            "description": "Parameters to control the calculation of ensemble statistics.",
             "type": "object",
             "required": [
-                "upperPercentile",
-                "centralPercentile",
-                "lowerPercentile"
+                "percentiles",
+                "method"
             ],
             "additionalProperties": false,
             "properties": {
-                "upperPercentile": {
-                    "type": "integer",
-                    "exclusiveMinimum": 0,
-                    "exclusiveMaximum": 100
+                "percentiles": {
+                    "description": "Specify the percentiles [0-100] calculated from the ensemble. We allow any number of values. Values of 0 and 100 indicate the maximum / minimum values in the ensemble.",
+                    "type": "array",
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "items": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    }
                 },
-                "centralPercentile": {
-                    "type": "integer",
-                    "exclusiveMinimum": 0,
-                    "exclusiveMaximum": 100
-                },
-                "lowerPercentile": {
-                    "type": "integer",
-                    "exclusiveMinimum": 0,
-                    "exclusiveMaximum": 100
+                "method": {
+                    "description": "Specifies the interpolation method to use when the desired quantile lies between two data points. Default value is 'linear'. String is supplied to the `method` argument of `xarray.dataset.quantile()` - see the documentation there for details.",                    
+                    "type": "string",
+                    "enum": [
+                        "inverted_cdf",
+                        "averaged_inverted_cdf",
+                        "closest_observation",
+                        "interpolated_inverted_cdf",
+                        "hazen",
+                        "weibull",
+                        "linear",
+                        "median_unbiased",
+                        "normal_unbiased",
+                        "lower",
+                        "higher",
+                        "midpoint",
+                        "nearest"
+                    ]
                 }
             }
         },

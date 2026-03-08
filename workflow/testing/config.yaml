@@ -44,9 +44,8 @@ cutouts:
     ymin: 4
     ymax: 12
 ensembles:
-    upperPercentile: 90
-    centralPercentile: 50
-    lowerPercentile: 10
+    percentiles: [10,50,90]
+    method: "linear"
 outputGrid:
     templateType: 'cdo'
     gridName: 'Ghana025'

@@ -15,7 +15,7 @@ inFiles=wf['ensstats'][outFile[0]]
 import xarray as xr
 import numpy as np
 
-def generateEnsstats(outFile, inFiles, upperPercentile,centralPercentile,lowerPercentile ):
+def generateEnsstats(outFile, inFiles, percentiles,method):
     # Setup the ensemble
     # Given that all input files have been regridded onto a common grid,
     # they can then be concatenated into a single object. There are
@@ -54,9 +54,9 @@ def generateEnsstats(outFile, inFiles, upperPercentile,centralPercentile,lowerPe
     ensMin=renameEnsStats(ensMin,"min")
 
     #Calculate the percentiles and transpose to a more friendly order
-    ptileList=sorted([upperPercentile,centralPercentile,lowerPercentile])
+    ptileList=sorted(percentiles)
     qtileList=[x/100 for x in ptileList]
-    ensPercs=thisEns.quantile(q=qtileList, dim='realization',keep_attrs=True)
+    ensPercs=thisEns.quantile(q=qtileList, dim='realization',method=method,keep_attrs=True)
     ensPercs=ensPercs.rename({"quantile":"percentiles"})
     ensPercs=ensPercs.assign_coords(percentiles=ptileList)
     
