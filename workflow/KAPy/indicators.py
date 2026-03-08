@@ -69,7 +69,7 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
             except ValueError:
                 raise ValueError(f"Cannot convert 'threshold' value in 'additionalArgs' to a float. 'Threshold' string value: {args['threshold']}")
             #Do count
-            comp = xc.indices.generic.compare(left=da,
+            comp = xc.indices.generic.compare(left=d,
                                             op=args['op'],
                                             right=float(args['threshold']))
             res=comp.groupby("time.year").sum().mean(dim="year")
