@@ -208,12 +208,12 @@ rule _08_arealstats:
 # # These are individual files that are produced, rather than a collection of files
 
 #Make the variable overview
-rule overview:
+rule OVERVIEW:
     run:
         KAPy.VariableOverview(config)
 
 #Merged csvs
-rule areal_ensstats:
+rule _09_areal_ensstats:
     input:
         WORKFLOW['mergedCSVs']['ensstats']
     output:
@@ -221,7 +221,7 @@ rule areal_ensstats:
     run:
         KAPy.mergeCSVs(outFile=output,inFiles=input)
 
-rule areal_members:
+rule _09_areal_members:
     input:
         WORKFLOW['mergedCSVs']['members']
     output:
@@ -230,10 +230,10 @@ rule areal_members:
         KAPy.mergeCSVs(outFile=output,inFiles=input)
 
 # Database 
-rule database:
+rule _09_database:
     input:
-        ensstats=rules.areal_ensstats.output,
-        members=rules.areal_members.output
+        ensstats=rules._09_areal_ensstats.output,
+        members=rules._09_areal_members.output
     output:
         os.path.join(outDirs['outputs'],config['outputs']["database"])
     run:
@@ -247,43 +247,47 @@ rule database:
 # necessary, but is a nice help for the user.
 
 #Primary variables
-rule primaryVars:
+rule PRIMARY_VARIABLES:
     input:
         [v["outputs"] for v in WORKFLOW['primary_vars'].values()]
+
 #Secondary variables  
-rule secondaryVars:
-    input:
-        [t for v in WORKFLOW['secondary_vars'].values() for t in v['outputs']]
+if "secondaryVars" in config:
+    rule SECONDARY_VARIABLES:
+        input:
+            [t for v in WORKFLOW['secondary_vars'].values() for t in v['outputs']]
 
 #Bias adjustment
-rule biasAdjustment:
-    input:
-        [v['outputs'] for v in WORKFLOW['bias_adj'].values() ]
+if "biasAdjustment" in config:
+    rule BIAS_ADJUSTMENT:
+        input:
+            [v['outputs'] for v in WORKFLOW['bias_adj'].values() ]
 
 #Tertiary variables
-rule tertiaryVars:
-    input:
-        [t for v in WORKFLOW['tertiary_vars'].values() for t in v['outputs']]
+if "tertiaryVars" in config:
+    rule TERTIARY_VARIABLES:
+        input:
+            [t for v in WORKFLOW['tertiary_vars'].values() for t in v['outputs']]
 
 #Indicator variables
-rule indicators:
+rule INDICATORS:
     input:
         [k for thisInd in WORKFLOW['indicators'].values() for k in thisInd["outputs"]]
 
 #Regridding
 if config['outputGrid']['templateType']!='none':
-    rule regrid:
+    rule REGRIDDING:
         input:
             WORKFLOW['regrid']['outputs']
 
 #Ensemble statistics
-rule ensstats:
+rule ENSEMBLE_STATISTICS:
     input:
         WORKFLOW['ensstats']['outputs']
 
 
 #Ensemble statistics
-rule arealstats:
+rule AREAL_STATISTICS:
     input:
         WORKFLOW['arealstats']['outputs']
 
@@ -292,11 +296,34 @@ rule arealstats:
 #     input:
 #         list(wf['plots'].keys())
 
+rule OUTPUTS:
+    input:
+        rules._09_areal_ensstats.output,
+        rules._09_areal_ensstats.output,
+        rules._09_database.output
+
 #All
-rule all:
+rule ALL:
     input:
         WORKFLOW['all'],
-        rules.areal_members.output,
-        rules.areal_ensstats.output,
-        rules.database.output
+        rules.OUTPUTS.input
     default_target: True
+
+
+#And finally, one target for each configuration group.
+for wf_key in WORKFLOW.keys():
+    if wf_key in ['secondary_vars',"bias_adj",'tertiary_vars','indicators']:
+        for item_key in WORKFLOW[wf_key].keys():
+            rule:
+                name: f".{item_key}"
+                input: WORKFLOW[wf_key][item_key]["outputs"]
+                    
+#Primary variables are a bit trickey, and require processing the entire dict first
+primary_var_output_groups={out['groupID'] : [] for out in WORKFLOW['primary_vars'].values()}
+for out in WORKFLOW['primary_vars'].values():
+    primary_var_output_groups[out['groupID']] += [out['outputs']]
+for item_key,outputs in primary_var_output_groups.items():
+    rule:
+        name: f".{item_key}"
+        input: outputs
+
