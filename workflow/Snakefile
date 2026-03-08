@@ -53,13 +53,14 @@ rule _01_primaryVar:
     output:
         os.path.join(outDirs['primaryVariables'],"{leaf}")
     params:
-        inpID=lambda wc: WORKFLOW['primary_vars'][wc.leaf]["groupID"]
+        row_arguments=lambda wc: config['inputs'][WORKFLOW['primary_vars'][wc.leaf]["groupID"]],
+        cutoutArgs=config['cutouts']
     run:
         KAPy.buildPrimVar(
             outFile=output,
             inFiles=input,
-            cutoutArgs=config['cutouts'],
-            **config['inputs'][params.inpID]
+            cutoutArgs=params.cutoutArgs,
+            **params.row_arguments
         )                          
 
 # Secondary variables 
@@ -70,10 +71,9 @@ for thisID, thisRow in WORKFLOW['secondary_vars'].items():
         name: f"_02_secondaryVar_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
-        params: groupID=thisID
+        params: **config['secondaryVars'][thisID]
         run:
-            SV=KAPy.buildDerivedVar(inFiles=dict(input),
-                                    **config['secondaryVars'][params.groupID])
+            SV=KAPy.buildDerivedVar(inFiles=dict(input),**params)
             KAPy.write_variables(SV,dict(output))
 
 # Bias Adjustment 
@@ -82,13 +82,14 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
         name: f"_03_biasAdjustment_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw['input_dict'][wc.leaf])
         output: **thisRow['output_rule']
-        params: groupID=thisID
+        params: 
+            **config['biasAdjustment'][thisID],
+            tempDir=config['dirs']['tempDir'],
         run:
             KAPy.biasAdjust(outFile=output,
                         histsimFile=input.histsim,
                         refFile=input.ref,
-                        tempDir=config['dirs']['tempDir'],
-                        **config['biasAdjustment'][params.groupID])
+                        **params)
 
 # Tertiary variables 
 # "Tertiary variables" are calculated as new variables derived from variables created
@@ -99,10 +100,9 @@ for thisID, thisRow in WORKFLOW['tertiary_vars'].items():
         name: f"_04_tertiaryVar_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
-        params: groupID=thisID
+        params: **config['tertiaryVars'][thisID]
         run:
-            TV=KAPy.buildDerivedVar(inFiles=dict(input),
-                                    **config['tertiaryVars'][params.groupID])
+            TV=KAPy.buildDerivedVar(inFiles=dict(input),**params)
             KAPy.write_variables(TV,dict(output))
 
 # Indicators 
@@ -113,13 +113,13 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
         name: f"_05_indicator_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
-        params: groupID=thisID
+        params: 
+            seasonsTable=config['seasons'],
+            periodsTable=config['periods'],
+            **config['indicators'][thisID]
         run:
             inds=KAPy.calculateIndicators(outFile=output,
-                                    inFiles=dict(input),
-                                    seasonsTable=config['seasons'],
-                                    periodsTable=config['periods'],
-                                    **config['indicators'][params.groupID])
+                inFiles=dict(input),**params)
             KAPy.write_indicators(inds,dict(output))
 
 # Regridding  
@@ -131,14 +131,15 @@ rule _06_regrid:
         unpack(lambda wc: WORKFLOW['regrid']["input_dict"][os.path.join(outDirs['regridded'],wc.outfile)])
     output:
         os.path.join(outDirs['regridded'],"{outfile}")
+    params:
+        tempDir=config['dirs']['tempDir'],
+        templateType=config["outputGrid"]["templateType"],
+        path=config["outputGrid"]["path"],
+        method=config['outputGrid']['method']
     run:
         KAPy.regrid(outFile=output,
                     inFile=input,
-                    tempDir=config['dirs']['tempDir'],
-                    templateType=config["outputGrid"]["templateType"],
-                    path=config["outputGrid"]["path"],
-                    method=config['outputGrid']['method'])
-
+                    **params)
 
 # Enssemble Statistics 
 # Now we can combine them into ensembles
@@ -147,12 +148,12 @@ rule _07_ensstats:
         unpack(lambda wc: WORKFLOW['ensstats']["input_dict"][os.path.join(outDirs['ensstats'],wc.es)])
     output:
         os.path.join(outDirs['ensstats'],"{es}")
+    params:
+        **config['ensembles']
     run:
         KAPy.generateEnsstats(outFile=output,
                               inFiles=input,
-                              upperPercentile=config['ensembles']['upperPercentile'],
-                              centralPercentile=config['ensembles']['centralPercentile'],
-                              lowerPercentile=config['ensembles']['lowerPercentile'])
+                              **params)
 
 #Areal statistics
 #Areal statistics are calculated for both the enssemble statistics and individual members
@@ -165,12 +166,14 @@ rule _08_arealstats:
         shapefile=lambda wildcards: config['arealstats']['shapefile'] if config['arealstats']['shapefile'] is not None else []
     output:
         os.path.join(outDirs['arealstats'],'{fname}')
+    params:
+        tempDir=config['dirs']['tempDir'],
+        shapefile=config['arealstats']['shapefile'],
+        useAreaWeighting=config['arealstats']['useAreaWeighting']
     run:
         KAPy.generateArealstats(outFile=output,
                                 inFile=input.inputFile,
-                                tempDir=config['dirs']['tempDir'],
-                                shapefile=config['arealstats']['shapefile'],
-                                useAreaWeighting=config['arealstats']['useAreaWeighting'])
+                                **params)
 
 # #Plots        
 # rule _09_lineplots:
