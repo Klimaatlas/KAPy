@@ -587,7 +587,6 @@ def getWorkflow(config):
     # all targets in the workflow
     allList = []
     for k, v in rtn.items():
-        print(k)
         if k in ["primary_vars"]:  # Skip this
             allList += [v["outputs"] for v in pvDict.values()]
         elif k in ["secondary_vars",
