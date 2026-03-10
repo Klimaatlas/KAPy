@@ -587,6 +587,7 @@ def getWorkflow(config):
     # all targets in the workflow
     allList = []
     for k, v in rtn.items():
+        print(k)
         if k in ["primary_vars"]:  # Skip this
             allList += [v["outputs"] for v in pvDict.values()]
         elif k in ["secondary_vars",
@@ -597,6 +598,9 @@ def getWorkflow(config):
                 allList += x["outputs"]
         elif k in ["mergedCSVs"]:  # Skip this
             continue
+        elif k in ["regrid"]:  # Skip if we're not regridding
+            if doRegridding:
+                allList += v["outputs"]
         else:
             allList += v["outputs"]
     rtn["all"] = allList
