@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import glob
+from pathlib import Path
 
 """
 #Setup for debugging
@@ -27,14 +28,53 @@ def getWorkflow(config):
     # work with
     pvDict = {}
     for thisKey, thisInp in config["inputs"].items():
-        # Get file list
-        inpTbl = pd.DataFrame(sorted(glob.glob(thisInp["path"])), columns=["inPath"])
-        inpTbl['inFname']=[os.path.basename(p) for p in inpTbl['inPath']]
-        #First, handle case where we don't find any files. We could ignore it,
+        # Input files can be specified in four different ways
+        # We handle all of these cases to extract a list of files that we want.
+
+        # Case 1. Glob - a glob is characterised by the presence of certain symbols in the string
+        if any(c in thisInp['path'] for c in "*?[]" ):
+            filelist=sorted(glob.glob(thisInp["path"]))
+        # Then we we are dealing with a single file. First check that it exists
+        else:
+            input_path=Path(thisInp['path'])
+            if not input_path.exists():
+                raise FileNotFoundError(f"Cannot find input file '{input_path}'")
+            # Case 2. Direct reference to a single NetCDF - we detect this and
+            # can use it directly
+            if  b"\x00" in open(thisInp['path'], "rb").read(1024):
+                filelist=[input_path]
+            # Assert that file must therefore be a text file
+            # Case 3. Direct reference to an .md5 file, in the form of output from md5sum,
+            # where the file path is in the second column
+            elif input_path.suffix.lower() in [".md5"]:
+                filelist=pd.read_csv(input_path,names=["md5","path"],
+                                       header=None,
+                                       sep=r"\s+",
+                                       index_col=None)
+                filelist=filelist["path"].tolist()
+            #Case 4. Just read the file line-by-line
+            else:
+                with open(input_path) as f:
+                    filelist=f.read().splitlines()
+
+        #Handle case where we don't find any files. We could ignore it,
         # but it's best to throw an error
-        if len(inpTbl)==0:
+        if len(filelist)==0:
             raise FileNotFoundError(f'No files found for input path "{thisInp["path"]}"')
-        
+
+        # Setup import table and check that all of the files actually exist. This is not so important for a single NetCDF
+        #but essential when we are supplying the filelist
+        inpTbl = pd.DataFrame(filelist, columns=["inPath"])
+        inpTbl['inFname']=[os.path.basename(p) for p in inpTbl['inPath']]
+        inpTbl['exists']=[os.path.exists(f) for f in filelist]
+        if not all(inpTbl['exists']):
+            missing=inpTbl[~inpTbl['exists']]
+            msg = (
+                f"{len(missing)} required files are missing:\n"
+                + "\n".join(f"  - {f}" for f in missing['inPath'])
+            )            
+            raise FileNotFoundError(msg)
+
         # If we only get one file, then there's not really much to do - that file
         # is the only member of the ensemble and we use it more or less directly
         # Handle that case first.

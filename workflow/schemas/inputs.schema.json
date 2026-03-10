@@ -52,7 +52,7 @@
     },
     "path": {
       "type": "string",
-      "description": "Path to input files, relative to the working directory. Glob-matching (e.g. `./resources/CORDEX/tas_*`) can be used when the input covers multiple files and/or there are multiple variable types in the same directory."
+      "description": "Specification of the input files. Four cases are considered. 1. A string describing  a path using glob-matching (e.g. `./resources/CORDEX/tas_*`) can be used to specify multiples files. 2. A path to a single netcdf file. 3. A path to a text file containing a list of input files, one file per line. 4. A path to a text file containing outputs from the md5sum command in unix, consisting of an md5 checksum followed by the file path, one file per line. Note that all paths need to be specified either relative to the working directory, or as absolute paths in the filesystem. See also the tutorials for more information and examples on how this can work, and a discussion of the merits of each approach."
     },
     "internalVarName": {
       "type": "string",
