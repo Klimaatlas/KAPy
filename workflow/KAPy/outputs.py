@@ -187,7 +187,10 @@ def write_indicators(obj:  xr.Dataset | dict,
         # Expect exactly one key in path
         if len(path) != 1:
             raise ValueError("Expected exactly one path for a single dataset")
-        obj.to_netcdf(next(iter(path.values())))
+        if isinstance(path,dict):
+            path=list(path.values())
+        print(path)
+        obj.to_netcdf(path[0])
     
     elif isinstance(obj, dict):
         for ind in path.keys():

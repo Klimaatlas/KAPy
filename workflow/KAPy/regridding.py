@@ -1,3 +1,11 @@
+import xarray as xr
+from cdo import Cdo 
+import numpy as np
+import scipy as sp
+import xesmf as xe
+from . import helpers
+
+
 """
 #Setup for debugging with a Jupyterlab console
 import os
@@ -8,36 +16,38 @@ import KAPy
 os.chdir("../..")
 config=KAPy.getConfig("./config/config.yaml")  
 wf=KAPy.getWorkflow(config)
-outFile=[list(wf['regridded'].keys())[0]]
-inFile=wf['regridded'][outFile[0]]
+outFile=[list(wf['regrid']['input_dict'].keys())[0]]
+input_path=[wf['regrid']['input_dict'][outFile[0]]['input_path']]
+templateType=config['outputGrid']['templateType']
+path=config['outputGrid']['path']
+method=config['outputGrid']['method']
+tempDir=config['dirs']['tempDir']
 %matplotlib inline
 """
 
-import xarray as xr
-from cdo import Cdo 
-import numpy as np
-import scipy as sp
-import xesmf as xe
-from . import helpers
 
-def regrid(outFile, inFile, templateType,path,method,tempDir):
+def regrid(input_path, templateType,path,method,tempDir):
     # Check regridding approach is valid
     if not templateType in ["file","cdo"]:
         raise ValueError("Regridding options are currently limited to `file` or `cdo`. See documentation")
 
     # Setup input files
     # ------------------
-    # Note that as this is an indicator file, we open it as a dataset
+    # Note that as this is an indicator file, we open it as a dataset and load it
+    # directly into RAM - no need for chunking here.
+    # Explicitly tell xarray not to think about time here, for indicators that
+    # give the units as number of days
     time_coder=xr.coders.CFDatetimeCoder(use_cftime=True)
-    thisDat = xr.open_dataset(inFile[0],
-                              decode_times=time_coder)
+    thisDat = xr.open_dataset(input_path[0],
+                              decode_times=time_coder,
+                              decode_timedelta=False)
     # Identify time coordinate
     if 'time' in thisDat.dims:
         tCoord='time'
     elif 'periodID' in thisDat.dims:
         tCoord='periodID'
     else:
-        raise ValueError(f'Cannot find time or periodID coordinate in "{inFile[0]}".')
+        raise ValueError(f'Cannot find time or periodID coordinate in "{input_path[0]}".')
     
     # Fill in the NaNs before regridding, to avoid bleeding from the surroundings
     # This is a bit work - we use scipy's griddata routine for regridding
@@ -88,5 +98,5 @@ def regrid(outFile, inFile, templateType,path,method,tempDir):
     #Mask output
     out=regrdded.where(~ np.isnan(refGrd),np.nan)
 
-    #Write output
-    out.to_netcdf(outFile[0])
+    #Done
+    return out

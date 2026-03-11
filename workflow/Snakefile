@@ -130,16 +130,16 @@ rule _06_regrid:
     input:
         unpack(lambda wc: WORKFLOW['regrid']["input_dict"][os.path.join(outDirs['regridded'],wc.outfile)])
     output:
-        os.path.join(outDirs['regridded'],"{outfile}")
+        output=os.path.join(outDirs['regridded'],"{outfile}")
     params:
         tempDir=config['dirs']['tempDir'],
         templateType=config["outputGrid"]["templateType"],
         path=config["outputGrid"]["path"],
         method=config['outputGrid']['method']
     run:
-        KAPy.regrid(outFile=output,
-                    inFile=input,
+        rgd=KAPy.regrid(input_path=input,
                     **params)
+        KAPy.write_indicators(rgd,output)
 
 # Enssemble Statistics 
 # Now we can combine them into ensembles
