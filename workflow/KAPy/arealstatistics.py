@@ -29,7 +29,8 @@ def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile):
     # multiple data variables in them
     time_coder=xr.coders.CFDatetimeCoder(use_cftime=True)
     thisDat = xr.open_dataset(inFile[0],
-                              decode_times=time_coder)
+                              decode_times=time_coder,
+                              decode_timedelta=False)
 
     #Identify the time / period coordinate first
     if 'time' in thisDat.dims:

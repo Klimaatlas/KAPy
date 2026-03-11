@@ -30,7 +30,8 @@ def generateEnsstats(outFile, inFiles, percentiles,method):
                                 concat_dim="realization", 
                                 combine="nested",
                                 coords="all",
-                                decode_times=time_coder)
+                                decode_times=time_coder,
+                                decode_timedelta=False)
     thisEns=thisEns.compute()
 
     #Function to rename ensemble statistics once generated
