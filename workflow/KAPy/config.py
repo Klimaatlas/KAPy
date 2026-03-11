@@ -109,8 +109,11 @@ def validateConfig(config):
                               dtype='str',
                               keep_default_na=False)
         #Drop rows that are disabled
-        enabledRows=thisTbl['enabled']!=""
-        thisTbl=thisTbl[enabledRows]
+        if ('enabled' not in thisTbl) & (thisTblKey != "indicators"):
+            raise ValueError(f"Cannot find column 'enabled' in {thisTblKey}' configuration table.")
+        else:
+            enabledRows=thisTbl['enabled']!=""
+            thisTbl=thisTbl[enabledRows]
         # Require a non-zero length
         if len(thisTbl)==0:
             raise ValueError(f"'{thisTblKey}' configuration table at {thisCfgFile} is empty or all rows are disabled.")
@@ -140,6 +143,12 @@ def validateConfig(config):
         # Indicators gets special treatment, where the indicator_codes column is used to make an id
         if thisTblKey=="indicators":
             thisTbl['id']=["+".join(rw['indicator_codes']) for idx,rw in thisTbl.iterrows()]
+
+        #id Column needs to be unique
+        duplicated_ids=thisTbl.loc[thisTbl['id'].duplicated(), "id"].unique()
+        if len(duplicated_ids) > 0:
+            raise ValueError(f"Duplicate ids values found in '{thisTblKey}' table: {list(duplicated_ids)}")        
+
         # Force id column to be a string. Set to as the index so it can be used as the key
         thisTbl["id"] = [str(x) for x in thisTbl["id"]]
         thisTbl = thisTbl.set_index("id", drop=False)
