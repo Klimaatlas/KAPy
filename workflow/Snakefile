@@ -86,10 +86,10 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
             **config['biasAdjustment'][thisID],
             tempDir=config['dirs']['tempDir'],
         run:
-            KAPy.biasAdjust(outFile=output,
-                        target_file=input.target,
-                        reference_file=input.ref,
-                        **params)
+            BA=KAPy.biasAdjust(target_file=input.target,
+                                reference_file=input.ref,
+                                **params)
+            KAPy.write_variables(BA,dict(output))
 
 # Tertiary variables 
 # "Tertiary variables" are calculated as new variables derived from variables created

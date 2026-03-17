@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 """
 
 
-def biasAdjust(outFile,target_file,reference_file,tempDir,outputGrid,trainPeriodStart,trainPeriodEnd,baVariable,method,grouping,
+def biasAdjust(target_file,reference_file,tempDir,outputGrid,trainPeriodStart,trainPeriodEnd,baVariable,method,grouping,
               additionalArgs,customScriptPath,customScriptFunction,**kwargs):
     # We choose to use a simplified typology here, where we have a target dataset that needs to be
     # be bias-adjusted to match the climatology of the reference dataset. In the Xclim typology,
@@ -222,9 +222,4 @@ def biasAdjust(outFile,target_file,reference_file,tempDir,outputGrid,trainPeriod
     #Finishing touches
     out2 = out.assign_attrs({"biasAdjustment_args": json.dumps(calCfg)})
 
-    #Now write, setting the chunk sizes and compression
-    chunkThisWay=[min([256,16,16][i],out2.shape[i]) for i in range(0,3)]
-    out2.to_netcdf(outFile[0],
-                encoding={baVariable:{'chunksizes':chunkThisWay,
-                            'zlib': True,
-                            'complevel':1}})
+    return out2
