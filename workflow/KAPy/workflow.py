@@ -289,25 +289,35 @@ def getWorkflow(config):
                     )
             except ValueError as e:
                 print("Error:", e)
+            
+            # The output grid is configurable and plays into the file name
+            if thisBA['outputGrid']=="reference":
+                BAtbl['outfile'] =f"{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_{refDict['grid']}_"+BAtbl["expt"]+"_"+BAtbl["stem"]+".nc"
+            elif thisBA['outputGrid']=="target":
+                BAtbl['outfile'] =f"{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_"+BAtbl['grid']+"_"+BAtbl["expt"]+"_"+BAtbl["stem"]+".nc"
+            else:
+                raise ValueError(f"Unknown output grid option, '{thisBA['outputGrid']}' supplied in bias adjustment row: '{thisKey}' ")
 
             # We've therefore identified what needs to be done. Here we follow the approach
             # used above for building up lookup dicts, even though its not strictly needed
             # as bias-adjustment is a 1(+1):1 mapping. 
             # The lookup id is also only based on the experiment and the stem, as everything else is determined
             # by the groupID - in particular the change of grid upon bias-adjustment causes issues with 
-            # file naming. There ispotential for problems here that we need to live with. 
+            # file naming. There is potential for problems here that we need to live with. 
             BAtbl['id'] =BAtbl["expt"]+"_"+BAtbl["stem"]
-            BAtbl['outfile'] =f"{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_{refDict['grid']}_"+BAtbl["expt"]+"_"+BAtbl["stem"]+".nc"
+            #Just use the output filename instead as id...
+            BAtbl['id']= BAtbl['outfile']
 
             #Setup dict
             inp_dict={}
             for idx,rw in BAtbl.iterrows():
-                inp_dict[rw['id']] = {'histsim':rw['path'],
+                inp_dict[rw['id']] = {'target':rw['path'],
                                       "ref": refDict['path']}
             out_rule= {thisBA['baVariable']: os.path.join(outDirs['biasAdjustment'],
                                         thisBA["outDatasetCode"],
                                         thisBA['baVariable'],
-                                        f"{thisBA["outDatasetCode"]}_{thisBA['baVariable']}_{refDict['grid']}_{{leaf}}.nc") 
+                                        f"{{leaf}}") 
+                                        #f"{thisBA["outDatasetCode"]}_{thisBA['baVariable']}_{{leaf}}.nc") 
                         }
             this_BA_dict={"input_dict": inp_dict,
                         "output_rule":out_rule,

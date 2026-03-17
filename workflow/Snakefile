@@ -87,8 +87,8 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
             tempDir=config['dirs']['tempDir'],
         run:
             KAPy.biasAdjust(outFile=output,
-                        histsimFile=input.histsim,
-                        refFile=input.ref,
+                        target_file=input.target,
+                        reference_file=input.ref,
                         **params)
 
 # Tertiary variables 

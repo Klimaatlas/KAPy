@@ -10,6 +10,7 @@
     "baVariable",
     "targetDataset",
     "refDataset",
+    "outputGrid",
     "trainPeriodStart",
     "trainPeriodEnd",
     "method",
@@ -41,6 +42,14 @@
     "refDataset": {
       "type": "string",
       "description": "The dataset that will be used as the reference  data source to bias-adjust against, such as `ERA5`. Most commonly this will be an observational data set, a reanalysis or similar but it need not be. However, the combination of climate variable and dataset code should uniquely identify a single file within the variable palette of KAPy - if not, an error will be raised."
+    },
+    "outputGrid": {
+      "type": "string",
+      "description": "Chooses the grid that the output of bias adjustment procedure ends on. Arguments can be made that the target dataset should be adjusted to the grid of the reference data (`reference`), or conversely, that the reference dataset should be adjusted onto the grid of the target dataset (`target`). In cases where there is a substantial difference in resolutions between the grids, this decision can potentially lead to the loss by omitting points from the higher resolution grid: however, this may also be desirable in some cases. Given that the appropriate choice will depend on the specifics of the system, this choice is therefore left to the user, as configured by this option. ",
+      "enum": [
+        "reference",
+        "target"
+    ]
     },
     "trainPeriodStart": {
       "type": "string",

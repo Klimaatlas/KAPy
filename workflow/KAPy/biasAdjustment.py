@@ -1,21 +1,3 @@
-"""
-#Setup for debugging with VS code
-import os
-print(os.getcwd())
-os.chdir("KAPy/workflow")
-import KAPy
-import KAPy.helpers as helpers
-os.chdir("../..")
-config=KAPy.getConfig("./config/config.yaml")  
-wf=KAPy.getWorkflow(config)
-thisCal='tas-ba'
-outFile=list(wf['baVars'][thisCal])[0]
-histsimFile=wf['baVars'][thisCal][outFile]['histsim']
-refFile=wf['baVars'][thisCal][outFile]['ref']
-import matplotlib.pyplot as plt
-%matplotlib inline
-"""
-
 import xarray as xr
 import tempfile
 import xesmf as xe
@@ -23,33 +5,73 @@ import json
 from . import helpers
 #from dask.distributed import Client
 
-def biasAdjust(outFile,histsimFile,refFile,tempDir,trainPeriodStart,trainPeriodEnd,baVariable,method,grouping,
+
+"""
+#Setup for debugging 
+import os
+print(os.getcwd())
+os.chdir("KAPy/workflow")
+import KAPy
+import KAPy.helpers as helpers
+os.chdir("../..")
+config=KAPy.getConfig("./config/config.yaml")  
+config=KAPy.getConfig("./workflow/testing/config.yaml")
+wf=KAPy.getWorkflow(config)
+thisCal='tas-ba'
+outFile=list(wf['bias_adj'][thisCal]['input_dict'].keys())[0]
+target_file=   wf['bias_adj'][thisCal]['input_dict'][outFile]['target']
+reference_file=wf['bias_adj'][thisCal]['input_dict'][outFile]['ref']
+tempDir=config['dirs']['tempDir']
+outputGrid=config['biasAdjustment'][thisCal]['outputGrid']
+trainPeriodStart=config['biasAdjustment'][thisCal]['trainPeriodStart']
+trainPeriodEnd=config['biasAdjustment'][thisCal]['trainPeriodEnd']
+baVariable=config['biasAdjustment'][thisCal]['baVariable']
+method=config['biasAdjustment'][thisCal]['method']
+grouping=config['biasAdjustment'][thisCal]['grouping']
+additionalArgs=config['biasAdjustment'][thisCal]['additionalArgs']
+import matplotlib.pyplot as plt
+%matplotlib inline
+"""
+
+
+def biasAdjust(outFile,target_file,reference_file,tempDir,outputGrid,trainPeriodStart,trainPeriodEnd,baVariable,method,grouping,
               additionalArgs,customScriptPath,customScriptFunction,**kwargs):
-    # We choose to follow here the Xclim typology of ref / hist / sim, with the
-    # assumption that the hist and sim part are contained in the same file ("histsim)")
+    # We choose to use a simplified typology here, where we have a target dataset that needs to be
+    # be bias-adjusted to match the climatology of the reference dataset. In the Xclim typology,
+    # "target" corresponds to "hist" and "sim" in one file. "ref" remains the same.
     # The general strategy employed is as follows:
-    # * Regrid histsim onto the reference grid
-    # * Merge histsim and ref into one dataset object. This requires a degree of
+    # * Regrid so that everything is on the same (user defined)
+    # * Merge target and ref into one dataset object. This requires a degree of
     #   massaging of the time units to make sure everything is comparable
-    # * Apply the bias-correction function to chunks of the combined dataset using dask
+    # * Apply the bias-adjustment function to chunks of the combined dataset using dask
 
     #Setup ------------------------
-    histsim=helpers.readFile(histsimFile)
-    refds=helpers.readFile(refFile,chunks={'time':-1})
+    target=helpers.readFile(target_file)
+    reference=helpers.readFile(reference_file)
  #   client=Client()
   #  print(client.dashboard_link)
     
     # Regrid to common spatial grids ------------------
-    # Regrid histsim using nearest neighbour interpolation to the refFile grid. 
+    # Regrid target using nearest neighbour interpolation to the appropriate grid. 
     # We have tried several iterations of this based on CDO, but CDO unfortunately doesn't
-    # respect the chunking of the histsim file. xESMF is currently our tool of choice
+    # respect the chunking of the target file. xESMF is currently our tool of choice
     # due to its ability to work ok with dask.
+    # The output grid is configurable set choices accordingly
+    if outputGrid=="reference":
+        from_this_grid=target
+        to_this_grid=reference
+    elif outputGrid=="target":
+        from_this_grid=reference
+        to_this_grid=target
+    else:
+        raise ValueError(f"Unknown output grid option, '{outputGrid}' supplied to  biasAdjust function.")
     # Start by getting the regridding weights
     regrdWtsFname=tempfile.NamedTemporaryFile(dir=tempDir,
                                                 delete=False,
                                                 prefix="regrdWts_",
                                                 suffix=".nc").name
-    regrdr=xe.Regridder(histsim,refds,
+    regrdr=xe.Regridder(ds_in=from_this_grid,
+                        ds_out=to_this_grid,
                        method="nearest_s2d",
                        filename=regrdWtsFname,
                        unmapped_to_nan=True)
@@ -59,45 +81,51 @@ def biasAdjust(outFile,histsimFile,refFile,tempDir,trainPeriodStart,trainPeriodE
     # steps of the bias adjustment, which require that we have the full timeseries in memory.
     # We therefore choose to write the regridding data to disk at this point with a 
     # chunking pattern that is amenable to further work downstrem. 
-    rechunkSpace={d: -1 for d in histsim.dims if d!='time'}
-    histsimRechunked=histsim.chunk(rechunkSpace)
-    regrdFname=tempfile.NamedTemporaryFile(dir=tempDir,
+    spatial_chunks={d: -1 for d in from_this_grid.dims if d!='time'}
+    rechunked=from_this_grid.chunk(spatial_chunks)
+    regridded_filename=tempfile.NamedTemporaryFile(dir=tempDir,
                                                 delete=False,
-                                                prefix="histsimNN_",
+                                                prefix="regridded_",
                                                 suffix=".nc").name
-    histsimNN=regrdr(histsimRechunked,output_chunks=(-1,-1),keep_attrs=True)
-    chunkThisWay=[min([256,16,16][i],histsimNN.shape[i]) for i in range(0,3)]
-    histsimNN.to_netcdf(regrdFname,
-              encoding={histsimNN.name:{'chunksizes':chunkThisWay}})
+    regridded=regrdr(rechunked,output_chunks=(-1,-1),keep_attrs=True)
+    chunkThisWay=[min([256,16,16][i],regridded.shape[i]) for i in range(0,3)]
+    regridded.to_netcdf(regridded_filename,
+              encoding={regridded.name:{'chunksizes':chunkThisWay}})
 
-    #Now reopen histsimNN with a time-oriented chunking
-    histsimNN=helpers.readFile(regrdFname,chunks={'time':-1}).unify_chunks()
+    #Now reopen with a time-oriented chunking - one file will be the source 
+    #file, the other will be the regridded file.
+    if outputGrid=="reference":
+        target=helpers.readFile(regridded_filename,chunks={'time':-1}).unify_chunks()
+        reference=helpers.readFile(reference_file,chunks={'time':-1}).unify_chunks()
+    elif outputGrid=="target":
+        target=helpers.readFile(target_file,chunks={'time':-1}).unify_chunks()
+        reference=helpers.readFile(regridded_filename,chunks={'time':-1}).unify_chunks()
 
     # Prepare combined dataset ------------------------------
-    # From a bias-correction perspective, the only part of the reference dataset that
+    # From a bias-adjustment perspective, the only part of the reference dataset that
     # is interesting is the common period data - there could be a whole lot more
     # that we otherwise don't use. We therefore drop the uninteresting parts
-    refdsTP=helpers.timeslice(refds,trainPeriodStart,trainPeriodEnd)
+    reference_common=helpers.timeslice(reference,trainPeriodStart,trainPeriodEnd)
     # Merge into one dataset object, with common spatial dimensions but
     # differentiated time dimensions. Note the need to unify the chunking
-    refdsTPtime=refdsTP.rename({"time": "reftime"})
-    combDS2=xr.Dataset({'histsim':histsimNN.unify_chunks(),
-                        'ref':refdsTPtime.unify_chunks()})
+    reference_common=reference_common.rename({"time": "reftime"})
+    combDS2=xr.Dataset({'target':target.unify_chunks(),
+                        'ref':reference_common.unify_chunks()})
     combDS=combDS2.unify_chunks()
 
     #Parallelised bias adjustment functions ------------------------------
     def biasAdjustThisChunk(chnk,trainPeriodStart,trainPeriodEnd,
                            method,additionalArgs,grouping):
         #Debug
-        # hs=combDS.histsim.data.blocks[0,0,0].compute()
-        # rf=combDS.ref.data.blocks[0,0,0].compute()
+        # tg=combDS.target.data.blocks[0,0,0]
+        # rfTP=combDS.ref.data.blocks[0,0,0]
         #Extract the data from the input block
-        hs=chnk.histsim
+        tg=chnk.target
         rfTP=chnk.ref
 
         #Truncate time slice to the common training period (TP). 
         #Adjust the naming of the reference time
-        hsTP=helpers.timeslice(hs,trainPeriodStart,trainPeriodEnd)
+        tgTP=helpers.timeslice(tg,trainPeriodStart,trainPeriodEnd)
         rfTP=rfTP.rename({"reftime": "time"})
 
         #Match calendars between reference data and simulations
@@ -106,12 +134,12 @@ def biasAdjust(outFile,histsimFile,refFile,tempDir,trainPeriodStart,trainPeriodE
         #under the assumption that we are primarily going to be working with daily data.
         #See here for details:
         #https://docs.xarray.dev/en/stable/generated/xarray.Dataset.convert_calendar.html
-        hsTP=hsTP.convert_calendar(rfTP.time.dt.calendar,
+        tgTP=tgTP.convert_calendar(rfTP.time.dt.calendar,
                                     use_cftime=True,
                                     align_on="year")  
         
         #We interpolate time to be on a common time axis
-        hsTP=hsTP.interp(time=rfTP.time,method="nearest")
+        tgTP=tgTP.interp(time=rfTP.time,method="nearest")
         
         #Setup mapping to methods and grouping
         cmethodsAdj={"cmethods-linear":'linear_scaling',
@@ -130,9 +158,9 @@ def biasAdjust(outFile,histsimFile,refFile,tempDir,trainPeriodStart,trainPeriodE
             from cmethods import adjust        #Use the adjust function from python cmethods
             res=adjust(method=cmethodsAdj[calCfg['method']],
                         obs=refDatTP,
-                        histsimNNTP=histsimNNTP.compute(),
-                        simh=histsimNNTP,
-                        simp=histsimNN,
+                        targetNNTP=targetNNTP.compute(),
+                        simh=targetNNTP,
+                        simp=targetNN,
                         group="time."+calCfg['grouping'],
                         **calCfg['additionalArgs'])
 
@@ -145,28 +173,28 @@ def biasAdjust(outFile,histsimFile,refFile,tempDir,trainPeriodStart,trainPeriodE
             #Empirical quantile mapping -----------------------------
             from xsdba.adjustment import EmpiricalQuantileMapping
             EQM = EmpiricalQuantileMapping.train(rfTP, 
-                                                    hsTP, 
+                                                    tgTP, 
                                                     group=groupThisWay,
                                                     **additionalArgs)
-            res = EQM.adjust(hs, extrapolation="constant", interp="nearest")
+            res = EQM.adjust(tg, extrapolation="constant", interp="nearest")
 
         elif method=="xclim-dqm":
             #Detrended quantile mapping -----------------------------
             from xsdba.adjustment import DetrendedQuantileMapping
             DQM = DetrendedQuantileMapping.train(rfTP, 
-                                                    hsTP, 
+                                                    tgTP, 
                                                     group=groupThisWay,
                                                     **additionalArgs)
-            res = DQM.adjust(hs, extrapolation="constant", interp="nearest")
+            res = DQM.adjust(tg, extrapolation="constant", interp="nearest")
 
         elif method=="xclim-scaling":
             #Xclim - Scaling--------------------------------
             from xsdba.adjustment import Scaling
             this = Scaling.train(rfTP, 
-                                    hsTP,
+                                    tgTP,
                                     group=groupThisWay,
                                     **additionalArgs)
-            res = this.adjust(hs, interp="nearest")
+            res = this.adjust(tg, interp="nearest")
 
         elif method=="custom":
             raise ValueError('"custom" bias adjustment functions are currently not implemented')
@@ -189,7 +217,7 @@ def biasAdjust(outFile,histsimFile,refFile,tempDir,trainPeriodStart,trainPeriodE
     out=xr.map_blocks(func=biasAdjustThisChunk,
                         obj=combDS,
                         kwargs=calCfg,
-                        template=histsimNN)
+                        template=target)
 
     #Finishing touches
     out2 = out.assign_attrs({"biasAdjustment_args": json.dumps(calCfg)})
