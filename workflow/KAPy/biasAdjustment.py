@@ -141,35 +141,14 @@ def biasAdjust(target_file,reference_file,tempDir,outputGrid,trainPeriodStart,tr
         #We interpolate time to be on a common time axis
         tgTP=tgTP.interp(time=rfTP.time,method="nearest")
         
-        #Setup mapping to methods and grouping
-        cmethodsAdj={"cmethods-linear":'linear_scaling',
-                "cmethods-variance":'variance_scaling',
-                "cmethods-delta":"delta_method",
-                "cmethods-quantile":'quantile_mapping',
-                "cmethods-quantile-delta":'quantile_delta_mapping'}
+        #Setup mapping to grouping
         if grouping=="none":
             groupThisWay="time"
         else:
             groupThisWay="time."+grouping
         
         #Apply method
-        if method in cmethodsAdj.keys():
-            raise ValueError('"cmethods" methods are currently disabled')
-            from cmethods import adjust        #Use the adjust function from python cmethods
-            res=adjust(method=cmethodsAdj[calCfg['method']],
-                        obs=refDatTP,
-                        targetNNTP=targetNNTP.compute(),
-                        simh=targetNNTP,
-                        simp=targetNN,
-                        group="time."+calCfg['grouping'],
-                        **calCfg['additionalArgs'])
-
-        elif method=="cmethods-detrended":
-            # Distribution methods from cmethods
-            from cmethods.distribution import detrended_quantile_mapping
-            raise ValueError('"cmethods-detrended" method is currently not implemented')
-
-        elif method=="xclim-eqm":
+        if method=="xsdba-eqm":
             #Empirical quantile mapping -----------------------------
             from xsdba.adjustment import EmpiricalQuantileMapping
             EQM = EmpiricalQuantileMapping.train(rfTP, 
@@ -178,7 +157,7 @@ def biasAdjust(target_file,reference_file,tempDir,outputGrid,trainPeriodStart,tr
                                                     **additionalArgs)
             res = EQM.adjust(tg, extrapolation="constant", interp="nearest")
 
-        elif method=="xclim-dqm":
+        elif method=="xsdba-dqm":
             #Detrended quantile mapping -----------------------------
             from xsdba.adjustment import DetrendedQuantileMapping
             DQM = DetrendedQuantileMapping.train(rfTP, 
@@ -187,7 +166,7 @@ def biasAdjust(target_file,reference_file,tempDir,outputGrid,trainPeriodStart,tr
                                                     **additionalArgs)
             res = DQM.adjust(tg, extrapolation="constant", interp="nearest")
 
-        elif method=="xclim-scaling":
+        elif method=="xsdba-scaling":
             #Xclim - Scaling--------------------------------
             from xsdba.adjustment import Scaling
             this = Scaling.train(rfTP, 

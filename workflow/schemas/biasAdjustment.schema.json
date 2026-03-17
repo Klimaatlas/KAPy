@@ -1,7 +1,7 @@
 {
   "title": "KAPy bias adjustment configuration",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "description": "Bias adjustment is the process by which the outputs of a climate model are post-processed so that they match specific characteristics of the observed climate during a common period of time. In KAPy we wrap methods in two existing packages to enable bias adjustment - `python-cmethods` and `xclim`. The method employed is chosen via the `method` field, with the following valid options: \n * `xclim-scaling` - [Scaling bias-adjustment](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package.\n * `xclim-eqm` - [Empirical Quantile Mapping](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package. \n * `xclim-dqm` - [Detrended Quantile Mapping](https://xclim.readthedocs.io/en/stable/api.html#adjustment-methods) from the `xclim`package. \n  \n In addition, we plan on implementing the following methods in a future release: \n * `cmethods-linear` - [Linear Scaling](https://python-cmethods.readthedocs.io/en/latest/methods.html#linear-scaling). \n  * `cmethods-variance` - [Variance scaling](https://python-cmethods.readthedocs.io/en/latest/methods.html#variance-scaling) \n  *  `cmethods-delta`- [Delta method](https://python-cmethods.readthedocs.io/en/latest/methods.html#variance-scaling) \n  * `cmethods-quantile` - [Quantile Mapping](https://python-cmethods.readthedocs.io/en/latest/methods.html#quantile-mapping) \n * `cmethods-detrended` - [Detrended Quantile Mapping](https://python-cmethods.readthedocs.io/en/latest/methods.html#detrended-quantile-mapping) \n * `cmethods-quantile-delta` - [Quantile Delta Mapping](https://python-cmethods.readthedocs.io/en/latest/methods.html#quantile-delta-mapping) \n * `custom` - Use a custom script, as specified in the `customScriptPath` and `customScriptFunction` arguments. \n  \n  For more information, see the documentation on the relevant packages: \n * `python-cmethods` - https://python-cmethods.readthedocs.io/en/latest/index.html \n  * `xclim` https://xclim.readthedocs.io/en/stable/sdba.html",
+  "description": "Bias adjustment is the process by which the outputs of a climate model are post-processed so that they match specific characteristics of the observed climate during a common period of time. In KAPy we wrap methods in the `xsdba` package, previously part of `xclim. The method employed is chosen via the `method` field, with the following valid options: \n * `xsdba-scaling` - [Scaling bias-adjustment](https://xsdba.readthedocs.io/en/stable/apidoc/xsdba.html#xsdba.adjustment.Scaling).\n * `xsdba-eqm` - [Empirical Quantile Mapping](https://xsdba.readthedocs.io/en/stable/apidoc/xsdba.html#xsdba.adjustment.EmpiricalQuantileMapping). \n * `xsdba-dqm` - [Detrended Quantile Mapping](https://xsdba.readthedocs.io/en/stable/apidoc/xsdba.html#xsdba.adjustment.DetrendedQuantileMapping). \n  \n In addition, the ability to add custom indicator functions may be added in a future verison. \n   For more information, see the documentation in the `xsdba` package: https://xsdba.readthedocs.io/en/stable/index.html",
   "type": "object",
   "required": [
     "id",
@@ -65,9 +65,9 @@
       "type": "string",
       "description": "Bias adjustment method to be used. See above for a clarification of options.",
       "enum": [
-        "xclim-scaling",
-        "xclim-eqm",
-        "xclim-dqm"
+        "xsdba-scaling",
+        "xsdba-eqm",
+        "xsdba-dqm"
     ]
     },
     "grouping": {
