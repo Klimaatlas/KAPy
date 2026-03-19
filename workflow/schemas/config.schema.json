@@ -134,7 +134,7 @@
                     "type": "string"
                 },
                 "database": {
-                    "description": "Path to SQLite database merging all outputs from the pipeline.",
+                    "description": "Path to SQLite database / Geopackage merging all outputs from the pipeline.",
                     "type": "string"
                 }
             }

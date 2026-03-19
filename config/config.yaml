@@ -33,9 +33,9 @@ dirs:
     outputs: 'outputs/09.outputs'
     tempDir: 'outputs/tmp'
 outputs:
-    ensembleStatisticsCSV: 'Ensemble_statistics.csv'
-    ensembleMembersCSV: 'Ensemble_members.csv'
-    database: 'KAPy_outputs.sqlite'
+    ensembleStatisticsCSV: 'outputs/09.outputs/Ensemble_statistics.csv'
+    ensembleMembersCSV: 'outputs/09.outputs/Ensemble_members.csv'
+    database: 'outputs/09.outputs/KAPy_outputs.sqlite'
 
 # Configuration options------------------------------------
 arealstats:

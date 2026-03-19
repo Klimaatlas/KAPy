@@ -220,7 +220,7 @@ rule _09_areal_ensstats:
     input:
         WORKFLOW['mergedCSVs']['ensstats']
     output:
-        os.path.join(outDirs['outputs'],config['outputs']["ensembleStatisticsCSV"])
+        config['outputs']["ensembleStatisticsCSV"]
     run:
         KAPy.mergeCSVs(outFile=output,inFiles=input)
 
@@ -228,21 +228,32 @@ rule _09_areal_members:
     input:
         WORKFLOW['mergedCSVs']['members']
     output:
-        os.path.join(outDirs['outputs'],config['outputs']["ensembleMembersCSV"])
+        config['outputs']["ensembleMembersCSV"]
     run:
         KAPy.mergeCSVs(outFile=output,inFiles=input)
 
 # Database 
 rule _09_database:
     input:
-        ensstats=rules._09_areal_ensstats.output,
-        members=rules._09_areal_members.output
+        ensemble_stats_csv=rules._09_areal_ensstats.output,
+        ensemble_members_csv=rules._09_areal_members.output,
+        indicators_tsv=config['configurationTables']['indicators'],
+        time_periods_tsv=config['configurationTables']['periods'],
+        seasons_tsv=config['configurationTables']['seasons'],
+        geometry=config['arealstats']['shapefile']
     output:
-        os.path.join(outDirs['outputs'],config['outputs']["database"])
+        output_gpkg_path=config['outputs']["database"]
     run:
-        KAPy.writeToDatabase(outFile=output,
-                             ensstats=input.ensstats, 
-                             members=input.members)
+        db = KAPy.database(**input,**output,include_geometry=True)
+        try:
+            db.create_full_database()
+        except ValueError as e:
+            print(f"Validation Error: {e}")
+        except FileNotFoundError as e:
+            print(f"File Error: {e}")
+        finally:
+            db.close()
+            
 
 # Helper Targets ---------------------------------------------------------
 # Here we define a series of short-hand targets that can be used to run 
