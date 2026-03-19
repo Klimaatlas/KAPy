@@ -475,7 +475,12 @@ def getWorkflow(config):
 
         #Check for the presence of duplicates in output_path. Fail if found
         if len(rgTbl['output_path'].unique()) != len(rgTbl):
-            raise ValueError("Duplicate filenames will result from the regridding step. Please recheck configuration.")
+            duplicates = rgTbl['output_path'][rgTbl['output_path'].duplicated()].unique()
+            msg = (
+                f"{len(duplicates )} duplicated filenames arise in regridding step. Please recheck configuration:\n"
+                + "\n".join(f"  - {f}" for f in duplicates)
+            )            
+            raise ValueError(msg)
         
         # Create the dict
         inp_dict=rgTbl.set_index('output_path')[['input_path']].to_dict(orient="index")
