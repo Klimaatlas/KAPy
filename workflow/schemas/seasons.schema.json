@@ -19,8 +19,8 @@
       "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
       "type": ["string","null"]
     },
-    "name": {
-      "description": "A longer description of the season. This is typically used in output files.",
+    "description": {
+      "description": "Description/name of the season. Stored in the output database.",
       "type": "string"
     },
     "months": { 

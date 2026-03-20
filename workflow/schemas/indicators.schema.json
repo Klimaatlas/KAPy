@@ -29,7 +29,7 @@
       "type": ["string","null"]
     },
     "description": {
-      "description": "Description of the indicator(s) defined here. Mainly used for own notes.",
+      "description": "Description of the indicator(s) defined here. Stored in the output database.",
       "type": "string"
     },
     "variables": {

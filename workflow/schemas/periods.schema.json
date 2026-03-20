@@ -16,8 +16,8 @@
       "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
       "type": ["string","null"]
     },
-    "name": {
-      "description": "A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long!",
+    "description": {
+      "description": "Description/name of the period. Stored in the output database.",
       "type": "string"
     },
     "start": { 

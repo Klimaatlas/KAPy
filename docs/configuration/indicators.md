@@ -6,7 +6,7 @@
 
 - <a id="properties/indicator_codes"></a>**`indicator_codes`** *(string, required)*: Codes of the set of indicators to be generated, as a comma-separated list. Each code must be unique. Used to generate a unique id for this row. Items must be unique.
 - <a id="properties/enabled"></a>**`enabled`** *(string or null, required)*: Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.
-- <a id="properties/description"></a>**`description`** *(string, required)*: Description of the indicator(s) defined here. Mainly used for own notes.
+- <a id="properties/description"></a>**`description`** *(string, required)*: Description of the indicator(s) defined here. Stored in the output database.
 - <a id="properties/variables"></a>**`variables`** *(string, required)*: Comma-separater list of input variables required to calculate the indicator. Must be at least one specified.
 - <a id="properties/datasets"></a>**`datasets`** *(string, required)*: Comma-separated list of dataset IDs for which the indicator is to be calculated. IDs should match those defined as primary (input), secondary, bias-adjusted or tertiary variables. In addition, `all` selects all datasets.
 - <a id="properties/seasons"></a>**`seasons`** *(string, required)*: Comma-separated lists of season IDs over which the indicator is to be calculated. IDs should match those in the [seasons configuration](seasons.md) table. In addition, `all` selects all seasons.

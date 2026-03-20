@@ -11,6 +11,13 @@ class database:
     # CONFIG
     # --------------------------------------------------
  
+    TABLES_WITH_DESCRIPTIONS={"Indicators": {"configuration_table":"indicators",
+                                             "description_column":"IndicatorDescription"},
+                            "Seasons":{"configuration_table":"seasons",
+                                             "description_column":"SeasonDescription"},
+                            "Periods":{"configuration_table":"periods",
+                                             "description_column":"PeriodDescription"}}
+
     LOOKUP_TABLES = {
         "Seasons": dict(table="Seasons", id="SeasonKey", code="SeasonCode", src="seasonID"),
         "Periods": dict(table="Periods", id="PeriodKey", code="PeriodCode", src="periodID"),
@@ -84,18 +91,27 @@ class database:
     # --------------------------------------------------
  
     def create_database_schema(self):
-        """Create lookup tables. Data tables are created later in
-        create_data_tables(), once all referenced parent tables exist."""
+        #Create lookup tables. Data tables are created later in
+        #create_data_tables(), once all referenced parent tables exist.
         conn = self.connect()
         cur = conn.cursor()
  
-        for cfg in self.LOOKUP_TABLES.values():
-            cur.execute(f"""
-            CREATE TABLE IF NOT EXISTS {cfg['table']}(
-                {cfg['id']} INTEGER PRIMARY KEY,
-                {cfg['code']} TEXT UNIQUE NOT NULL
-            );
-            """)
+        for key,cfg in self.LOOKUP_TABLES.items():
+            if key in self.TABLES_WITH_DESCRIPTIONS.keys():
+                cur.execute(f"""
+                CREATE TABLE IF NOT EXISTS {cfg['table']}(
+                    {cfg['id']} INTEGER PRIMARY KEY,
+                    {cfg['code']} TEXT UNIQUE NOT NULL,
+                    {self.TABLES_WITH_DESCRIPTIONS[key]['description_column']} TEXT
+                );
+                """)
+            else:
+                cur.execute(f"""
+                CREATE TABLE IF NOT EXISTS {cfg['table']}(
+                    {cfg['id']} INTEGER PRIMARY KEY,
+                    {cfg['code']} TEXT UNIQUE NOT NULL
+                );
+                """)
 
         conn.commit()
  
@@ -152,37 +168,37 @@ class database:
         if pd.api.types.is_float_dtype(s): return "REAL"
         return "TEXT"
  
-    def import_metadata(self):
+    def import_descriptions(self):
         conn = self.connect()
         cur = conn.cursor()
- 
-        for key, table in self.METADATA_TABLE_MAP.items():
-            df = pd.read_csv(self.metadata_tsv_files[key], sep="\t", encoding="windows-1252")
- 
-            if table == "Indicators":
-                df = df.rename(columns={"id": "IndicatorKey"})
- 
-            if table == "Seasons":
-                df = df.rename(columns={"id": "SeasonCode"})
-                df.insert(0, "SeasonKey", range(1, len(df) + 1))
- 
-            if table == "Time_Periods":
-                df = df.rename(columns={"id": "PeriodKey", "name": "PeriodCode"})
- 
-            cols = []
-            for c in df.columns:
-                t = self._infer_type(df[c])
-                if c.lower().endswith("key"):
-                    cols.append(f"{c} {t} PRIMARY KEY")
-                else:
-                    cols.append(f"{c} {t}")
- 
-            cur.execute(f"CREATE TABLE IF NOT EXISTS {table} ({', '.join(cols)})")
- 
-            cur.executemany(
-                f"INSERT INTO {table} VALUES ({','.join(['?']*len(df.columns))})",
-                df.itertuples(index=False, name=None),
-            )
+
+        for key in self.TABLES_WITH_DESCRIPTIONS.keys():
+            #Import configuration table, drop disabled
+            tbl= self.LOOKUP_TABLES[key]
+            desc_tbl=self.TABLES_WITH_DESCRIPTIONS[key]
+            cfg = pd.read_csv(self.config['configurationTables'][desc_tbl['configuration_table']],
+                               sep="\t",
+                                encoding="windows-1252",
+                                dtype=str)
+            cfg=cfg[cfg['enabled'] !=""]
+
+            #Handle Indicator codes, which are specified as a comma-separated list, separately.
+            if key =="Indicators":
+                cfg['id'] = cfg["indicator_codes"].apply(lambda x: [item.strip() for item in x.split(",")] if pd.notnull(x) else [])
+                cfg=cfg.explode("id")
+            cfg=cfg[["id","description"]]
+            cfg=cfg.rename(columns={"id": tbl['code'],
+                                    "description":desc_tbl['description_column']})
+
+            #Import from database
+            df = pd.read_sql(f"SELECT * FROM {tbl["table"]}", conn)
+            df=df.drop(columns=desc_tbl['description_column'])
+
+            #Left join
+            df_joined = df.merge(cfg, on=tbl["code"], how="left")
+
+            #Write back to database
+            df_joined.to_sql(f"{tbl["table"]}", conn, index=False, if_exists="replace")
  
         conn.commit()
  
@@ -390,9 +406,12 @@ class database:
             sc.ScenarioCode         AS ScenarioCode,
             gr.GridCode             AS GridCode,
             i.IndicatorCode         AS IndicatorCode,
+            i.IndicatorDescription  AS IndicatorDescription,
             es.AreaKey              AS AreaKey,
             p.PeriodCode            AS PeriodCode,
+            p.PeriodDescription     AS PeriodDescription,
             se.SeasonCode           AS SeasonCode,
+            se.SeasonDescription    AS SeasonDescription,
             ar.ArealStatisticCode   AS ArealStatisticCode,
             es.Delta                AS Delta,
             es.Percentile           AS Percentile,
@@ -417,9 +436,12 @@ class database:
             sc.ScenarioCode         AS ScenarioCode,
             gr.GridCode             AS GridCode,
             i.IndicatorCode         AS IndicatorCode,
+            i.IndicatorDescription  AS IndicatorDescription,
             em.AreaKey              AS AreaKey,
             p.PeriodCode            AS PeriodCode,
+            p.PeriodDescription     AS PeriodDescription,
             se.SeasonCode           AS SeasonCode,
+            se.SeasonDescription    AS SeasonDescription,
             ar.ArealStatisticCode   AS ArealStatisticCode,
             em.Delta                AS Delta,
             em.Value                AS Value
@@ -464,9 +486,9 @@ class database:
                 self.import_geometries()
  
             self.create_database_schema()
-            #self.import_metadata()
             self.build_lookup_tables()
             self.create_data_tables()
+            self.import_descriptions()
             self.import_stats()
             self.import_members()
             self.create_indexes_and_views()

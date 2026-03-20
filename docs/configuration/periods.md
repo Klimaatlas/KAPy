@@ -6,6 +6,6 @@
 
 - <a id="properties/id"></a>**`id`** *(string, required)*: Unique identifier for the period. This can be numeric, but will be treated as a string. Cannont contain space. Must match pattern: `^[^ ]+$` ([Test](https://regexr.com/?expression=%5E%5B%5E%20%5D%2B%24)). Items must be unique.
 - <a id="properties/enabled"></a>**`enabled`** *(string or null, required)*: Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.
-- <a id="properties/name"></a>**`name`** *(string, required)*: A longer description of the period. This is typically used in the x-axes of plots, so shouldn't be TOO long!
+- <a id="properties/description"></a>**`description`** *(string)*: Description/name of the period. Stored in the output database.
 - <a id="properties/start"></a>**`start`** *(string, required)*: The start year of the period. The full year is included in the calculation. Must match pattern: `^\d{4}$` ([Test](https://regexr.com/?expression=%5E%5Cd%7B4%7D%24)).
 - <a id="properties/end"></a>**`end`** *(string, required)*: The end year of the period. The full year is included in the calculation. Must match pattern: `^\d{4}$` ([Test](https://regexr.com/?expression=%5E%5Cd%7B4%7D%24)).
