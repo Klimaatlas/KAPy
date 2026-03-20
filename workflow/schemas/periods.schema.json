@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "KAPy periods configuration",
   "description": "Calculation periods in KAPy are configured through a tab-separated table, with one row per period. At least one period must be defined, even in configurations where there is no `period` time-binning used, as the first period is used as the reference period against which changes in indicators are calculated. The available options are described here. All options are required.",
-  "required": ["id", "enabled","name", "start", "end"],
+  "required": ["id", "enabled","description", "start", "end"],
   "additionalProperties": false,
   "type": "object",
   "properties": {

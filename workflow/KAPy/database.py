@@ -4,6 +4,7 @@ import geopandas as gpd
 import os
 from typing import Dict, List, Tuple, Optional
 import yaml
+import csv, json
   
 class database:
  
@@ -38,6 +39,7 @@ class database:
         config_file: str
     ):
         #Load configuration file and populate self from there
+        self.config_file=config_file
         with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)
 
@@ -113,13 +115,22 @@ class database:
                 );
                 """)
 
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS Configuration(
+            id INTEGER PRIMARY KEY,
+            ConfigurationType TEXT UNIQUE NOT NULL,
+            FilePath TEXT UNIQUE NOT NULL,                    
+            JSON TEXT UNIQUE NOT NULL
+        );
+        """)
+
         conn.commit()
  
     def create_data_tables(self):
-        """Create Ensemble_stats and Ensemble_members with FK references.
-        Must be called after all referenced parent tables have been created
-        (Indicators, Time_Periods, Seasons via import_metadata; lookup tables
-        via build_lookup_tables; Areas via import_geometries)."""
+        #Create Ensemble_stats and Ensemble_members with FK references.
+        #Must be called after all referenced parent tables have been created
+        #(Indicators, Time_Periods, Seasons via import_metadata; lookup tables
+        #via build_lookup_tables; Areas via import_geometries).
         conn = self.connect()
         cur = conn.cursor()
  
@@ -358,6 +369,36 @@ class database:
         conn.execute("PRAGMA foreign_keys=ON;")
         print("Inserted members:",len(rows))
  
+    def import_configuration(self):
+        conn = self.connect()
+        cur = conn.cursor()
+
+        #Import configuration yaml
+        cur.execute("""
+        INSERT INTO Configuration 
+        VALUES (NULL, 'config', ?,?)
+        """, (self.config_file, json.dumps(self.config)))
+
+        #Loop over configuration tables
+        for key,path in self.config['configurationTables'].items():
+            if (path is None) or (path==''):
+                continue
+            #Load configuration table
+            tbl=pd.read_csv(path, 
+                            sep="\t",
+                            encoding="windows-1252",
+                            keep_default_na=False,
+                            dtype="str")
+            tbl=tbl[tbl['enabled'] !=""]
+            cur.execute("""
+            INSERT INTO Configuration 
+            VALUES (NULL, ?, ?,?)
+            """, (key, self.config["configurationTables"][key], tbl.to_json()))
+            
+
+        conn.commit()
+
+    
     # --------------------------------------------------
     # INDEXES AND VIEWS
     # --------------------------------------------------
@@ -491,6 +532,7 @@ class database:
             self.import_descriptions()
             self.import_stats()
             self.import_members()
+            self.import_configuration()
             self.create_indexes_and_views()
             print("\nSUCCESS")
         finally:
@@ -509,8 +551,8 @@ if __name__ == "__main__":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
     import KAPy
 
-    #configfile="./config/config.yaml"
-    configfile="./workflow/testing/config.yaml"
+    configfile="./config/config.yaml"
+    #configfile="./workflow/testing/config.yaml"
 
     db = database(config_file=configfile)
     

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "KAPy seasons configuration",
   "description": "Seasonal calculations in KAPy are configured through a tab-separated table, with one row per season. The available options are described here. All options are required",
-  "required": ["id", "enabled","name","months"],
+  "required": ["id", "enabled","description","months"],
   "additionalProperties": false,
   "type": "object",
   "properties": {
