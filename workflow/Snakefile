@@ -15,7 +15,7 @@
 
 #Setup-----------------------
 #Load configuration 
-DEFAULT_CONFIG = "./config/config.yaml"  #Defined relative to execution directory
+DEFAULT_CONFIG = "config/config.yaml"  #Defined relative to execution directory
 if workflow.overwrite_configfiles:
     configfile_path = workflow.overwrite_configfiles[0]
 else:
@@ -235,24 +235,19 @@ rule _09_areal_members:
 # Database 
 rule _09_database:
     input:
-        ensemble_stats_csv=rules._09_areal_ensstats.output,
-        ensemble_members_csv=rules._09_areal_members.output,
-        indicators_tsv=config['configurationTables']['indicators'],
-        time_periods_tsv=config['configurationTables']['periods'],
-        seasons_tsv=config['configurationTables']['seasons'],
-        geometry=config['arealstats']['shapefile']
+        ensemble_stats=rules._09_areal_ensstats.output,
+        ensemble_members=rules._09_areal_members.output,
+        indicators=config['configurationTables']['indicators'],
+        periods=config['configurationTables']['periods'],
+        seasons=config['configurationTables']['seasons'],
+        config_file=configfile_path
     output:
-        output_gpkg_path=config['outputs']["database"]
+        database=config['outputs']["database"]
+    params:
     run:
-        db = KAPy.database(**input,**output,include_geometry=True)
-        try:
-            db.create_full_database()
-        except ValueError as e:
-            print(f"Validation Error: {e}")
-        except FileNotFoundError as e:
-            print(f"File Error: {e}")
-        finally:
-            db.close()
+        db = KAPy.database(input.config_file)
+        db.create_full_database()
+        db.close()
             
 
 # Helper Targets ---------------------------------------------------------
@@ -313,7 +308,7 @@ rule AREAL_STATISTICS:
 rule OUTPUTS:
     input:
         rules._09_areal_ensstats.output,
-        rules._09_areal_ensstats.output,
+        rules._09_areal_members.output,
         rules._09_database.output
 
 #All

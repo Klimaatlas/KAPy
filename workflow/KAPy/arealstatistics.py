@@ -111,9 +111,9 @@ def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile):
         spSdDf=spSd.to_dataframe()
         spSdDf['arealStatistic']='sd'
 
-        # Save files pandas
+        # Save files pandas. Set the areaID to NA
         dfOut = pd.concat([spMeanDf,spSdDf])
-        dfOut.insert(0,'areaID',"all" )
+        dfOut.insert(0,'areaID',"NA" )
         dfOut=dfOut.reset_index()
 
     #Write out date without time for easier handling

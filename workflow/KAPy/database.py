@@ -3,19 +3,13 @@ import pandas as pd
 import geopandas as gpd
 import os
 from typing import Dict, List, Tuple, Optional
- 
- 
+import yaml
+  
 class database:
  
     # --------------------------------------------------
     # CONFIG
     # --------------------------------------------------
- 
-    METADATA_TABLE_MAP = {
-        'indicators_tsv': 'Indicators2',
-        'time_periods_tsv': 'Time_Periods2',
-        'seasons_tsv': 'Seasons2',
-    }
  
     LOOKUP_TABLES = {
         "Seasons": dict(table="Seasons", id="SeasonKey", code="SeasonCode", src="seasonID"),
@@ -34,61 +28,25 @@ class database:
  
     def __init__(
         self,
-        output_gpkg_path: str,
-        indicators_tsv: str,
-        time_periods_tsv: str,
-        seasons_tsv: str,
-        ensemble_stats_csv: str,
-        ensemble_members_csv: Optional[str] = None,
-        geometry: Optional[str] = None,
-        include_geometry: bool = False,
+        config_file: str
     ):
-        self.db_path = output_gpkg_path
-        self.stats_csv = ensemble_stats_csv[0]
-        self.members_csv = ensemble_members_csv[0]
-        self.geometry = geometry
-        self.include_geometry = include_geometry
- 
-        self.metadata_tsv_files = {
-            'indicators_tsv': indicators_tsv,
-            'time_periods_tsv': time_periods_tsv,
-            'seasons_tsv': seasons_tsv,
-        }
+        #Load configuration file and populate self from there
+        with open(config_file, "r") as f:
+            self.config = yaml.safe_load(f)
+
+        self.db_path = self.config['outputs']['database']
+        self.stats_csv = self.config['outputs']['ensembleStatisticsCSV']
+        self.members_csv = self.config['outputs']['ensembleMembersCSV']
+        self.geometry = self.config['arealstats']['shapefile']
+        self.include_geometry = (self.config['arealstats']['shapefile'] is not None)
  
         self.conn = None
         self._stats_df = None
         self._members_df = None
  
-        self._validate_paths()
         os.makedirs(os.path.dirname(self.db_path) or ".", exist_ok=True)
  
-    # --------------------------------------------------
-    # FILE VALIDATION
-    # --------------------------------------------------
- 
-    def _validate_paths(self):
-        missing = []
- 
-        for p in self.metadata_tsv_files.values():
-            if not os.path.exists(p):
-                missing.append(p)
- 
-        if not os.path.exists(self.stats_csv):
-            missing.append(self.stats_csv)
- 
-        if self.members_csv and not os.path.exists(self.members_csv):
-            missing.append(self.members_csv)
- 
-        if self.include_geometry:
-            if not self.geometry:
-                missing.append("<geometry> path not provided")
-            elif not os.path.exists(self.geometry):
-                missing.append(self.geometry)
- 
-        if missing:
-            raise FileNotFoundError("\n".join(missing))
- 
-    # --------------------------------------------------
+   # --------------------------------------------------
     # CONNECTION
     # --------------------------------------------------
  
@@ -110,7 +68,7 @@ class database:
     def _load_stats(self):
         if self._stats_df is None:
             print("Loading stats CSV...")
-            self._stats_df = pd.read_csv(self.stats_csv, encoding="windows-1252")
+            self._stats_df = pd.read_csv(self.stats_csv, encoding="windows-1252",keep_default_na=False,dtype="str")
         return self._stats_df
  
     def _load_members(self):
@@ -118,7 +76,7 @@ class database:
             return None
         if self._members_df is None:
             print("Loading members CSV...")
-            self._members_df = pd.read_csv(self.members_csv, encoding="windows-1252")
+            self._members_df = pd.read_csv(self.members_csv, encoding="windows-1252",keep_default_na=False,dtype="str")
         return self._members_df
  
     # --------------------------------------------------
@@ -126,7 +84,7 @@ class database:
     # --------------------------------------------------
  
     def create_database_schema(self):
-        """Create lookup tables and Version. Data tables are created later in
+        """Create lookup tables. Data tables are created later in
         create_data_tables(), once all referenced parent tables exist."""
         conn = self.connect()
         cur = conn.cursor()
@@ -138,8 +96,7 @@ class database:
                 {cfg['code']} TEXT UNIQUE NOT NULL
             );
             """)
- 
-        cur.execute("CREATE TABLE IF NOT EXISTS Version(version TEXT);")
+
         conn.commit()
  
     def create_data_tables(self):
@@ -260,9 +217,6 @@ class database:
     # --------------------------------------------------
  
     def import_geometries(self):
-        if not self.include_geometry:
-            return self._create_areas_table()
- 
         if self.conn:
             self.conn.close()
             self.conn = None
@@ -274,31 +228,6 @@ class database:
  
         self.conn = sqlite3.connect(self.db_path)
         self.conn.execute("PRAGMA foreign_keys=ON;")
- 
-    def _create_areas_table(self):
-        dfs = [self._load_stats()]
-        mem = self._load_members()
-        if mem is not None:
-            dfs.append(mem)
- 
-        codes = pd.concat([d["areaID"].astype(str) for d in dfs]).unique()
-        codes = sorted(codes)
- 
-        conn = self.connect()
-        cur = conn.cursor()
- 
-        cur.execute("""
-        CREATE TABLE IF NOT EXISTS Areas(
-            AreaKey INTEGER PRIMARY KEY,
-            AreaCode TEXT UNIQUE
-        );
-        """)
- 
-        cur.executemany("INSERT INTO Areas VALUES (?,?)",
-            [(i+1,c) for i,c in enumerate(codes)]
-        )
- 
-        conn.commit()
  
     # --------------------------------------------------
     # MAPPINGS
@@ -312,10 +241,6 @@ class database:
             df = pd.read_sql_query(f"SELECT {cfg['id']},{cfg['code']} FROM {cfg['table']}", conn)
             maps[name] = {r[cfg["code"]]: r[cfg["id"]] for _,r in df.iterrows()}
 
-        if not self.include_geometry:
-            df = pd.read_sql_query("SELECT AreaKey,AreaCode FROM Areas", conn)
-            maps["Areas"] = dict(zip(df.AreaCode.astype(str), df.AreaKey))
- 
         return maps
  
     # --------------------------------------------------
@@ -326,7 +251,7 @@ class database:
         df=self._load_stats().copy()
  
         #Apply mappings
-        df["AreaKey"]=df.areaID.astype(int)
+        df["AreaKey"]=df.areaID.replace("NA", -999).astype(int).replace(-999,None)
         df["Percentile"]=df["percentiles"].astype(float)
         for lookup_dict in self.LOOKUP_TABLES.values():
             df[lookup_dict["id"]]= df[lookup_dict["src"]].astype(str).map(maps[lookup_dict["table"]])
@@ -355,7 +280,7 @@ class database:
         df=self._load_members().copy()
  
         #Apply mappings
-        df["AreaKey"]=df.areaID.astype(int)
+        df["AreaKey"]=df.areaID.replace("NA", -999).astype(int).replace(-999,None)
         for lookup_dict in self.LOOKUP_TABLES.values():
             df[lookup_dict["id"]]= df[lookup_dict["src"]].astype(str).map(maps[lookup_dict["table"]])
  
@@ -374,8 +299,6 @@ class database:
         cursor = self.conn.execute("PRAGMA table_info(Indicator_data);")
         columns = cursor.fetchall()
         output_columns = [col[1] for col in columns if col[1] != "id"]
-        df=df[output_columns]
-
         df=df[output_columns]
  
         return list(df.itertuples(index=False,name=None))
@@ -475,7 +398,6 @@ class database:
             es.Percentile           AS Percentile,
             es.Value                AS Value
         FROM Ensemble_statistics AS es
-        JOIN Areas           AS a  ON es.AreaKey           = a.AreaKey
         JOIN Indicators      AS i  ON es.IndicatorKey      = i.IndicatorKey
         JOIN Scenarios       AS sc ON es.ScenarioKey       = sc.ScenarioKey
         JOIN Periods         AS p  ON es.PeriodKey         = p.PeriodKey
@@ -502,7 +424,6 @@ class database:
             em.Delta                AS Delta,
             em.Value                AS Value
         FROM Indicator_data AS em
-        JOIN Areas           AS a  ON em.AreaKey           = a.AreaKey
         JOIN Indicators      AS i  ON em.IndicatorKey      = i.IndicatorKey
         JOIN Scenarios       AS sc ON em.ScenarioKey       = sc.ScenarioKey
         JOIN Periods         AS p  ON em.PeriodKey         = p.PeriodKey
@@ -517,14 +438,16 @@ class database:
  
         # Register views in gpkg_contents so GeoPackage-aware clients
         # (QGIS, ArcGIS, etc.) can discover and display them.
-        for view_name in ("view_Ensemble_stats", "view_Ensemble_members"):
-            cur.execute("""
-            INSERT OR REPLACE INTO gpkg_contents
-                (table_name, data_type, identifier, description, srs_id)
-            VALUES (?, 'attributes', ?, '', NULL)
-            """, (view_name, view_name))
+        # But only if we have geometry in the first place.
+        if self.include_geometry:
+            for view_name in ("view_Ensemble_statistics", "view_Indicator_data"):
+                cur.execute("""
+                INSERT OR REPLACE INTO gpkg_contents
+                    (table_name, data_type, identifier, description, srs_id)
+                VALUES (?, 'attributes', ?, '', NULL)
+                """, (view_name, view_name))
  
-        conn.commit()
+            conn.commit()
         print("Indexes and views created.")
  
     # --------------------------------------------------
@@ -537,9 +460,11 @@ class database:
             if os.path.exists(self.db_path):  
                 os.remove(self.db_path)
 
-            self.import_geometries()
+            if self.include_geometry:
+                self.import_geometries()
+ 
             self.create_database_schema()
-            self.import_metadata()
+            #self.import_metadata()
             self.build_lookup_tables()
             self.create_data_tables()
             self.import_stats()
@@ -562,19 +487,10 @@ if __name__ == "__main__":
     sys.path.append(str(Path(__file__).resolve().parents[1]))
     import KAPy
 
-    #config=KAPy.getConfig("./config/config.yaml")  
-    config=KAPy.getConfig("./workflow/testing/config.yaml")  
+    #configfile="./config/config.yaml"
+    configfile="./workflow/testing/config.yaml"
 
-    db = database(
-        output_gpkg_path=config['outputs']['database'],
-        indicators_tsv=config['configurationTables']['indicators'],
-        time_periods_tsv=config['configurationTables']['periods'],
-        seasons_tsv=config['configurationTables']['seasons'],
-        ensemble_stats_csv=config['outputs']['ensembleStatisticsCSV'],
-        ensemble_members_csv=config['outputs']['ensembleMembersCSV'],
-        geometry=config['arealstats']['shapefile'],
-        include_geometry=True,
-    )
+    db = database(config_file=configfile)
     
     try:
         db.create_full_database()

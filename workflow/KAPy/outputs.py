@@ -1,4 +1,3 @@
-import sqlite3
 import pandas as pd
 import os
 import xarray as xr
@@ -20,7 +19,7 @@ def mergeCSVs(outFile, inFiles):
     #Load data file function
     def prepareDataFile(thisPath):
         #Load file
-        datIn=pd.read_csv(thisPath)
+        datIn=pd.read_csv(thisPath,dtype=str,keep_default_na=False)
         
         #Process filename 
         datIn.insert(0,'filename',os.path.basename(thisPath))
@@ -112,7 +111,6 @@ def write_indicators(obj:  xr.Dataset | dict,
             raise ValueError("Expected exactly one path for a single dataset")
         if isinstance(path,dict):
             path=list(path.values())
-        print(path)
         obj.to_netcdf(path[0])
     
     elif isinstance(obj, dict):
