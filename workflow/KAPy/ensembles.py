@@ -57,7 +57,7 @@ def generateEnsstats(outFile, inFiles, percentiles,method):
     #Calculate the percentiles and transpose to a more friendly order
     ptileList=sorted(percentiles)
     qtileList=[x/100 for x in ptileList]
-    ensPercs=thisEns.quantile(q=qtileList, dim='realization',method=method,keep_attrs=True)
+    ensPercs=thisEns.quantile(q=qtileList, dim='realization',method=method,keep_attrs=True,skipna=True)
     ensPercs=ensPercs.rename({"quantile":"percentiles"})
     ensPercs=ensPercs.assign_coords(percentiles=ptileList)
     
