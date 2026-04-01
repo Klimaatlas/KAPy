@@ -30,12 +30,11 @@ dirs:
     regridded: 'outputs/06.commmon_grid'
     ensstats: 'outputs/07.ensstats'
     arealstats: 'outputs/08.areal_statistics'
-    outputs: 'outputs/09.outputs'
     tempDir: 'outputs/tmp'
 outputs:
-    ensembleStatisticsCSV: 'outputs/09.outputs/Ensemble_statistics.csv'
-    ensembleMembersCSV: 'outputs/09.outputs/Ensemble_members.csv'
-    database: 'outputs/09.outputs/KAPy_outputs.sqlite'
+    ensembleStatisticsCSV: 'outputs/Ensemble_statistics.csv'
+    ensembleMembersCSV: 'outputs/Ensemble_members.csv'
+    database: 'outputs/KAPy_outputs.sqlite'
 
 # Configuration options------------------------------------
 arealstats:

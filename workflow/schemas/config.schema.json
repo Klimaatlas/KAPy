@@ -68,7 +68,6 @@
                 "regridded",
                 "ensstats",
                 "arealstats",
-                "outputs",
                 "tempDir"
             ],
             "additionalProperties": false,
@@ -103,10 +102,6 @@
                 },
                 "arealstats": {
                     "description": "Directory for storing statistics calculated over areas.",
-                    "type": "string"
-                },
-                "outputs": {
-                    "description": "Directory for storing output files and databases. Plots are stored in the ./plots subdirectory.",
                     "type": "string"
                 },
                 "tempDir": {
