@@ -1,2 +1,3 @@
 indicator_codes	enabled	description	variables	datasets	seasons	timeBinning	statistic	deltaType	additionalArgs	customScriptPath	customScriptFunction
 i101	x	Annual mean temperature	tas	CORDEX-BA	all	periods	mean	subtract	{}		
+i101y	x	Annual mean temperature	tas	CORDEX-BA	all	years	mean	subtract	{}		
