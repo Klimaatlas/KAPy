@@ -26,6 +26,7 @@ print(f'KAPy configuration file: {configfile_path}')
 import KAPy
 import os
 
+
 config=KAPy.getConfig(configfile_path)
 outDirs=config['dirs']
 
@@ -51,17 +52,17 @@ rule _01_primaryVar:
     input:
         lambda wc: WORKFLOW['primary_vars'][wc.leaf]["inputs"]
     output:
-        os.path.join(outDirs['primaryVariables'],"{leaf}")
+        output=os.path.join(outDirs['primaryVariables'],"{leaf}")
     params:
         row_arguments=lambda wc: config['inputs'][WORKFLOW['primary_vars'][wc.leaf]["groupID"]],
         cutoutArgs=config['cutouts']
     run:
-        KAPy.buildPrimVar(
-            outFile=output,
+        da=KAPy.buildPrimVar(
             inFiles=input,
             cutoutArgs=params.cutoutArgs,
             **params.row_arguments
         )                          
+        KAPy.write_variables(da,dict(output))
 
 # Secondary variables 
 # "Secondary variables" are calculated as new variables derived from primary variables.  

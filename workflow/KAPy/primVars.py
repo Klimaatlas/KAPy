@@ -46,11 +46,13 @@ def defaultImport(inFiles,varCode,internalVarName,checks):
 								compat="no_conflicts" if checks=="all" else "override",
 								coords="minimal",
 								data_vars="minimal",
+                                chunks={"time": 256},
 								preprocess=lambda ds: ds[[internalVarName]])
 
 	except Exception as e:
 		raise RuntimeError(f"Opening following NetCDF files:\n '{inFiles}'\n failed with error:\n{e}")	
 	
+
 	# Apply some checkes on the results (if requested)
 	if checks=="all":
 		if not dsIn.indexes["time"].is_monotonic_increasing:
@@ -130,7 +132,7 @@ def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varCode,**kwargs):
 
 
 #-----------------------------------------------------------------	
-def buildPrimVar(outFile, inFiles,varCode,internalVarName,checks,importScriptPath,importScriptFunction,
+def buildPrimVar(inFiles,varCode,internalVarName,checks,importScriptPath,importScriptFunction,
 				 units, cutoutArgs,**kwargs):
 	# If an import function is defined, use that. Otherwise use the default
 	if importScriptPath=='':
@@ -180,19 +182,8 @@ def buildPrimVar(outFile, inFiles,varCode,internalVarName,checks,importScriptPat
 	#netcdf "float" types as well.
 	daFloat=da.astype(np.float32)
 
-	#Set chunking
-	defaultChunks=[256,16,16]
-	chunkThisWay=[min(defaultChunks[i],daFloat.shape[i]) for i in range(0,3)]
+	return daFloat
 	
-	#Now use the chunking scheme as the basis for writing out the encoding
-	try:
-		daFloat.to_netcdf(outFile[0],
-					encoding={varCode:{'chunksizes':chunkThisWay,
-							'zlib': True,
-							'complevel':1}})
-	except Exception as e:
-		raise RuntimeError(f"Writing NetCDF file '{outFile[0]}' to disk failed with error: {e}") 
-
 
 
 def VariableOverview(config):
