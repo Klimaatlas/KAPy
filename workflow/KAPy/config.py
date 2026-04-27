@@ -109,8 +109,8 @@ def validateConfig(config):
                               dtype='str',
                               keep_default_na=False)
         #Drop rows that are disabled
-        if ('enabled' not in thisTbl) & (thisTblKey != "indicators"):
-            raise ValueError(f"Cannot find column 'enabled' in {thisTblKey}' configuration table.")
+        if ('enabled' not in thisTbl):
+            raise ValueError(f"Cannot find column 'enabled' in {thisTblKey} configuration table.")
         else:
             enabledRows=thisTbl['enabled']!=""
             thisTbl=thisTbl[enabledRows]
