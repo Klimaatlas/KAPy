@@ -106,6 +106,8 @@ def biasAdjust(target_file,reference_file,tempDir,outputGrid,trainPeriodStart,tr
     # is interesting is the common period data - there could be a whole lot more
     # that we otherwise don't use. We therefore drop the uninteresting parts
     reference_common=helpers.timeslice(reference,trainPeriodStart,trainPeriodEnd)
+    if reference_common.time.size==0:
+        raise ValueError(f"The selected training period from {trainPeriodStart} to {trainPeriodEnd} does not overlap with the reference dataset, which runs from {reference.time.to_index()[0].strftime("%Y-%m-%d")} to {reference.time.to_index()[-1].strftime("%Y-%m-%d")}")
     # Merge into one dataset object, with common spatial dimensions but
     # differentiated time dimensions. Note the need to unify the chunking
     reference_common=reference_common.rename({"time": "reftime"})
