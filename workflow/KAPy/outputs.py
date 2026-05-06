@@ -61,7 +61,8 @@ def write_variables(obj: xr.DataArray | xr.Dataset | dict,
         For a Dataset, keys should match dataset variables.
     """
 
-    def write_dataarray(da: xr.DataArray,var_name: str, 
+    def write_dataarray(da: xr.DataArray,
+                        var_name: str, 
                         output_path: str):
             da.name = var_name
             chunkThisWay=[min([256,16,16][i],da.shape[i]) for i in range(0,3)]
@@ -73,7 +74,7 @@ def write_variables(obj: xr.DataArray | xr.Dataset | dict,
     if isinstance(obj, xr.DataArray):
         # Expect exactly one key in path
         if len(path) != 1:
-            raise ValueError("Expected exactly one path for a single DataArray")
+            raise ValueError(f"Expected exactly one path for a single DataArray: received {path}")
         write_dataarray(obj,
                         var_name=next(iter(path.keys())),
                         output_path = next(iter(path.values())))
