@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import xarray as xr
+import pickle
 
 """
 #Setup for debugging with VS code 
@@ -64,12 +65,20 @@ def write_variables(obj: xr.DataArray | xr.Dataset | dict,
     def write_dataarray(da: xr.DataArray,
                         var_name: str, 
                         output_path: str):
-            da.name = var_name
-            chunkThisWay=[min([256,16,16][i],da.shape[i]) for i in range(0,3)]
-            da.to_netcdf(output_path,
-                        encoding={var_name:{'chunksizes':chunkThisWay,
-                                        'zlib': True,
-                                        'complevel':1}})
+            #Choose output format
+            format = os.path.splitext(os.path.basename(output_path))[1]
+            if format == ".nc":
+                da.name = var_name
+                chunkThisWay=[min([256,16,16][i],da.shape[i]) for i in range(0,3)]
+                da.to_netcdf(output_path,
+                            encoding={var_name:{'chunksizes':chunkThisWay,
+                                            'zlib': True,
+                                            'complevel':1}})
+            elif format == ".pkl":  # Write as pickle
+                with open(output_path, "wb") as f:
+                    pickle.dump(da, f)                    
+            else:
+                raise IOError(f"Unknown file format, '{format}' inferred from: '{output_path}'.")
 
     if isinstance(obj, xr.DataArray):
         # Expect exactly one key in path

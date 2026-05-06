@@ -28,6 +28,10 @@ def getWorkflow(config):
     # work with
     pvDict = {}
     for thisKey, thisInp in config["inputs"].items():
+        # Get file extension corresponding to rechunk strategy
+        fileExtn={"none": "pkl",
+                 "nc":"nc"}[thisInp['rechunkingStrategy']]
+
         # Input files can be specified in four different ways
         # We handle all of these cases to extract a list of files that we want.
 
@@ -82,7 +86,7 @@ def getWorkflow(config):
             #Set output filename, setting the file extension manually.
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noExpt_noEnsID.nc"
+                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noExpt_noEnsID.{fileExtn}"
 
         # A similar case also exists where there is a single ensemble member, but it
         # is spread across multiple files. This is indicated when the ensMemberFields and 
@@ -90,7 +94,7 @@ def getWorkflow(config):
         elif thisInp['ensMemberFields']==[''] and thisInp['experimentField']=='' and len(inpTbl)>1:
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noExpt_noEnsID.nc"
+                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noExpt_noEnsID.{fileExtn}"
         # elif thisInp['ensMemberFields']==['']:
         #     raise ValueError("Unhandled case. Please file a bug")
         # elif thisInp['experimentField']==['']:
@@ -117,7 +121,7 @@ def getWorkflow(config):
                 inpTbl['pvFname']= \
                     f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_" + \
                     inpTbl['experiment'] + "_" + \
-                    inpTbl['ensMemberID'] +".nc"
+                    inpTbl['ensMemberID'] +"." + fileExtn
 
                 # Store results
                 pvTbl = inpTbl[['pvFname','inPath']]
@@ -142,11 +146,11 @@ def getWorkflow(config):
                     theseExptFiles['pvFname']= \
                         f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}" + \
                         f"_{thisInp["commonExperiment"]}+{thisExpt}_" + \
-                        theseExptFiles['ensMemberID'] +".nc"
+                        theseExptFiles['ensMemberID'] +"." + fileExtn
                     commonExptTable['pvFname']= \
                         f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}" + \
                         f"_{thisInp["commonExperiment"]}+{thisExpt}_" + \
-                        commonExptTable['ensMemberID'] +".nc"
+                        commonExptTable['ensMemberID'] +"."+fileExtn
                     
                     #Now select the files from the commonExpt that are also in the
                     #otherExperiment table. This makes sure that we only add
@@ -202,7 +206,7 @@ def getWorkflow(config):
         thisTbl["var"] = thisTbl["fname"].str.extract("^[^_]+_([^_]+)_.*$")
         thisTbl["grid"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_([^_]+)_.*$")
         thisTbl["expt"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_([^_.]+).*$")
-        thisTbl["stem"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+).nc(?:.pkl)?$")
+        thisTbl["stem"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+).(?:nc|pkl)$")
         return thisTbl
 
     varPal = parseFilelist([v["outputs"] for v in pvDict.values()],

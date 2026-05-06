@@ -16,6 +16,7 @@
     "ensMemberFields",
     "commonExperiment",
     "checks", 
+    "rechunkingStrategy",
     "importScriptPath",
     "importScriptFunction"
   ],
@@ -86,6 +87,14 @@
       "enum": [
         "all",
         "none"]
+    },
+    "rechunkingStrategy": {
+      "type": "string",
+      "description": "Determine the approach to rechunking to be employed for this input. The concept of chunking relates to the way that data is stored on disk, and is particularly relevant when dealing with multi-dimensional datasets, such as is common in working with climate data. For example, many functions, such as bias-adjustment, calculation of standardised precipitation indices and marine heatwave indicators require the processing of the full time series at a grid point at once: if the data is not stored in a way to facilitate this time-oriented reading, data processing can be prohibitively slow. In such cases, rechunking the dataset from its original structure (often in time-slices) to a time-oriented format is required. However, rechunking can also be both time- and storage-consuming and is not required in all cases. This switch can be used to control the approach to rechunking on an input-by-input basis. Two strategies are available: 1) `none`, where the imported primary variable objected is written to disk as a 'pickle', ready to be imported again by other parts of the processing chain. This option is most appropriate when dealing with large datasets that don't require rechunking: it has the disadvantage that the pickled object cannot be viewed with external tools, such as `ncview`. 2) `nc`, where the primary variable is rechunked to a NetCDF file. This option should be considered as the default and has the advantage of producing files that can be used with other tools, but can be space and time consuming.",
+      "enum": [
+        "none",
+        "nc"
+      ]
     },
     "importScriptPath": {
       "type": ["string", "null"],
