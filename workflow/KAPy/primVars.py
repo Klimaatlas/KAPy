@@ -35,8 +35,6 @@ def defaultImport(inFiles,varCode,internalVarName,checks):
 	#
 	# Setup	
 	time_coder=xr.coders.CFDatetimeCoder(use_cftime=True)
-	inFiles = sorted(inFiles)  #Helps ensure monotonic time
-
 	try:
 		dsIn =xr.open_mfdataset(inFiles,
 								combine='by_coords' if checks=="all" else "nested",
@@ -51,13 +49,6 @@ def defaultImport(inFiles,varCode,internalVarName,checks):
 	except Exception as e:
 		raise RuntimeError(f"Opening following NetCDF files:\n '{inFiles}'\n failed with error:\n{e}")	
 	
-	# Apply some checkes on the results (if requested)
-	if checks=="all":
-		if not dsIn.indexes["time"].is_monotonic_increasing:
-			raise ValueError(f"Time coordinate is not monotonic in file set: '{inFiles}'.")
-		if dsIn.indexes["time"].has_duplicates:
-			raise ValueError(f"Duplicate timestamps detected file set: '{inFiles}'.")
-
 	# Select the desired variable to give a and rename to the variable code
 	da = dsIn[internalVarName]
 	da.name= varCode
@@ -174,6 +165,14 @@ def buildPrimVar(outFile, inFiles,varCode,internalVarName,checks,importScriptPat
 		da=xclim.core.units.convert_units_to(da,units)
 	
 	# Check that the unit choice is sane
+
+	# Checks -----------------------------------------
+	# We need to do some checks on at least the time dimension
+	if not da.indexes["time"].is_monotonic_increasing:
+		raise ValueError(f"Time coordinate is not monotonic in file set: '{inFiles}'.")
+	if da.indexes["time"].has_duplicates:
+		raise ValueError(f"Duplicate timestamps detected file set: '{inFiles}'.")
+
 	
 	# Output --------------------
 	#We also apply a little trick here, by forcing everything to be stored as
