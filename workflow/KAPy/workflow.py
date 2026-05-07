@@ -418,7 +418,7 @@ def getWorkflow(config):
         else:
             useThese = varPal['correctVar'] & varPal['correctDataset']
         if not any(useThese):
-            raise ValueError(f"Cannot find variable(s) '{thisInd["variables"]}' for datasets '{thisInd['datasets']}' to calculate indicators from.")
+            raise ValueError(f"Cannot find variable(s) '{thisInd["variables"]}' for datasets '{thisInd['datasets']}' to calculate indicators {thisInd['indicator_codes']} from.")
         long_ind_tbl=varPal[useThese].copy()
 
         # Pivot and retain only those in common
