@@ -134,8 +134,8 @@ rule _06_regrid:
     params:
         tempDir=config['dirs']['tempDir'],
         templateType=config["outputGrid"]["templateType"],
-        path=config["outputGrid"]["path"],
-        method=config['outputGrid']['method']
+        path=config["outputGrid"].get("path",""),
+        method=config['outputGrid'].get('method',"")
     run:
         rgd=KAPy.regrid(input_path=input,
                     **params)

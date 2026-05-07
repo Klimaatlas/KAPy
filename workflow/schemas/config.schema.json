@@ -251,19 +251,16 @@
             }
         },
         "outputGrid": {
-            "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Can be disabled by setting `templateType` to `none`. ",
+            "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Can be disabled by setting `templateType` to `none`.",
             "type": "object",
             "required": [
-                "templateType",
-                "gridName",
-                "method",
-                "path"
+                "templateType"
             ],
             "additionalProperties": false,
             "properties": {
                 "templateType": {
                     "type": "string",
-                    "description": "Type of template to use to specify the output grid. Selecting `none` will disable regridding. Selecting `file` will use an existing NetCDF file as the template. `cdo` uses a CDO grid descriptor file as the template.",
+                    "description":  "Type of template to use to specify the output grid. Selecting `none` will disable regridding. Selecting `file` will use an existing NetCDF file as the template. `cdo` uses a CDO grid descriptor file as the template.",
                     "enum": [
                         "none",
                         "cdo",
@@ -271,12 +268,12 @@
                     ]
                 },
                 "gridName": {
-                    "description": "String giving the name of the grid to be used in regridding filenames.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "String giving the name of the grid to be used in regridding filenames."
                 },
                 "method": {
-                    "description": "Method used by the xESMF Regridder function to do the regridding. See documentaiton for xESMF for details.",
                     "type": "string",
+                    "description": "Method used by the xESMF Regridder function to do the regridding. See documentaiton for xESMF for details.",
                     "enum": [
                         "bilinear",
                         "conservative",
@@ -286,11 +283,31 @@
                         "nearest_d2s"
                     ]
                 },
+
                 "path": {
-                    "description": "Path to the file to be used as a template, in the case of a `file` templateType, or the cdo grid descriptor, in the case of `cdo` templateType.",
-                    "type": "string"
+                    "type": "string",
+                    "description": "Path to the file to be used as a template, in the case of a `file` templateType, or the cdo grid descriptor, in the case of `cdo` templateType."
                 }
-            }
-        }
+            },
+            "allOf": [
+                {
+                    "if": {
+                        "properties": {
+                            "templateType": {
+                                "const": "none"
+                            }
+                        }
+                    },
+                    "then": {},
+                    "else": {
+                        "required": [
+                            "gridName",
+                            "method",
+                            "path"
+                        ]
+                    }
+                }
+            ]
+        }        
     }
 }
