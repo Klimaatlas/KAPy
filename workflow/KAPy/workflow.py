@@ -86,7 +86,7 @@ def getWorkflow(config):
             #Set output filename, setting the file extension manually.
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noExpt_noEnsID.{fileExtn}"
+                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
 
         # A similar case also exists where there is a single ensemble member, but it
         # is spread across multiple files. This is indicated when the ensMemberFields and 
@@ -94,11 +94,11 @@ def getWorkflow(config):
         elif thisInp['ensMemberFields']==[''] and thisInp['experimentField']=='' and len(inpTbl)>1:
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noExpt_noEnsID.{fileExtn}"
         # elif thisInp['ensMemberFields']==['']:
         #     raise ValueError("Unhandled case. Please file a bug")
         # elif thisInp['experimentField']==['']:
         #     raise ValueError("Unhandled case. Please file a bug")
+                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
         # Else multiple hits detected that need to be handled.
         else:
             # Handling multiple files requires some information from the filenames, 
