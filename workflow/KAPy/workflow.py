@@ -29,8 +29,9 @@ def getWorkflow(config):
     pvDict = {}
     for thisKey, thisInp in config["inputs"].items():
         # Get file extension corresponding to rechunk strategy
-        fileExtn={"none": "pkl",
-                 "nc":"nc"}[thisInp['rechunkingStrategy']]
+        fileExtnDict={"none": "pkl",
+                      "nc":"nc"}
+        fileExtn=fileExtnDict[thisInp['rechunkingStrategy']]
 
         # Input files can be specified in four different ways
         # We handle all of these cases to extract a list of files that we want.
@@ -82,24 +83,27 @@ def getWorkflow(config):
         # If we only get one file, then there's not really much to do - that file
         # is the only member of the ensemble and we use it more or less directly
         # Handle that case first.
-        elif len(inpTbl)==1:
+        if len(inpTbl)==1:
             #Set output filename, setting the file extension manually.
             pvTbl=inpTbl
             pvTbl['pvFname']= \
                     f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
+            
+        #So we have multiple files. In cases where we don't want to merge them into combined files, the
+        #input file is just mapped onto an output file (albeit it with the standard filenaming structure)
+        elif thisInp['mergeFiles']=="FALSE":
+            inpTbl['basename']=[Path(f).stem for f in inpTbl["inFname"]]
+            pvTbl=inpTbl
+            pvTbl['pvFname']= \
+                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_"+inpTbl['basename']+f".{fileExtn}"
 
-        # A similar case also exists where there is a single ensemble member, but it
-        # is spread across multiple files. This is indicated when the ensMemberFields and 
-        # experimentField is empty. We handle all variates of that here
+        # A similar case also exists where a single ensemble member is spread across multiple files. This is
+        # indicated when the ensMemberFields and experimentField is empty. 
         elif thisInp['ensMemberFields']==[''] and thisInp['experimentField']=='' and len(inpTbl)>1:
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-        # elif thisInp['ensMemberFields']==['']:
-        #     raise ValueError("Unhandled case. Please file a bug")
-        # elif thisInp['experimentField']==['']:
-        #     raise ValueError("Unhandled case. Please file a bug")
                     f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
-        # Else multiple hits detected that need to be handled.
+        # Else need to merge files.
         else:
             # Handling multiple files requires some information from the filenames, 
             # and therefore the fieldSeparator needs to be defined. If not, throw an error

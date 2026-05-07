@@ -6,19 +6,21 @@
   "required": [
     "id",
     "enabled",
-    "varCode", 
     "datasetCode", 
+    "varCode", 
+    "units",
     "gridCode",
     "path", 
     "internalVarName", 
-    "units",
-    "experimentField", 
-    "ensMemberFields",
-    "commonExperiment",
+    "importScriptPath",
+    "importScriptFunction",
     "checks", 
     "rechunkingStrategy",
-    "importScriptPath",
-    "importScriptFunction"
+    "mergeFiles",
+    "fieldSeparator",
+    "experimentField", 
+    "commonExperiment",
+    "ensMemberFields"
   ],
   "additionalProperties": false,
   "properties": {
@@ -59,34 +61,15 @@
       "type": "string",
       "description": "The internal variable name used within the input file for the variable of interest. For example, in ERA5 files the internal variable name for surface temperature is `t2m` whereas in CORDEX is is `tas`."
     },
-    "fieldSeparator": {
-      "type": "string",
-      "minLength": 0,
-      "maxLength": 1,
-      "description": "Character separating fields in the input file names. Most often an underscore character '_'. Currently limited to a single character."
-    },
-    "experimentField": {
-      "type": "string",
-      "pattern": "^\\d*$",
-      "description": "Number of the field in the filename to be used for forming dataseries based on scenarios e.g. for the file `tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_day_20360101-20401231.nc`, the fourth field (`rcp85`) contains the emissions scenario code, and this parameter would then be set to 4. If omitted, the experiment code is set to `noExpt`. 1-based indexing is assumed.",
+    "importScriptPath": {
+      "type": ["string", "null"],
+      "description": "Path to the custom import script. Use this option to enable useage of a custom script to import data before being written to disk as primVars. If empty, then the default import system in KAPy will be used.",
       "default": null
     },
-    "commonExperiment": {
-      "type": ["string","null"],
-      "description": "Many climate experiments, such as CMIP, involve splitting time into separate experiments e.g. a `historical` experiment that runs to 2005 and then the `rcp26` and `rcp85` scenario experiments that start from 2006. This field provides the name for the experiment that is common to all others (in this case `historical`) All (other) values of the `experimentField` will be concatenated with this experiment to produce one contiguous *dataseries*. Omission of this parameter will disable this feature, and all experiments will be processed individually.",
+    "importScriptFunction": {
+      "type": ["string", "null"],
+      "description": "Function in the custom import script to be used. Must be supplied if `importScriptPath` is present.",
       "default": null
-    },
-    "ensMemberFields": {
-      "type": ["string","null"],
-      "description": "Comma-separated list of integers representing the fields to join together to make the *ensemble member identifier*. Including the grid descriptor in this configuration is often a good idea, when the same model can be run on two different grids. If not specified, the ensemble member identifier will be set to `noEnsID`. 1-based indexing is assumed.",
-      "default": null
-    },
-    "checks": {
-      "type": "string",
-      "description": "Determine the degree of checking that should to be applied upon importing files. There are three elements to the checking procedure: 1). ensure that all dimensions except time match between input files (governed by the `join='exact'` and `compat='no_conflicts'` arguments to `xarray.open_mfdataset()`) 2) ensure that the time dimension is monotonic (governed by the `is_monotonic_increasing` property of an xarray time index and 3) ensure that there are no duplicated time variables (governed by the `has_duplicates` property of an xarray time index. For more information, please see documentation for these methods. The `all` argument applies all of these checks, while `none` applies none of them. While it may be tempting to ignore this step and disable all checks, it is recommended to set it to all, and investigate files that fail checks, before they propigate further into the processing chain, where they may cause unexpected problems.",
-      "enum": [
-        "all",
-        "none"]
     },
     "rechunkingStrategy": {
       "type": "string",
@@ -96,14 +79,41 @@
         "nc"
       ]
     },
-    "importScriptPath": {
-      "type": ["string", "null"],
-      "description": "Path to the custom import script. Use this option to enable useage of a custom script to import data before being written to disk as primVars. If empty, then the default import system in KAPy will be used.",
+    "checks": {
+      "type": "string",
+      "description": "Determine the degree of checking that should to be applied upon importing files. There are three elements to the checking procedure: 1). ensure that all dimensions except time match between input files (governed by the `join='exact'` and `compat='no_conflicts'` arguments to `xarray.open_mfdataset()`) 2) ensure that the time dimension is monotonic (governed by the `is_monotonic_increasing` property of an xarray time index and 3) ensure that there are no duplicated time variables (governed by the `has_duplicates` property of an xarray time index. For more information, please see documentation for these methods. The `all` argument applies all of these checks, while `none` applies none of them. While it may be tempting to ignore this step and disable all checks, it is recommended to set it to all, and investigate files that fail checks, before they propigate further into the processing chain, where they may cause unexpected problems.",
+      "enum": [
+        "all",
+        "none"]
+    },
+    "mergeFiles": {
+      "type": "string",
+      "description": "Should the set of input files be merged into composite files (e.g. merging years and/or experiments) (`TRUE) or should they each be handled as is (`FALSE`)? In cases where this parameter is set to `FALSE`, subsequent fields defining how merging should be structured are ignored.,",
+      "enum": [
+        "TRUE",
+        "FALSE"
+      ]
+    },
+    "fieldSeparator": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1,
+      "description": "Character separating fields in the input file names, for use in merging files. Most often an underscore character '_'. Currently limited to a single character."
+    },
+    "experimentField": {
+      "type": "string",
+      "pattern": "^\\d*$",
+      "description": "Number of the field in the filename to be used for merging files based on scenarios e.g. for the file `tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_day_20360101-20401231.nc`, the fourth field (`rcp85`) contains the emissions scenario code, and this parameter would then be set to 4. If omitted, the experiment code is set to `noexp`. 1-based indexing is assumed.",
       "default": null
     },
-    "importScriptFunction": {
-      "type": ["string", "null"],
-      "description": "Function in the custom import script to be used. Must be supplied if `importScriptPath` is present.",
+    "commonExperiment": {
+      "type": ["string","null"],
+      "description": "Many climate experiments, such as CMIP, involve splitting time into separate experiments e.g. a `historical` experiment that runs to 2005 and then the `rcp26` and `rcp85` scenario experiments that start from 2006. This field provides the name for the experiment that is common to all others (in this case `historical`) All (other) values of the `experimentField` will be merged with this experiment to produce one contiguous *dataseries*. Omission of this parameter will disable this feature, and all experiments will be processed individually.",
+      "default": null
+    },
+    "ensMemberFields": {
+      "type": ["string","null"],
+      "description": "Comma-separated list of integers representing the fields to join together to make the *ensemble member identifier*, for use when merging files. Including the grid descriptor in this configuration is often a good idea, when the same model can be run on two different grids. If not specified, the ensemble member identifier will be set to `noensid`. 1-based indexing is assumed.",
       "default": null
     }
   }
