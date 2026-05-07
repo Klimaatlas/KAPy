@@ -1,2 +1,2 @@
-id	enabled	datasetCode	varCode	units	gridCode	path	internalVarName	importScriptPath	importScriptFunction	checks	rechunkingStrategy	mergeFiles	fieldSeparator	experimentField	commonExperiment	ensMemberFields
+id	enabled	datasetCode	varCode	units	gridCode	path	internalVarName	importScriptPath	importScriptFunction	checks	rechunkingStrategy	mergeFiles	fieldSeparator	experimentField	commonExperiment	ensidFields
 CORDEX-tas-44	x	CORDEX	tas	degC	AFR-44	inputs/CORDEX/tas_Ghana-44_*	tas			all	none	TRUE	_	4	historical	3,5,6,7,8,2

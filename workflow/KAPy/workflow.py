@@ -70,7 +70,7 @@ def getWorkflow(config):
         # Setup import table and check that all of the files actually exist. This is not so important for a single NetCDF
         #but essential when we are supplying the filelist
         inpTbl = pd.DataFrame(filelist, columns=["inPath"])
-        inpTbl['inFname']=[os.path.basename(p) for p in inpTbl['inPath']]
+        inpTbl['inFname']=[Path(p).stem for p in inpTbl['inPath']]
         inpTbl['exists']=[os.path.exists(f) for f in filelist]
         if not all(inpTbl['exists']):
             missing=inpTbl[~inpTbl['exists']]
@@ -90,20 +90,36 @@ def getWorkflow(config):
                     f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
             
         #So we have multiple files. In cases where we don't want to merge them into combined files, the
-        #input file is just mapped onto an output file (albeit it with the standard filenaming structure)
+        #input file is just mapped onto an output file (albeit it with the standard filenaming structure). Note
+        #however, that in some cases we may want to use the ensemble ID definitions anyway
         elif thisInp['mergeFiles']=="FALSE":
-            inpTbl['basename']=[Path(f).stem for f in inpTbl["inFname"]]
+            #Set exp
+            if (thisInp['experimentField']!='') and (thisInp['fieldSeparator']!=''):
+                inpTbl['split']=inpTbl['inFname'].str.split(thisInp['fieldSeparator'])
+                inpTbl['exptID']=[f[int(thisInp['experimentField'])-1] for f in inpTbl['split']]
+            else:
+                inpTbl['exptID']="noexp"
+            #Set ensid
+            if (thisInp['ensidFields']!='') and (thisInp['fieldSeparator']!=''):
+                inpTbl['split']=inpTbl['inFname'].str.split(thisInp['fieldSeparator'])
+                ensidFieldsIdxs = [int(i)-1 for i in thisInp['ensidFields']]
+                inpTbl['ensMemberID']=["_".join([f[i] for i in ensidFieldsIdxs]) for f in inpTbl['split']]
+            else:
+                #Set ensid to file stem
+                inpTbl['ensMemberID']=[Path(f).stem for f in inpTbl["inFname"]]
+
             pvTbl=inpTbl
             pvTbl['pvFname']= \
-                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_"+inpTbl['basename']+f".{fileExtn}"
+                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_"+inpTbl['exptID']+"_"+inpTbl['ensMemberID'] +f".{fileExtn}"
 
         # A similar case also exists where a single ensemble member is spread across multiple files. This is
-        # indicated when the ensMemberFields and experimentField is empty. 
-        elif thisInp['ensMemberFields']==[''] and thisInp['experimentField']=='' and len(inpTbl)>1:
+        # indicated when the ensidFields and experimentField is empty. 
+        elif thisInp['ensidFields']==[''] and thisInp['experimentField']=='' and len(inpTbl)>1:
             pvTbl=inpTbl
             pvTbl['pvFname']= \
                     f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
-        # Else need to merge files.
+            
+        # Else need to process multiple files.
         else:
             # Handling multiple files requires some information from the filenames, 
             # and therefore the fieldSeparator needs to be defined. If not, throw an error
@@ -114,11 +130,11 @@ def getWorkflow(config):
             # Split filenames into columns and extract predefined elements
             inpTbl['split']=inpTbl['inFname'].str.split(thisInp['fieldSeparator'])
             inpTbl['experiment']=[f[int(thisInp['experimentField'])-1] for f in inpTbl['split']]
-            ensMemberFieldsIdxs = [int(i)-1 for i in thisInp['ensMemberFields']]
-            inpTbl['ensMemberID']=["_".join([f[i] for i in ensMemberFieldsIdxs]) for f in inpTbl['split']]
+            ensidFieldsIdxs = [int(i)-1 for i in thisInp['ensidFields']]
+            inpTbl['ensMemberID']=["_".join([f[i] for i in ensidFieldsIdxs]) for f in inpTbl['split']]
 
             # Deal with the issue around the definition of a common experiment
-            if thisInp["commonExperiment"]=='':
+            if thisInp["commonExperiment"]=='' :
                 #If a commonExperiment is not defined, then we just handle each
                 #experiment individually
                 #Form the corresponding filename. Don't forget to add the .nc
@@ -427,7 +443,7 @@ def getWorkflow(config):
         )
         wide_ind_tbl = wide_ind_tbl.dropna().reset_index()
         if wide_ind_tbl.size == 0:
-            raise ValueError(f"Cannot find any matching input variables for indicator id '{thisInd['id']}'. ")
+            raise ValueError(f"Cannot find any input variables {thisInd["variables"]} for indicator id '{thisInd['id']}'. ")
 
         # Now we have a list of valid dataset/grid/expt/stem combinations that are valid and 
         # have the required input variables. This combination is used to form a unique id

@@ -64,7 +64,7 @@ def validateConfig(config):
     # Validate each configuration table in turn. The validation approach used
     # is defined in the following table
     tabularCfg = {
-        "inputs": {"listCols": ['ensMemberFields'], 
+        "inputs": {"listCols": ['ensidFields'], 
                    "dictCols": [], 
                    "schema": "inputs",
                    "optional": False},

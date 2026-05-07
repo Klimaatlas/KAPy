@@ -20,7 +20,7 @@
     "fieldSeparator",
     "experimentField", 
     "commonExperiment",
-    "ensMemberFields"
+    "ensidFields"
   ],
   "additionalProperties": false,
   "properties": {
@@ -111,7 +111,7 @@
       "description": "Many climate experiments, such as CMIP, involve splitting time into separate experiments e.g. a `historical` experiment that runs to 2005 and then the `rcp26` and `rcp85` scenario experiments that start from 2006. This field provides the name for the experiment that is common to all others (in this case `historical`) All (other) values of the `experimentField` will be merged with this experiment to produce one contiguous *dataseries*. Omission of this parameter will disable this feature, and all experiments will be processed individually.",
       "default": null
     },
-    "ensMemberFields": {
+    "ensidFields": {
       "type": ["string","null"],
       "description": "Comma-separated list of integers representing the fields to join together to make the *ensemble member identifier*, for use when merging files. Including the grid descriptor in this configuration is often a good idea, when the same model can be run on two different grids. If not specified, the ensemble member identifier will be set to `noensid`. 1-based indexing is assumed.",
       "default": null
