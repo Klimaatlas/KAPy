@@ -54,4 +54,10 @@ outputGrid:
     gridName: 'Ghana025'
     method: 'bilinear'
     path: 'config/griddes.txt'
+
+# Advanced options-------------------------------
+dask:
+    nWorkers: 
+    threadsPerWorker: 
+    memoryLimit: 
     

@@ -9,7 +9,8 @@
         "arealstats",
         "dirs",
         "outputs",
-        "ensembles"
+        "ensembles",
+        "dask"
     ],
     "additionalProperties": true,
     "properties": {
@@ -308,6 +309,37 @@
                     }
                 }
             ]
-        }        
+        },
+        "dask": {
+            "description": "ADVANCED OPTION. The bias adjustment step in KAPy can be both processor and memory intensive and takes advantage of the dask tool that is build into the xarray and xsdba packages.However, if dask is used with snakemake in an unconstrained manner, it can rapidly take all of the resources of the machine and ultimately crash it. These switches provide a mechanism by which dask can be reigned in and forced to play nicely. These switches are best used in conjunction with local profiles, so as to separate the pipeline configuration from the local instance where the pipeline is being executed. If you are unsure about what values to use, leave them blank to start with so that the dask cluster is unconstrained and defaults: this may be appropriate in simpler settings. If problems start to arise, place restrictions on the cluster. Currently only implemented for bias-adjustment steps.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "nWorkers",
+                "threadsPerWorker",
+                "clusterMemoryLimit"
+            ],
+            "properties": {
+              "nWorkers": {
+                "type": ["integer","null"],
+                "minimum": 1,
+                "description": "Number of Dask workers. Maps to the `n_workers` argument in the `LocalCluster()` scheduler of  `dask.distributed`. When this parameter is not set, dask reverts to the defaults."
+              },
+      
+              "threadsPerWorker": {
+                "type": ["integer","null"],
+                "minimum": 1,
+                "description": "Number of threads per worker. Maps to the `threads_per_worker` argument in the `LocalCluster()` scheduler of  `dask.distributed`. Due to the nature of the bias-adjustment problem, most documentation high recommends restricting this setting to a value of 1 - however, it is provided here as an option to allow maximum flexibility. See e.g https://xsdba.readthedocs.io/en/latest/notebooks/advanced_example.html#Optimization-with-dask. Dask reverts to defaults if this parameter is not set."
+              },
+      
+              "clusterMemoryLimit": {
+                "type": ["integer","null"],
+                "minimum": 1,
+                "description": "Memory limit for the cluster, specified in MB. Configures the memory useage of the `LocalCluster()` scheduler of  `dask.distributed`. In cases where this option is not specified, the total system memory is made available for use. As a rule of thumb, the memory available per worker (ie `memoryLimit` / `threadsPerWorker` ) should be 3-4x the size of a chunk."
+              }
+            }
+      
+          }
+      
     }
 }

@@ -26,12 +26,21 @@ print(f'KAPy configuration file: {configfile_path}')
 import KAPy
 import os
 
-
 config=KAPy.getConfig(configfile_path)
 outDirs=config['dirs']
 
 #Generate filename dicts
 WORKFLOW=KAPy.getWorkflow(config)
+
+#Interpret dask resouce useage
+daskcfg={}
+daskcfg['nWorkers']=config["dask"].get("nWorkers", 1) or 1
+daskcfg['threadsPerWorker']=(config["dask"].get("threadsPerWorker", 1) or 1)
+daskcfg['totalThreads']=daskcfg['nWorkers'] * daskcfg['threadsPerWorker']
+daskcfg['resources']= {}
+memoryLimit=config["dask"].get("clusterMemoryLimit")
+if memoryLimit is not None:
+    daskcfg['resources']= {"mem_mb":memoryLimit}
 
 # Wildcard rules -------------------------------------------
 # Wildcard rules are generic rules in Snakemake that deal with many files at a time -
@@ -84,8 +93,15 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
         output: **thisRow['output_rule']
         params: 
             **config['biasAdjustment'][thisID],
-            tempDir=config['dirs']['tempDir'],
+            tempDir=config['dirs']['tempDir']
+        threads:
+            daskcfg['totalThreads']
+        resources:
+            **daskcfg['resources']
         run:
+            client=KAPy.setupDask(nWorkers=threads,
+                                  threadsPerWorker=daskcfg['threadsPerWorker'],
+                                  memoryLimit=resources.mem_mb)
             BA=KAPy.biasAdjust(target_file=input.target,
                                 reference_file=input.ref,
                                 **params)

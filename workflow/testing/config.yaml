@@ -51,3 +51,8 @@ outputGrid:
     method: 'bilinear'
     path: 'workflow/testing/griddes.txt'
     
+# Advanced options-------------------------------
+dask:
+    nWorkers: 4
+    threadsPerWorker: 1
+    clusterMemoryLimit: 10000
