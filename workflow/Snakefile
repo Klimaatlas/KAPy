@@ -14,7 +14,13 @@
 
 
 #Setup-----------------------
+#Configure logging
+import logging
+logging.getLogger("snakemake").setLevel(logging.WARNING)
+
 #Load configuration 
+import KAPy
+import os
 DEFAULT_CONFIG = "config/config.yaml"  #Defined relative to execution directory
 if workflow.overwrite_configfiles:
     configfile_path = workflow.overwrite_configfiles[0]
@@ -22,25 +28,18 @@ else:
     configfile_path = DEFAULT_CONFIG
 print(f'KAPy configuration file: {configfile_path}')
 
-#Load and validate
-import KAPy
-import os
-
 config=KAPy.getConfig(configfile_path)
 outDirs=config['dirs']
 
 #Generate filename dicts
 WORKFLOW=KAPy.getWorkflow(config)
 
-#Interpret dask resouce useage
-daskcfg={}
-daskcfg['nWorkers']=config["dask"].get("nWorkers", 1) or 1
-daskcfg['threadsPerWorker']=(config["dask"].get("threadsPerWorker", 1) or 1)
-daskcfg['totalThreads']=daskcfg['nWorkers'] * daskcfg['threadsPerWorker']
-daskcfg['resources']= {}
-memoryLimit=config["dask"].get("clusterMemoryLimit")
-if memoryLimit is not None:
-    daskcfg['resources']= {"mem_mb":memoryLimit}
+#Configure dask and setup
+client=KAPy.setupDaskCluster(host=config['dask']['host'],
+                     port=config['dask']['port'],
+                     nWorkers=workflow.cores-1,  #Retain one free core for coordination,
+                     threadsPerWorker=config['dask']['threadsPerWorker'],
+                     memLim=workflow.global_resources.get("mem_mb", None))
 
 # Wildcard rules -------------------------------------------
 # Wildcard rules are generic rules in Snakemake that deal with many files at a time -
@@ -95,13 +94,13 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
             **config['biasAdjustment'][thisID],
             tempDir=config['dirs']['tempDir']
         threads:
-            daskcfg['totalThreads']
+            4 #daskcfg['totalThreads']
         resources:
-            **daskcfg['resources']
+            #**daskcfg['resources']
         run:
-            client=KAPy.setupDask(nWorkers=threads,
-                                  threadsPerWorker=daskcfg['threadsPerWorker'],
-                                  memoryLimit=resources.mem_mb)
+            # client=KAPy.setupDaskCluster(nWorkers=threads,
+            #                       threadsPerWorker=daskcfg['threadsPerWorker'],
+            #                       memoryLimit=resources.mem_mb)
             BA=KAPy.biasAdjust(target_file=input.target,
                                 reference_file=input.ref,
                                 **params)

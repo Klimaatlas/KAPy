@@ -53,6 +53,6 @@ outputGrid:
     
 # Advanced options-------------------------------
 dask:
-    nWorkers: 4
     threadsPerWorker: 1
-    clusterMemoryLimit: 10000
+    host: "localhost"
+    port: 8786

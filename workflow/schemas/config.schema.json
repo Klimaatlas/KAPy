@@ -315,28 +315,26 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
-                "nWorkers",
                 "threadsPerWorker",
-                "clusterMemoryLimit"
+                "host",
+                "port"
             ],
             "properties": {
-              "nWorkers": {
-                "type": ["integer","null"],
-                "minimum": 1,
-                "description": "Number of Dask workers. Maps to the `n_workers` argument in the `LocalCluster()` scheduler of  `dask.distributed`. When this parameter is not set, dask reverts to the defaults."
-              },
-      
               "threadsPerWorker": {
                 "type": ["integer","null"],
                 "minimum": 1,
                 "description": "Number of threads per worker. Maps to the `threads_per_worker` argument in the `LocalCluster()` scheduler of  `dask.distributed`. Due to the nature of the bias-adjustment problem, most documentation high recommends restricting this setting to a value of 1 - however, it is provided here as an option to allow maximum flexibility. See e.g https://xsdba.readthedocs.io/en/latest/notebooks/advanced_example.html#Optimization-with-dask. Dask reverts to defaults if this parameter is not set."
               },
       
-              "clusterMemoryLimit": {
-                "type": ["integer","null"],
-                "minimum": 1,
-                "description": "Memory limit for the cluster, specified in MB. Configures the memory useage of the `LocalCluster()` scheduler of  `dask.distributed`. In cases where this option is not specified, the total system memory is made available for use. As a rule of thumb, the memory available per worker (ie `memoryLimit` / `threadsPerWorker` ) should be 3-4x the size of a chunk."
+              "host": {
+                "type": "string",
+                "description": "Location of the scheduler used the dask `LocalCluster()` scheduler. Use 'localhost' by default."
+              },
+              "port": {
+                "type": "integer",
+                "description": "Port to be used by the dask `LocalCluster()` scheduler used by dask. 8786 is the default."
               }
+
             }
       
           }
