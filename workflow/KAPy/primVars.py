@@ -30,7 +30,8 @@ from . import helpers
 from . import workflow
 
 #-----------------------------------------------------------------
-def defaultImport(inFiles,varCode,internalVarName,checks):
+def defaultImport(inFiles,varCode,internalVarName,checks,
+				  chunks={"time": 256}):
 	# Make dataset object using xarray lazy load approach.
 	#
 	# Setup	
@@ -44,7 +45,7 @@ def defaultImport(inFiles,varCode,internalVarName,checks):
 								compat="no_conflicts" if checks=="all" else "override",
 								coords="minimal",
 								data_vars="minimal",
-                                chunks={"time": 256},
+                                chunks=chunks,
 								preprocess=lambda ds: ds[[internalVarName]])
 
 	except Exception as e:
