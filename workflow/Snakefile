@@ -37,9 +37,9 @@ WORKFLOW=KAPy.getWorkflow(config)
 #Configure dask and setup
 client=KAPy.setupDaskCluster(host=config['dask']['host'],
                      port=config['dask']['port'],
-                     nWorkers=workflow.cores-1,  #Retain one free core for coordination,
+                     threads=workflow.cores-1,  #Retain one free core for coordination,
                      threadsPerWorker=config['dask']['threadsPerWorker'],
-                     memLim=workflow.global_resources.get("mem_mb", None))
+                     memoryPerWorker=config['dask']['memoryPerWorker'])
 
 # Wildcard rules -------------------------------------------
 # Wildcard rules are generic rules in Snakemake that deal with many files at a time -
