@@ -298,7 +298,7 @@ def getWorkflow(config):
                         (varPal["dataset"]==thisBA['refDataset'])
             if sum(selThese)!=1:
                 raise ValueError("Cannot find a unique data variable to use as the reference "
-                                 + f'for bias adjustment of "{thisBA['baVariable']}_{thisBA['targetDataset']}"')
+                                 + f'for bias adjustment. See {config["configurationTables"]["biasAdjustment"]}, row: "{thisBA['id']}" ')
             refDict = varPal[selThese].to_dict(orient="records")[0]
 
             # Now identify the input files needed for this bias adjustment 
