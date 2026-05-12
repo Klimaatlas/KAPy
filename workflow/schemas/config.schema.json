@@ -315,15 +315,21 @@
             "type": "object",
             "additionalProperties": false,
             "required": [
+                "memoryPerWorker",
                 "threadsPerWorker",
                 "host",
                 "port"
             ],
             "properties": {
+                "memoryPerWorker": {
+                    "type": ["string"],
+                    "description": "Maximum amount of memory allowed per worker in the dask cluster. Maps directly to the `memory_limit` argument of the `LocalCluster()` scheduler. Using `auto` will split the total system memory between the workers. Otherwise, a string giving the number of bytes (like 1 GiB or 1GB),  the amount of memory to be used *per worker*."
+                  },
+    
               "threadsPerWorker": {
-                "type": ["integer","null"],
+                "type": ["integer"],
                 "minimum": 1,
-                "description": "Number of threads per worker. Maps to the `threads_per_worker` argument in the `LocalCluster()` scheduler of  `dask.distributed`. Due to the nature of the bias-adjustment problem, most documentation high recommends restricting this setting to a value of 1 - however, it is provided here as an option to allow maximum flexibility. See e.g https://xsdba.readthedocs.io/en/latest/notebooks/advanced_example.html#Optimization-with-dask. Dask reverts to defaults if this parameter is not set."
+                "description": "Number of threads per worker. Maps to the `threads_per_worker` argument in the `LocalCluster()` scheduler of  `dask.distributed`. Due to the nature of the bias-adjustment problem, most documentation high recommends restricting this setting to a value of 1 - however, it is provided here as an option to allow maximum flexibility. See e.g https://xsdba.readthedocs.io/en/latest/notebooks/advanced_example.html#Optimization-with-dask."
               },
       
               "host": {
