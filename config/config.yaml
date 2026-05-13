@@ -56,8 +56,7 @@ outputGrid:
     path: 'config/griddes.txt'
 
 # Advanced options-------------------------------
-dask:
+advanced:
+    nWorkers: 1
     threadsPerWorker: 1
     memoryPerWorker: auto
-    host: "localhost"
-    port: 8786

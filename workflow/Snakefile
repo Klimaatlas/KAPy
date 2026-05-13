@@ -16,9 +16,8 @@
 #Setup-----------------------
 #Configure logging
 import logging
-logger = logging.getLogger("snakemake")
-logger.setLevel(logging.WARNING)
-logger.propagate = False  # stops messages bubbling up to root logger
+logging.getLogger("snakemake").setLevel(logging.WARNING)
+logging.getLogger("snakemake").propagate = False  # stops messages bubbling up to root logger
 
 #Load configuration 
 import KAPy
@@ -35,13 +34,6 @@ outDirs=config['dirs']
 
 #Generate filename dicts
 WORKFLOW=KAPy.getWorkflow(config)
-
-#Configure dask and setup
-# client=KAPy.setupDaskCluster(host=config['dask']['host'],
-#                      port=config['dask']['port'],
-#                      threads=workflow.cores-1,  #Retain one free core for coordination,
-#                      threadsPerWorker=config['dask']['threadsPerWorker'],
-#                      memoryPerWorker=config['dask']['memoryPerWorker'])
 
 # Wildcard rules -------------------------------------------
 # Wildcard rules are generic rules in Snakemake that deal with many files at a time -
