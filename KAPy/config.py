@@ -48,7 +48,7 @@ def validateConfig(config):
     # schemaDir="./workflow/schemas/"
     # schemaDir="./KAPy/workflow/schemas/"
     schemaDir = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "schemas"
+        os.path.dirname(os.path.abspath(__file__)), "..","workflow", "schemas"
     )
 
     # Do custom validation handling rather the using Snakemake's. The goal

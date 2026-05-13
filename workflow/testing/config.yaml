@@ -54,5 +54,6 @@ outputGrid:
 # Advanced options-------------------------------
 dask:
     threadsPerWorker: 1
+    memoryPerWorker: auto
     host: "localhost"
     port: 8786
