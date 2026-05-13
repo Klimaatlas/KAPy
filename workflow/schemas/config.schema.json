@@ -327,8 +327,8 @@
                   },
     
                 "memoryPerWorker": {
-                    "type": ["string"],
-                    "description": "Maximum amount of memory allowed per worker in the dask cluster. Maps directly to the `memory_limit` argument of the `LocalCluster()` scheduler. A string giving the number of bytes (like 1 GiB or 1GB),  the amount of memory to be used *per worker*. Defaults to '0', resulting in no limitation."
+                    "type": ["integer"],
+                    "description": "Maximum amount of memory allowed per worker in the dask cluster. Maps directly to the `memory_limit` argument of the `LocalCluster()` scheduler. An integer giving the number of megabytes (MB),  the amount of memory to be used *per worker*. Defaults to '0', resulting in no limitation."
                   },
     
               "threadsPerWorker": {

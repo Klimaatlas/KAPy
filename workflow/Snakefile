@@ -22,7 +22,6 @@ logging.getLogger("snakemake").propagate = False  # stops messages bubbling up t
 #Load configuration 
 import KAPy
 import os
-from humanfriendly import parse_size
 DEFAULT_CONFIG = "config/config.yaml"  #Defined relative to execution directory
 if workflow.overwrite_configfiles:
     configfile_path = workflow.overwrite_configfiles[0]
@@ -85,7 +84,7 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
         threads:
             config['advanced']['nWorkers']*config['advanced']['threadsPerWorker']
         resources:
-            mem=config['advanced']['nWorkers']*parse_size(config['advanced']['memoryPerWorker'])
+            mem_mb=config['advanced']['nWorkers']*config['advanced']['memoryPerWorker']
         script:
             "scripts/_03_biasAdjust.py"
 

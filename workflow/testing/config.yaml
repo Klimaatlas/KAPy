@@ -55,4 +55,4 @@ outputGrid:
 advanced:
     nWorkers: 1
     threadsPerWorker: 1
-    memoryPerWorker: auto
+    memoryPerWorker: 5000

@@ -17,7 +17,7 @@ def setupDaskCluster(nWorkers,
     #Configure cluster
     cluster = LocalCluster(threads_per_worker=threadsPerWorker,
                            n_workers=nWorkers,
-                           memory_limit=memoryPerWorker)
+                           memory_limit=f"{memoryPerWorker}MB")
 
     #We're good. Make the client
     client = Client(cluster)
