@@ -16,7 +16,9 @@
 #Setup-----------------------
 #Configure logging
 import logging
-logging.getLogger("snakemake").setLevel(logging.WARNING)
+logger = logging.getLogger("snakemake")
+logger.setLevel(logging.WARNING)
+logger.propagate = False  # stops messages bubbling up to root logger
 
 #Load configuration 
 import KAPy
