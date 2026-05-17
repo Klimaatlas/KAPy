@@ -5,6 +5,8 @@ import os
 from typing import Dict, List, Tuple, Optional
 import yaml
 import csv, json
+import tempfile
+import shutil
   
 class database:
  
@@ -36,14 +38,25 @@ class database:
  
     def __init__(
         self,
-        config_file: str
+        config_file: str,
+        tempDir: str
     ):
         #Load configuration file and populate self from there
         self.config_file=config_file
         with open(config_file, "r") as f:
             self.config = yaml.safe_load(f)
 
-        self.db_path = self.config['outputs']['database']
+        #Setup paths
+        self.db_path=tempfile.NamedTemporaryFile(dir=tempDir,
+                                                delete=False,
+                                                prefix="KAPy_database_",
+                                                suffix=".sqlite").name
+        print("TEMPORARY PATH: ",self.db_path)
+
+
+        self.db_output_path = self.config['outputs']['database']
+
+        #Populate rest of object
         self.stats_csv = self.config['outputs']['ensembleStatisticsCSV']
         self.members_csv = self.config['outputs']['ensembleMembersCSV']
         self.geometry = self.config['arealstats']['shapefile']
@@ -53,6 +66,7 @@ class database:
         self._stats_df = None
         self._members_df = None
  
+        os.makedirs(os.path.dirname(self.db_output_path) or ".", exist_ok=True)
         os.makedirs(os.path.dirname(self.db_path) or ".", exist_ok=True)
  
    # --------------------------------------------------
@@ -519,10 +533,6 @@ class database:
  
     def create_full_database(self):
         try:
-            #Delete DB if it already exists
-            if os.path.exists(self.db_path):  
-                os.remove(self.db_path)
-
             if self.include_geometry:
                 self.import_geometries()
  
@@ -537,6 +547,12 @@ class database:
             print("\nSUCCESS")
         finally:
             self.close()
+        
+        #Move the result into place
+        #Delete DB if it already exists
+        if os.path.exists(self.db_output_path):  
+            os.remove(self.db_output_path)
+        shutil.move(self.db_path, self.db_output_path)
  
 
 #--------------------------------------------

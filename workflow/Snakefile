@@ -230,7 +230,7 @@ rule _09_database:
         database=config['outputs']["database"]
     params:
     run:
-        db = KAPy.database(input.config_file)
+        db = KAPy.database(input.config_file,tempDir=resources.tmpdir)
         db.create_full_database()
         db.close()
             
