@@ -193,10 +193,6 @@ def validateConfig(config):
         if (rw['statistic'] != "custom") & (len(rw['variables'])>1):
                 raise ValueError(f"Multiple variables supplied to indicator '{rw["id"]}': in this case, the statistic chosen needs to be 'custom' but is currently '{rw["statistic"]}'.")
 
-    # If the temporary directory doesn't exist, create it
-    if not os.path.exists(config['dirs']['tempDir']):
-        os.makedirs(config['dirs']['tempDir'])
-
     #Check if the configuration file is valid
     if config['arealstats']['shapefile'] is not None:
         if not os.path.exists(config['arealstats']['shapefile']):

@@ -79,8 +79,7 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
         input: unpack(lambda wc, rw=thisRow: rw['input_dict'][wc.leaf])
         output: **thisRow['output_rule']
         params: 
-            **config['biasAdjustment'][thisID],
-            tempDir=config['dirs']['tempDir']
+            **config['biasAdjustment'][thisID]
         threads:
             config['advanced']['nWorkers']*config['advanced']['threadsPerWorker']
         resources:
@@ -126,7 +125,6 @@ rule _06_regrid:
     output:
         output=os.path.join(outDirs['regridded'],"{outfile}")
     params:
-        tempDir=config['dirs']['tempDir'],
         templateType=config["outputGrid"]["templateType"],
         path=config["outputGrid"].get("path",""),
         method=config['outputGrid'].get('method',"")
@@ -157,7 +155,6 @@ rule _08_arealstats:
     output:
         os.path.join(outDirs['arealstats'],'{fname}')
     params:
-        tempDir=config['dirs']['tempDir'],
         shapefile=config['arealstats']['shapefile'],
         useAreaWeighting=config['arealstats']['useAreaWeighting']
     script:

@@ -26,6 +26,7 @@ def main():
     BA = KAPy.biasAdjust(
         target_file=snakemake.input.target,
         reference_file=snakemake.input.ref,
+        tempDir= snakemake.resources.tmpdir,
         **snakemake.params
     )
 

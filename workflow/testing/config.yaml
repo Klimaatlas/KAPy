@@ -26,7 +26,6 @@ dirs:
     regridded: 'testing/06.commmon_grid'
     ensstats: 'testing/07.ensstats'
     arealstats: 'testing/08.areal_statistics'
-    tempDir: 'testing/tmp'
 outputs:
     ensembleStatisticsCSV: 'testing/Ensemble_statistics.csv'
     ensembleMembersCSV: 'testing/Ensemble_members.csv'

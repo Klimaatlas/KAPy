@@ -30,7 +30,6 @@ dirs:
     regridded: 'outputs/06.commmon_grid'
     ensstats: 'outputs/07.ensstats'
     arealstats: 'outputs/08.areal_statistics'
-    tempDir: 'outputs/tmp'
 outputs:
     ensembleStatisticsCSV: 'outputs/Ensemble_statistics.csv'
     ensembleMembersCSV: 'outputs/Ensemble_members.csv'

@@ -68,8 +68,7 @@
                 "indicators",
                 "regridded",
                 "ensstats",
-                "arealstats",
-                "tempDir"
+                "arealstats"
             ],
             "additionalProperties": false,
             "properties": {
@@ -104,12 +103,7 @@
                 "arealstats": {
                     "description": "Directory for storing statistics calculated over areas.",
                     "type": "string"
-                },
-                "tempDir": {
-                    "description": "Temporary directory to be used for scratch files",
-                    "type": "string"
-                }
-            }
+                }            }
         },
         "outputs": {
             "description": "Paths for writing output files",
