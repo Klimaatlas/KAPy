@@ -147,7 +147,7 @@ $ Value                <dbl> 25.81420, 26.59437, 26.96859, 26.90858, 25.81643, 2
 > 
 ```
 
-6. So lets make a plot.
+6. So lets make a plot. We first need to add a bit of data-wrangling to get the axes labelled nicely, and then can just plot.
 
 ```
 temp %>% 
@@ -166,6 +166,10 @@ temp %>%
 ![](Rplot.png)
 
 Ka pai!
+
+This is a very basic example of how to work with the data, but the key mechanism of extracting the data using `dbplyr` holds, regardless of how simple or complex an analysis one is making. Have a play, and see how you get on!
+
+The full R script can be found in [Visualisation.r](Visualisation.r)
 
 
 
