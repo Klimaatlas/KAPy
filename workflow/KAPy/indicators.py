@@ -15,7 +15,7 @@ import workflow.KAPy as KAPy
 import workflow.KAPy.helpers as helpers
 config=KAPy.getConfig("./config/config.yaml")  
 wf=KAPy.getWorkflow(config)
-indID='i011+i012+i015'
+indID='q95'
 leaf=next(iter(wf['indicators'][indID]['input_dict']))
 inFiles=wf['indicators'][indID]['input_dict'][leaf]
 %matplotlib inline
@@ -82,7 +82,7 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
             except ValueError:
                 raise ValueError(f"Cannot convert 'q' value in 'additionalArgs' to a float. 'q' string value: {args['q']}")
             #Calculate quantile
-            res =d.quantile(q=qtile,dim="time")
+            res =d.quantile(q=qtile,dim="time").drop_vars("quantile")
         elif thisStat=="custom":
             #Send to a custom function
             custFn=helpers.getExternalFunction(customScriptPath,
