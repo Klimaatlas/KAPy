@@ -73,6 +73,16 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
                                             op=args['op'],
                                             right=float(args['threshold']))
             res=comp.groupby("time.year").sum().mean(dim="year")
+        elif thisStat=="quantile":
+            #Check input arguments
+            if not (('q' in args) ):
+                raise ValueError("The 'additionalArgs' field must define the quantile via the 'q' argument e.g q:0.5 ")
+            try:
+                qtile = float(args['q'])
+            except ValueError:
+                raise ValueError(f"Cannot convert 'q' value in 'additionalArgs' to a float. 'q' string value: {args['q']}")
+            #Calculate quantile
+            res =d.quantile(q=qtile,dim="time")
         elif thisStat=="custom":
             #Send to a custom function
             custFn=helpers.getExternalFunction(customScriptPath,
