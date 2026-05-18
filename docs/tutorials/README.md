@@ -8,3 +8,6 @@ Here we have provided a set of worked examples to help you learn the basics of K
 * [Tutorial 4 - Adding a new data source](Tutorial04.md)
 * [Tutorial 5 - Using a shapefile for area averaging](Tutorial05.md)
 * [Tutorial 6 - Use of bias adjustment](Tutorial06.md)
+
+In addition, the following tutorials provide more information, but need not be taken in any particular order
+* [Visualisation and working with KAPy outputs](Visualisation/Visualisation.md)
