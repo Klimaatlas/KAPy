@@ -216,14 +216,14 @@ class database:
                                     "description":desc_tbl['description_column']})
 
             #Import from database
-            df = pd.read_sql(f"SELECT * FROM {tbl["table"]}", conn)
+            df = pd.read_sql(f'SELECT * FROM {tbl["table"]}', conn)
             df=df.drop(columns=desc_tbl['description_column'])
 
             #Left join
             df_joined = df.merge(cfg, on=tbl["code"], how="left")
 
             #Write back to database
-            df_joined.to_sql(f"{tbl["table"]}", conn, index=False, if_exists="replace")
+            df_joined.to_sql(f"{tbl['table']}", conn, index=False, if_exists="replace")
  
         conn.commit()
  

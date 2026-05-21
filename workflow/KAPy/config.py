@@ -59,7 +59,7 @@ def validateConfig(config):
     try:
         jsonschema.validate(instance=config, schema=cfgSchema)
     except jsonschema.ValidationError as e:
-        raise jsonschema.ValidationError(f'❌ Validation of "{config['configfile']}" failed at "{'.'.join(map(str, e.path))}": {e.message}') 
+        raise jsonschema.ValidationError(f'❌ Validation of "{config["configfile"]}" failed at "{".".join(map(str, e.path))}": {e.message}') 
 
     # Validate each configuration table in turn. The validation approach used
     # is defined in the following table
@@ -125,7 +125,7 @@ def validateConfig(config):
             try:
                 jsonschema.validate(instance=row, schema=thisSchema)
             except jsonschema.ValidationError as e:
-                raise jsonschema.ValidationError(f'❌ Validation of "{thisCfgFile}" failed at row {i+1}, column "{'.'.join(map(str, e.path))}": {e.message}')
+                raise jsonschema.ValidationError(f'❌ Validation of "{thisCfgFile}" failed at row {i+1}, column "{".".join(map(str, e.path))}": {e.message}')
 
         # We allow some columns to be defined as lists, but 
         # note that Snakemake doesn't validate arrays in tabular configurations at the moment
@@ -186,12 +186,12 @@ def validateConfig(config):
     for idx,thisrw in indTbl.iterrows():
         for requestSeason in thisrw["seasons"]:
             if not (requestSeason in validSeasons):
-                raise ValueError(f"Unknown season '{requestSeason}' requested for indicator '{thisrw["id"]}'.")
+                raise ValueError(f"Unknown season '{requestSeason}' requested for indicator '{thisrw['id']}'.")
 
     # Indicators can only take multiple input variables if the statistic type is "custom"
     for idx, rw in indTbl.iterrows():
         if (rw['statistic'] != "custom") & (len(rw['variables'])>1):
-                raise ValueError(f"Multiple variables supplied to indicator '{rw["id"]}': in this case, the statistic chosen needs to be 'custom' but is currently '{rw["statistic"]}'.")
+                raise ValueError(f"Multiple variables supplied to indicator '{rw['id']}': in this case, the statistic chosen needs to be 'custom' but is currently '{rw['statistic']}'.")
 
     #Check if the configuration file is valid
     if config['arealstats']['shapefile'] is not None:

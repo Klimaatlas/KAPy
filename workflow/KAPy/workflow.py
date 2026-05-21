@@ -124,7 +124,7 @@ def getWorkflow(config):
             # Handling multiple files requires some information from the filenames, 
             # and therefore the fieldSeparator needs to be defined. If not, throw an error
             if thisInp['fieldSeparator']=='':
-                raise ValueError(f'fieldSeparator is not defined for input ID "{thisInp['id']}" ' + \
+                raise ValueError(f'fieldSeparator is not defined for input ID "{thisInp["id"]}" ' + \
                          f'but {len(inpTbl)} files were detected.')
 
             # Split filenames into columns and extract predefined elements
@@ -165,11 +165,11 @@ def getWorkflow(config):
                     #Experiment naming is the sum of the commonExpt and thisExpt
                     theseExptFiles['pvFname']= \
                         f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}" + \
-                        f"_{thisInp["commonExperiment"]}+{thisExpt}_" + \
+                        f"_{thisInp['commonExperiment']}+{thisExpt}_" + \
                         theseExptFiles['ensMemberID'] +"." + fileExtn
                     commonExptTable['pvFname']= \
                         f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}" + \
-                        f"_{thisInp["commonExperiment"]}+{thisExpt}_" + \
+                        f"_{thisInp['commonExperiment']}+{thisExpt}_" + \
                         commonExptTable['ensMemberID'] +"."+fileExtn
                     
                     #Now select the files from the commonExpt that are also in the
@@ -298,7 +298,7 @@ def getWorkflow(config):
                         (varPal["dataset"]==thisBA['refDataset'])
             if sum(selThese)!=1:
                 raise ValueError("Cannot find a unique data variable to use as the reference "
-                                 + f'for bias adjustment. See {config["configurationTables"]["biasAdjustment"]}, row: "{thisBA['id']}" ')
+                                 + f'for bias adjustment. See {config["configurationTables"]["biasAdjustment"]}, row: "{thisBA["id"]}" ')
             refDict = varPal[selThese].to_dict(orient="records")[0]
 
             # Now identify the input files needed for this bias adjustment 
@@ -316,9 +316,9 @@ def getWorkflow(config):
             
             # The output grid is configurable and plays into the file name
             if thisBA['outputGrid']=="reference":
-                BAtbl['outfile'] =f"{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_{refDict['grid']}_"+BAtbl["expt"]+"_"+BAtbl["stem"]+".nc"
+                BAtbl['outfile'] =f'{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_{refDict["grid"]}_'+BAtbl["expt"]+'_'+BAtbl["stem"]+'.nc'
             elif thisBA['outputGrid']=="target":
-                BAtbl['outfile'] =f"{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_"+BAtbl['grid']+"_"+BAtbl["expt"]+"_"+BAtbl["stem"]+".nc"
+                BAtbl['outfile'] =f'{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_'+BAtbl['grid']+'_'+BAtbl["expt"]+'_'+BAtbl["stem"]+'.nc'
             else:
                 raise ValueError(f"Unknown output grid option, '{thisBA['outputGrid']}' supplied in bias adjustment row: '{thisKey}' ")
 
@@ -434,7 +434,7 @@ def getWorkflow(config):
         else:
             useThese = varPal['correctVar'] & varPal['correctDataset']
         if not any(useThese):
-            raise ValueError(f"Cannot find variable(s) '{thisInd["variables"]}' for datasets '{thisInd['datasets']}' to calculate indicators {thisInd['indicator_codes']} from.")
+            raise ValueError(f"Cannot find variable(s) '{thisInd['variables']}' for datasets '{thisInd['datasets']}' to calculate indicators {thisInd['indicator_codes']} from.")
         long_ind_tbl=varPal[useThese].copy()
 
         # Pivot and retain only those in common
@@ -443,7 +443,7 @@ def getWorkflow(config):
         )
         wide_ind_tbl = wide_ind_tbl.dropna().reset_index()
         if wide_ind_tbl.size == 0:
-            raise ValueError(f"Cannot find any input variables {thisInd["variables"]} for indicator id '{thisInd['id']}'. ")
+            raise ValueError(f"Cannot find any input variables {thisInd['variables']} for indicator id '{thisInd['id']}'. ")
 
         # Now we have a list of valid dataset/grid/expt/stem combinations that are valid and 
         # have the required input variables. This combination is used to form a unique id
