@@ -1,2 +1,2 @@
-id	enabled	inputVars	outputVars	processorType	processorPath	processorFunction	passXarrays	additionalArgs
-e_sat_ba	x	tas	e-sat	module	xclim.indicators.convert	saturation_vapor_pressure	True	{}
+id	enabled	inputVars	outputVars	passXarrays	scriptPath	scriptFunction	additionalArgs
+tas-ba_C2K	x	tas	tasK	True	workflow/testing/temperature_conversions.py	C2K	{}
