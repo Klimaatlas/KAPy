@@ -28,12 +28,14 @@ if workflow.overwrite_configfiles:
 else:
     configfile_path = DEFAULT_CONFIG
 print(f'KAPy configuration file: {configfile_path}')
-
 config=KAPy.getConfig(configfile_path)
-outDirs=config['dirs']
 
 #Generate filename dicts
 WORKFLOW=KAPy.getWorkflow(config)
+
+#Setup helpers
+from pathlib import Path
+outDirs={key : Path(p) for key,p in config['dirs'].items()}
 
 # Wildcard rules -------------------------------------------
 # Wildcard rules are generic rules in Snakemake that deal with many files at a time -
@@ -49,16 +51,16 @@ WORKFLOW=KAPy.getWorkflow(config)
 #The rule is based on a dictionary mapping output files to input files, but we also 
 #need to keep track of the corresponding inpID, which contains the various configurations
 #relevant for that output file. 
-rule _01_primaryVar:
-    input:
-        lambda wc: WORKFLOW['primary_vars'][wc.leaf]["inputs"]
-    output:
-        os.path.join(outDirs['primaryVariables'], "{leaf}")
-    params:
-        row_arguments = lambda wc: config['inputs'][WORKFLOW['primary_vars'][wc.leaf]["groupID"]],
-        cutout_args   = config['cutouts']
-    script:
-        "scripts/_01_primaryVar.py"        
+for thisID, thisRow in WORKFLOW['primary_vars'].items():
+    rule:
+        name: f"_01_primaryVar_{thisID}"
+        input: unpack(lambda wc, rw=thisRow, pvID=thisID: rw["input_dict"][os.path.join(pvID,wc.file)])
+        output: thisRow['output_rule']
+        params: 
+            row_arguments = config['inputs'][thisID],
+            cutout_args   = config['cutouts']
+        script:
+            "scripts/_01_primaryVar.py"        
 
 # Secondary variables 
 # "Secondary variables" are calculated as new variables derived from primary variables.  
@@ -159,38 +161,7 @@ rule _08_arealstats:
         useAreaWeighting=config['arealstats']['useAreaWeighting']
     script:
         "scripts/_08_arealstats.py"
-
-# #Plots        
-# rule _09_lineplots:
-#     output:
-#         os.path.join(outDirs['outputs'],'plots','{indID}_lineplot.png')
-#     input:
-#         lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
-#                                                    f"{wildcards.indID}_lineplot.png")]
-#     run:
-#         KAPy.makeLineplot(outFile=output,
-#                           srcFiles=input)
-
-# rule _09_boxplots:
-#     output:
-#         os.path.join(outDirs['outputs'],'plots','{indID}_boxplot.png')
-#     input:
-#         lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
-#                                                    f"{wildcards.indID}_boxplot.png")]
-#     run:
-#         KAPy.makeBoxplot(outFile=output,
-#                          srcFiles=input)
-
-# rule _09_spatial_plots:
-#     output:
-#         os.path.join(outDirs['outputs'],'plots','{indID}_spatial.png')
-#     input:
-#         lambda wildcards: wf['plots'][os.path.join(outDirs['outputs'],'plots',
-#                                                    f"{wildcards.indID}_spatial.png")]
-#     run:
-#         KAPy.makeSpatialplot(outFile=output,
-#                              srcFiles=input)
-        
+ 
 
 # # Individual targets -------------------------------
 # # These are individual files that are produced, rather than a collection of files
@@ -243,7 +214,7 @@ rule _09_database:
 #Primary variables
 rule PRIMARY_VARIABLES:
     input:
-        [v["outputs"] for v in WORKFLOW['primary_vars'].values()]
+        [t for v in WORKFLOW['primary_vars'].values() for t in v['outputs']]
 
 #Secondary variables  
 if "secondaryVars" in config:
@@ -306,18 +277,18 @@ rule ALL:
 
 #And finally, one target for each configuration group.
 for wf_key in WORKFLOW.keys():
-    if wf_key in ['secondary_vars',"bias_adj",'tertiary_vars','indicators']:
+    if wf_key in ['primary_vars','secondary_vars',"bias_adj",'tertiary_vars','indicators']:
         for item_key in WORKFLOW[wf_key].keys():
             rule:
                 name: f".{item_key}"
                 input: WORKFLOW[wf_key][item_key]["outputs"]
                     
 #Primary variables are a bit trickey, and require processing the entire dict first
-primary_var_output_groups={out['groupID'] : [] for out in WORKFLOW['primary_vars'].values()}
-for out in WORKFLOW['primary_vars'].values():
-    primary_var_output_groups[out['groupID']] += [out['outputs']]
-for item_key,outputs in primary_var_output_groups.items():
-    rule:
-        name: f".{item_key}"
-        input: outputs
+# primary_var_output_groups={out['groupID'] : [] for out in WORKFLOW['primary_vars'].values()}
+# for out in WORKFLOW['primary_vars'].values():
+#     primary_var_output_groups[out['groupID']] += [out['outputs']]
+# for item_key,outputs in primary_var_output_groups.items():
+#     rule:
+#         name: f".{item_key}"
+#         input: outputs
 
