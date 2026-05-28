@@ -32,7 +32,7 @@ def setupDaskCluster(threads,
         #We take the most conservative memory useage. If nothing is defined, throw an error
         memList=[]
         if "mem" in daskArgs:
-            memList.append(daskArgs.get("mem"))
+            memList.append(parse_size(daskArgs.get("mem")))
         if "mem_mb" in daskArgs:
             memList.append(parse_size(f"{daskArgs.get("mem_mb")}MB"))
         if "mem_mib" in daskArgs:
