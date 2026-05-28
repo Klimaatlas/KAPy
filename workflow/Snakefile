@@ -82,10 +82,6 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
         output: **thisRow['output_rule']
         params: 
             **config['biasAdjustment'][thisID]
-        threads:
-            config['advanced']['nWorkers']*config['advanced']['threadsPerWorker']
-        resources:
-            mem_mb=config['advanced']['nWorkers']*config['advanced']['memoryPerWorker']
         script:
             "scripts/_03_biasAdjust.py"
 

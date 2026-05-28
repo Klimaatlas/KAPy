@@ -53,9 +53,3 @@ outputGrid:
     gridName: 'Ghana025'
     method: 'bilinear'
     path: 'config/griddes.txt'
-
-# Advanced options-------------------------------
-advanced:
-    nWorkers: 1
-    threadsPerWorker: 1
-    memoryPerWorker: 0

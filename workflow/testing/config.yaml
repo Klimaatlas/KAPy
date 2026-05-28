@@ -49,9 +49,4 @@ outputGrid:
     gridName: 'Ghana025'
     method: 'bilinear'
     path: 'workflow/testing/griddes.txt'
-    
-# Advanced options-------------------------------
-advanced:
-    nWorkers: 1
-    threadsPerWorker: 1
-    memoryPerWorker: 5000
+
