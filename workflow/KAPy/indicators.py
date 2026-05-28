@@ -84,10 +84,27 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
             #Calculate quantile
             res =d.quantile(q=qtile,dim="time").drop_vars("quantile")
         elif thisStat=="custom":
-            #Send to a custom function
+            #When working with multiple indicators, it is easiest to merge everything into a single
+            #dataset and then apply the overloaded time slicing functions of Xarray. However,
+            #we also want to enforce passing by named arguments to our custom function and therefore
+            #split the Xarray dataset into a dict again.
+            if isinstance(d, xr.DataArray):
+                datDict={list(inFiles.keys())[0]: d  }
+            elif isinstance(d, xr.Dataset): 
+                datDict={thisKey: d[thisKey] for thisKey in inFiles.keys()}
+            else:
+                raise ValueError("Unknown object type.")
+
+            #Retrieve the custom function. We check that the signature of the function
+            #can accept at least the variables that we want
             custFn=helpers.getExternalFunction(customScriptPath,
                                                customScriptFunction)
-            res = custFn(d,**additionalArgs)  
+            missing=helpers.checkSignature(custFn,datDict)
+            if missing:
+                raise ValueError(f"Required arguments '{missing}' are missing from function '{customScriptFunction}' in '{customScriptPath}'.")
+            
+            #Call function
+            res = custFn(**datDict,**additionalArgs)  
         else:
             raise ValueError(f"Unknown indicator statistic, '{thisStat}'")
         return(res)

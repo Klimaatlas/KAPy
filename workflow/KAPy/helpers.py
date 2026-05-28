@@ -10,7 +10,7 @@ import pickle
 import xarray as xr
 import os
 import importlib
-
+from inspect import signature
 
 def readFile(thisPath,format=None,chunks={}):
     """
@@ -103,3 +103,14 @@ def getExternalFunction(scriptPath,functionName):
     thisSpec.loader.exec_module(thisModule)
     thisFn = getattr(thisModule, functionName)
     return(thisFn)
+
+def checkSignature(fn,argList):
+    #Get the signature of the function
+    thisSig=signature(fn).parameters
+
+    #Check what is missing
+    missing = [key for key in argList.keys()if key not in thisSig]
+
+    #Return missing. Error handling is in the calling function
+    return missing
+    
