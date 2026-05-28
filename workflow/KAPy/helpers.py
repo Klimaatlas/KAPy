@@ -11,6 +11,7 @@ import xarray as xr
 import os
 import importlib
 from inspect import signature
+from pathlib import Path
 
 def readFile(thisPath,format=None,chunks={}):
     """
@@ -98,9 +99,13 @@ def getExternalFunction(scriptPath,functionName):
         scriptPath (_type_): Path to the script file containing the function
         functionName (_type_): Name of the function to retrieve
     """
-    thisSpec = importlib.util.spec_from_file_location("customScript", scriptPath)
-    thisModule = importlib.util.module_from_spec(thisSpec)
-    thisSpec.loader.exec_module(thisModule)
+    #Check that file exists first
+    if not Path(scriptPath).exists():
+        raise FileNotFoundError(f"Cannot find requested script: {scriptPath}.")
+
+    #Import
+    loader = importlib.machinery.SourceFileLoader("customScript", scriptPath)
+    thisModule = loader.load_module()
     thisFn = getattr(thisModule, functionName)
     return(thisFn)
 
