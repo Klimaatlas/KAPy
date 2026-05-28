@@ -51,7 +51,7 @@ def getWorkflow(config):
             # Assert that file must therefore be a text file
             # Case 3. Direct reference to an .md5 file, in the form of output from md5sum,
             # where the file path is in the second column
-            elif input_path.suffix.lower() in [".md5"]:
+            elif Path(input_path).suffix.lower() in [".md5"]:
                 filelist=pd.read_csv(input_path,names=["md5","path"],
                                        header=None,
                                        sep=r"\s+",
