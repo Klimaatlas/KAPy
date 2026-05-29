@@ -3,3 +3,4 @@ mean-tas	x	Annual mean temperature	tas	all	all	periods	mean	subtract	{}
 mean-tasK	x	Annual mean temperature (K)	tasK	all	all	periods	mean	subtract	{}		
 i101	x	Annual mean temperature	tas	CORDEX-BA	all	years	mean	subtract	{}		
 q95	x	Annual mean temperature	tas	CORDEX-BA	all	periods	quantile	subtract	{'q':'0.95'}		
+hotdays	x	Number of days above 30	tas	CORDEX-BA	all	periods	custom	subtract	{}	workflow/testing/hotdays.py	hotdays

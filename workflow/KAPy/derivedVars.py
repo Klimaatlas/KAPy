@@ -35,6 +35,9 @@ def buildDerivedVar(inFiles, passXarrays, scriptPath, scriptFunction,
     # Now get the function to call
     thisFn=helpers.getExternalFunction(scriptPath,
                                         scriptFunction)
+    #Check the signature
+    helpers.checkSignature(thisFn,inFiles)
+
 
     # Call function
     theseArgs = {**inFiles, **additionalArgs}
