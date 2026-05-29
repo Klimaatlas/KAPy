@@ -53,3 +53,7 @@ outputGrid:
     gridName: 'Ghana025'
     method: 'bilinear'
     path: 'config/griddes.txt'
+
+# Advanced options-------------
+dask_resources:  #Blank to use default options. Generally specified at runtime via: --config dask_resources=<path/to/file.tsv>
+

@@ -59,6 +59,10 @@ for thisID, thisRow in WORKFLOW['primary_vars'].items():
         params: 
             row_arguments = config['inputs'][thisID],
             cutout_args   = config['cutouts']
+        threads:
+            KAPy.get_dask_threads(config['dask_resources'],"PRIMARY_VARIABLES",thisID)
+        resources:
+            **KAPy.get_dask_resources(config['dask_resources'],"PRIMARY_VARIABLES",thisID)
         script:
             "scripts/_01_primaryVar.py"        
 
@@ -71,6 +75,10 @@ for thisID, thisRow in WORKFLOW['secondary_vars'].items():
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: **config['secondaryVars'][thisID]
+        threads:
+            KAPy.get_dask_threads(config['dask_resources'],"SECONDARY_VARIABLES",thisID)
+        resources:
+            **KAPy.get_dask_resources(config['dask_resources'],"SECONDARY_VARIABLES",thisID)
         script:
             "scripts/_02_secondaryVars.py"
 
@@ -82,6 +90,10 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
         output: **thisRow['output_rule']
         params: 
             **config['biasAdjustment'][thisID]
+        threads:
+            KAPy.get_dask_threads(config['dask_resources'],"BIAS_ADJUSTMENT",thisID)
+        resources:
+            **KAPy.get_dask_resources(config['dask_resources'],"BIAS_ADJUSTMENT",thisID)
         script:
             "scripts/_03_biasAdjust.py"
 
@@ -95,6 +107,10 @@ for thisID, thisRow in WORKFLOW['tertiary_vars'].items():
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: **config['tertiaryVars'][thisID]
+        threads:
+            KAPy.get_dask_threads(config['dask_resources'],"TERTIARY_VARIABLES",thisID)
+        resources:
+            **KAPy.get_dask_resources(config['dask_resources'],"TERTIARY_VARIABLES",thisID)
         script:
             "scripts/_04_tertiaryVar.py"
 
@@ -110,6 +126,10 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
             seasonsTable=config['seasons'],
             periodsTable=config['periods'],
             **config['indicators'][thisID]
+        threads:
+            KAPy.get_dask_threads(config['dask_resources'],"INDICATORS",thisID)
+        resources:
+            **KAPy.get_dask_resources(config['dask_resources'],"INDICATORS",thisID)
         script:
             "scripts/_05_indicators.py"        
 
@@ -126,6 +146,10 @@ rule _06_regrid:
         templateType=config["outputGrid"]["templateType"],
         path=config["outputGrid"].get("path",""),
         method=config['outputGrid'].get('method',"")
+    threads:
+        KAPy.get_dask_threads(config['dask_resources'],"REGRIDDING",thisID)
+    resources:
+        **KAPy.get_dask_resources(config['dask_resources'],"REGRIDDING",thisID)
     script:
         "scripts/_06_regridding.py"        
 

@@ -50,3 +50,5 @@ outputGrid:
     method: 'bilinear'
     path: 'workflow/testing/griddes.txt'
 
+# Advanced options-------------
+dask_resources:  workflow/testing/dask.tsv

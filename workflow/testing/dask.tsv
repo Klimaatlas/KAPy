@@ -1,0 +1,7 @@
+id	enabled	n_workers	threads_per_worker	memory_limit
+PRIMARY_VARIABLES				
+SECONDARY_VARIABLES				
+BIAS_ADJUSTMENT	x	2	1	1000MB
+TERTIARY_VARIABLES				
+INDICATORS				
+REGRIDDING				

@@ -94,10 +94,18 @@ def validateConfig(config):
                        "dictCols": ["additionalArgs"], 
                        "schema": "indicators",
                        "optional": True},
+        "dask_resources": {"listCols": [], 
+                       "dictCols": [], 
+                       "schema": "dask",
+                       "optional": True},
         }
     for thisTblKey, theseVals in tabularCfg.items():
         # Load the tablular configuration table (if it  exists)
-        thisCfgFile = config["configurationTables"][thisTblKey]
+        if thisTblKey=="dask_resources":
+            thisCfgFile = config[thisTblKey]
+        else:
+            thisCfgFile = config["configurationTables"][thisTblKey]
+
         if ((thisCfgFile =='') | (thisCfgFile==None)) & theseVals['optional']:
             continue  #Not using this option
         elif (thisCfgFile =='') & theseVals['optional']:

@@ -9,7 +9,8 @@
         "arealstats",
         "dirs",
         "outputs",
-        "ensembles"
+        "ensembles",
+        "dask_resources"
     ],
     "additionalProperties": true,
     "properties": {
@@ -302,7 +303,10 @@
                     }
                 }
             ]
+        },
+        "dask_resources": {
+            "description": "Paths to dask resource specification type",
+            "type": ["string","null"]
         }
-      
     }
 }
