@@ -116,6 +116,9 @@ def checkSignature(fn,argList):
     #Check what is missing
     missing = [key for key in argList.keys()if key not in thisSig]
 
-    #Return missing. Error handling is in the calling function
-    return missing
+    if missing:
+        raise ValueError(f"The function does not accept the required argument(s): {missing}.")
+    else:
+        #Looks good
+        return None
     

@@ -36,7 +36,13 @@ def buildDerivedVar(inFiles, passXarrays, scriptPath, scriptFunction,
     thisFn=helpers.getExternalFunction(scriptPath,
                                         scriptFunction)
     #Check the signature
-    helpers.checkSignature(thisFn,inFiles)
+    try:
+        helpers.checkSignature(thisFn, inFiles)
+    except ValueError as e:
+        raise ValueError(
+            f"Error in the signature of the external function '{scriptFunction}' "
+            f"in '{scriptPath}': {e}"
+        ) from None            
 
 
     # Call function

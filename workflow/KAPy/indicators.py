@@ -99,10 +99,14 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
             #can accept at least the variables that we want
             custFn=helpers.getExternalFunction(customScriptPath,
                                                customScriptFunction)
-            missing=helpers.checkSignature(custFn,datDict)
-            if missing:
-                raise ValueError(f"Required arguments '{missing}' are missing from function '{customScriptFunction}' in '{customScriptPath}'.")
-            
+            try:
+                helpers.checkSignature(custFn, inFiles)
+            except ValueError as e:
+                raise ValueError(
+                    f"Error in the signature of the external function '{customScriptFunction}' "
+                    f"in '{customScriptPath}': {e}"
+                ) from None            
+
             #Call function
             res = custFn(**datDict,**additionalArgs)  
         else:
