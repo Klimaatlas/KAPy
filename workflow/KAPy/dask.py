@@ -98,6 +98,9 @@ def setupDaskCluster(threads, resources):
 
 def get_dask_threads(resource_table, family, id):
     # Check if the id or family are in the resource table
+    if resource_table is None:
+        return 1
+
     if id in resource_table:
         this = resource_table[id]
     elif family in resource_table:
@@ -111,6 +114,9 @@ def get_dask_threads(resource_table, family, id):
 
 def get_dask_resources(resource_table, family, id):
     # Check if the id or family are in the resource table
+    if resource_table is None:
+        return {}
+
     if id in resource_table:
         this = resource_table[id]
     elif family in resource_table:
