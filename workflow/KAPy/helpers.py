@@ -12,6 +12,8 @@ import os
 import importlib
 from inspect import signature
 from pathlib import Path
+import uuid
+
 
 def readFile(thisPath,format=None,chunks={}):
     """
@@ -104,9 +106,13 @@ def getExternalFunction(scriptPath,functionName):
         raise FileNotFoundError(f"Cannot find requested script: {scriptPath}.")
 
     #Import
-    loader = importlib.machinery.SourceFileLoader("customScript", scriptPath)
-    thisModule = loader.load_module()
-    thisFn = getattr(thisModule, functionName)
+    module_name = f"customScript_{uuid.uuid4().hex}"    
+    spec = importlib.util.spec_from_file_location(module_name, scriptPath)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    thisFn = getattr(module, functionName)    
+    if thisFn is None:
+        raise AttributeError(f"Function '{functionName}' not found in {scriptPath}")
     return(thisFn)
 
 def checkSignature(fn,argList):
