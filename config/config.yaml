@@ -54,8 +54,6 @@ outputGrid:
     method: 'bilinear'
     path: 'config/griddes.txt'
 
-# Advanced options-------------------------------
-advanced:
-    nWorkers: 1
-    threadsPerWorker: 1
-    memoryPerWorker: 0
+# Advanced options-------------
+dask_resources:  #Blank to use default options. Generally specified at runtime via: --config dask_resources=<path/to/file.tsv>
+

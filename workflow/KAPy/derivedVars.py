@@ -25,22 +25,25 @@ import os
 from . import helpers
 
 
-def buildDerivedVar(inFiles, processorType, processorPath,processorFunction,
-                    passXarrays,additionalArgs,**kwargs):
+def buildDerivedVar(inFiles, passXarrays, scriptPath, scriptFunction,
+                    additionalArgs,**kwargs):
 
     # Load input files
     if passXarrays=='True':  # Then load the paths into xarrays. Otherwise just pass the path.
         inFiles = {thisKey: helpers.readFile(thisPath) for thisKey, thisPath in inFiles.items()}
 
     # Now get the function to call
-    if processorType == "module":
-        thisModule = importlib.import_module(processorPath)
-        thisFn = getattr(thisModule, processorFunction)
-    elif processorType == "script":
-        thisFn=helpers.getExternalFunction(processorPath,
-                                            processorFunction)
-    else:
-        raise ValueError(f"processorType '{processorType}' is invalid.")
+    thisFn=helpers.getExternalFunction(scriptPath,
+                                        scriptFunction)
+    #Check the signature
+    try:
+        helpers.checkSignature(thisFn, inFiles)
+    except ValueError as e:
+        raise ValueError(
+            f"Error in the signature of the external function '{scriptFunction}' "
+            f"in '{scriptPath}': {e}"
+        ) from None            
+
 
     # Call function
     theseArgs = {**inFiles, **additionalArgs}

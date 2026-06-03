@@ -21,7 +21,6 @@
   - <a id="properties/dirs/properties/regridded"></a>**`regridded`** *(string, required)*: Directory for storing indicators regridded to a common grid.
   - <a id="properties/dirs/properties/ensstats"></a>**`ensstats`** *(string, required)*: Directory for storing ensemble statistics.
   - <a id="properties/dirs/properties/arealstats"></a>**`arealstats`** *(string, required)*: Directory for storing statistics calculated over areas.
-  - <a id="properties/dirs/properties/tempDir"></a>**`tempDir`** *(string, required)*: Temporary directory to be used for scratch files.
 - <a id="properties/outputs"></a>**`outputs`** *(object, required)*: Paths for writing output files. Cannot contain additional properties.
   - <a id="properties/outputs/properties/ensembleStatisticsCSV"></a>**`ensembleStatisticsCSV`** *(string, required)*: Path to .csv file combining all areal statistics summarised across the entire ensemble.
   - <a id="properties/outputs/properties/ensembleMembersCSV"></a>**`ensembleMembersCSV`** *(string, required)*: Path to .csv file combining the  areal statistics for each individual ensemble member.

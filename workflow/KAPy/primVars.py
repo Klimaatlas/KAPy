@@ -106,17 +106,20 @@ def cutout_lonlat(thisDat, xmin,xmax,ymin,ymax,varCode,**kwargs):
 	# Extract first time step. This avoids having to work
 	# with the entire dataset.
 	# ASSERT: there is a time dimension called "time"
+	if "time" not in thisDat.dims:
+		raise ValueError("DataArray must contain a 'time' dimension")
 	firstTS=thisDat.isel(time=0)
 
-	# Do cutouts using cdo sellonlatbox. Make sure that we
-	# return a dataarray and not a dataset
+	# Create a mask as the basis for the cutouts using cdo masklonlatbox.
+	# Make sure that we return a dataarray and not a dataset by specifying the
+	# varCode
 	cdo = Cdo()
-	cutoutMask = cdo.sellonlatbox(xmin, xmax, ymin, ymax,
+	mask = cdo.masklonlatbox(xmin, xmax, ymin, ymax,
 								  input=firstTS,
 								  returnXArray=varCode)
 	
-	# Apply masking to data array object
-	da=thisDat.where(cutoutMask.notnull(),drop=True)
+	# Find the intersection of the two
+	da=thisDat.where(mask.notnull(),drop=True)
 
 	# Done
 	return(da)

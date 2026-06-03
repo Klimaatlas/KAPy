@@ -41,8 +41,8 @@ def getWorkflow(config):
             filelist=sorted(glob.glob(thisInp["path"]))
         # Then we we are dealing with a single file. First check that it exists
         else:
-            input_path=Path(thisInp['path'])
-            if not input_path.exists():
+            input_path=thisInp['path']
+            if not Path(input_path).exists():
                 raise FileNotFoundError(f"Cannot find input file '{input_path}'")
             # Case 2. Direct reference to a single NetCDF - we detect this and
             # can use it directly
@@ -51,7 +51,7 @@ def getWorkflow(config):
             # Assert that file must therefore be a text file
             # Case 3. Direct reference to an .md5 file, in the form of output from md5sum,
             # where the file path is in the second column
-            elif input_path.suffix.lower() in [".md5"]:
+            elif Path(input_path).suffix.lower() in [".md5"]:
                 filelist=pd.read_csv(input_path,names=["md5","path"],
                                        header=None,
                                        sep=r"\s+",
@@ -192,28 +192,27 @@ def getWorkflow(config):
                 pvTbl = pd.concat(pvList)
 
         # Build the full filename and tidy up the output into a dict
-        pvTbl["pvLeaf"] = [
-            os.path.join(thisInp['datasetCode'], thisInp['varCode'],f)
+        pvTbl["pvPath"] = [
+            os.path.join(thisKey,f)
             for f in pvTbl["pvFname"]
         ]
 
         #Prior to adding to the pvDict, check that we have unique keys
-        if any(pvTbl['pvLeaf'].isin(pvDict.keys())):
+        if any(pvTbl['pvPath'].isin(pvDict.keys())):
             raise ValueError("Duplicate keys found in generating primary variables.")
 
-        #Finally, group the inputfiles together and copy into pvDict
-        grouped_inputs =(
-            pvTbl.groupby("pvLeaf")
+        #Finally, group the inputfiles together and setup entry in pvDict
+        inp_dict =(
+            pvTbl.groupby("pvPath")
             .apply(lambda x: list(x["inPath"]), include_groups=False)
             .to_dict()
         )
-        for outLeaf in grouped_inputs.keys():
-            pvDict[outLeaf] = {
-                "groupID": thisKey,
-                "inputs": grouped_inputs[outLeaf],
-                "outputs": os.path.join(outDirs["primaryVariables"],outLeaf)
-            }
+        out_rule= os.path.join(outDirs['primaryVariables'],thisKey,"{file}") 
+        this_PV_dict={"input_dict": inp_dict,
+                    "output_rule":out_rule,
+                    "outputs": [os.path.join(outDirs["primaryVariables"],f) for f in inp_dict.keys()]}
 
+        pvDict[thisKey] = this_PV_dict
 
     # # Secondary Variables---------------------------------------------
     # # Setup the variable palette as a tabular list of files. As we add each
@@ -229,7 +228,7 @@ def getWorkflow(config):
         thisTbl["stem"] = thisTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+).(?:nc|pkl)$")
         return thisTbl
 
-    varPal = parseFilelist([v["outputs"] for v in pvDict.values()],
+    varPal = parseFilelist([f for v in pvDict.values() for f in v["outputs"]],
                            "primaryVariables")
 
     # Iterate over secondary variables if they are request

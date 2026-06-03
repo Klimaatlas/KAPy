@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Dask Resource Configuration",
+  "description": "Configuration of resources to be used by Dask in each rule is achieved a tab-separated table, with one row per Snakemake rule. Resources for generic families of rules (e.g. BIAS_ADJUSTMENT) can be specified together, and are inherited across all BIAS_ADJUSTMENT rules. Resources for individual rules can also be specified and override the family-level rules - rule specification is based on the id in the corresponding configuration table. Currently only LocalClusters are supported, while disabling the row uses the default scheduler. Arguments to LocalCluster() can be specified via the columns, with additional arguments to the LocalCluster also being possible. For more details, see the documentation of `LocalCluster()`: https://docs.dask.org/en/stable/deploying-python.html#reference",
+  "type": "object",
+  "items": {
+    "type": "object",
+    "required": [
+      "id",
+      "enabled",
+      "n_workers",
+      "threads_per_worker",
+      "memory_limit"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "id": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Identifier for the pipeline stage or configuration block (e.g. PRIMARY_VARIABLES, BIAS_ADJUSTMENT)."
+      },
+      "enabled": {
+        "description": "Determines whether to use the Dask LocalCluster for the corresponding row.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "n_workers": {
+        "type": "integer",
+        "minimum": 1,
+        "description": "Number of worker processes to start in the cluster."
+      },
+      "threads_per_worker": {
+        "type":
+          "integer",
+        "minimum": 1,
+        "description": "Number of threads allocated per worker process."
+      },
+      "memory_limit": {
+        "type": "string",
+        "description": "Memory limit assigned to each worker (e.g. 1000MB, 4GB)."
+      }
+    }
+  }
+}

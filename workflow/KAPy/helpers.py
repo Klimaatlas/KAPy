@@ -10,7 +10,8 @@ import pickle
 import xarray as xr
 import os
 import importlib
-
+from inspect import signature
+from pathlib import Path
 
 def readFile(thisPath,format=None,chunks={}):
     """
@@ -98,8 +99,26 @@ def getExternalFunction(scriptPath,functionName):
         scriptPath (_type_): Path to the script file containing the function
         functionName (_type_): Name of the function to retrieve
     """
-    thisSpec = importlib.util.spec_from_file_location("customScript", scriptPath)
-    thisModule = importlib.util.module_from_spec(thisSpec)
-    thisSpec.loader.exec_module(thisModule)
+    #Check that file exists first
+    if not Path(scriptPath).exists():
+        raise FileNotFoundError(f"Cannot find requested script: {scriptPath}.")
+
+    #Import
+    loader = importlib.machinery.SourceFileLoader("customScript", scriptPath)
+    thisModule = loader.load_module()
     thisFn = getattr(thisModule, functionName)
     return(thisFn)
+
+def checkSignature(fn,argList):
+    #Get the signature of the function
+    thisSig=signature(fn).parameters
+
+    #Check what is missing
+    missing = [key for key in argList.keys()if key not in thisSig]
+
+    if missing:
+        raise ValueError(f"The function does not accept the required argument(s): {missing}.")
+    else:
+        #Looks good
+        return None
+    
