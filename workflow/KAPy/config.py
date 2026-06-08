@@ -148,9 +148,6 @@ def validateConfig(config):
                 thisTbl[col] = [ast.literal_eval(x) for x in thisTbl[col]]
             except (SyntaxError, ValueError) as e:
                 raise ValueError (f"Error occurred in parsing column '{col}' in '{thisCfgFile}' : {e}")
-        # Indicators gets special treatment, where the indicator_codes column is used to make an id
-        if thisTblKey=="indicators":
-            thisTbl['id']=["+".join(rw['indicator_codes']) for idx,rw in thisTbl.iterrows()]
 
         #id Column needs to be unique
         duplicated_ids=thisTbl.loc[thisTbl['id'].duplicated(), "id"].unique()
