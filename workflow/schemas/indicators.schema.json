@@ -19,8 +19,14 @@
   ],
   "additionalProperties": false,
   "properties": {
+    "id": {
+      "type": "string",
+      "description": "A unique id for this processing group. Cannot contain a space.",
+      "pattern": "^[^ ]+$",            
+      "uniqueItems": true
+    },
     "indicator_codes": {
-      "description": "Codes of the set of indicators to be generated, as a comma-separated list. Each code must be unique. Used to generate a unique id for this row",
+      "description": "Codes of the set of indicators to be generated, as a comma-separated list. Each code must be unique.",
       "type": "string",
       "uniqueItems": true
     },
