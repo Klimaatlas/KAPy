@@ -1,16 +1,14 @@
+"""
+Generate workflow structure
+
+Starting from an imported configuration file, this function infers the workflow
+dependencies that are then used to inform Snakemake about the structure of the
+"""
+
 import os
 import pandas as pd
 import glob
 from pathlib import Path
-
-"""
-#Setup for debugging
-pd.set_option('display.max_colwidth', None)
-print(os.getcwd())
-import workflow.KAPy as KAPy
-config=KAPy.getConfig("./workflow/testing/config.yaml")
-config=KAPy.getConfig("./config/config.yaml")
-"""
 
 def getWorkflow(config):
     """
@@ -257,8 +255,7 @@ def getWorkflow(config):
             #Setup dict
             inp_dict =svTbl.set_index("id")[thisSV['inputVars']].to_dict(orient="index")
             out_rule= {v: os.path.join(outDirs['secondaryVariables'],
-                                        "{dataset}",
-                                        v,
+                                        thisKey,
                                         f"{{dataset}}_{v}_{{leaf}}.nc") 
                         for v in thisSV['outputVars']
                         }
@@ -269,8 +266,7 @@ def getWorkflow(config):
                 for this_var in thisSV['outputVars']:
                     output_file= rw["dataset"] +f"_{this_var}_" + rw['grid']+"_"+rw["expt"]+"_"+rw["stem"]+".nc"
                     this_SV_dict['outputs'] += [os.path.join(outDirs["secondaryVariables"], 
-                                                                rw["dataset"],
-                                                                this_var,
+                                                                thisKey,
                                                                 output_file)]
 
             # Add to output dict
@@ -337,16 +333,14 @@ def getWorkflow(config):
                 inp_dict[rw['id']] = {'target':rw['path'],
                                       "ref": refDict['path']}
             out_rule= {thisBA['baVariable']: os.path.join(outDirs['biasAdjustment'],
-                                        thisBA["outDatasetCode"],
-                                        thisBA['baVariable'],
+                                                          thisKey,
                                         f"{{leaf}}") 
                                         #f"{thisBA["outDatasetCode"]}_{thisBA['baVariable']}_{{leaf}}.nc") 
                         }
             this_BA_dict={"input_dict": inp_dict,
                         "output_rule":out_rule,
                         "outputs": [os.path.join(outDirs["biasAdjustment"],
-                                                 thisBA["outDatasetCode"],
-                                                 thisBA["baVariable"],
+                                                 thisKey,
                                                  this_out_file)
                                     for this_out_file in BAtbl['outfile']]  }
             BADict[thisKey]=this_BA_dict
@@ -392,8 +386,7 @@ def getWorkflow(config):
             #Setup dict
             inp_dict =tvTbl.set_index("id")[thisTV['inputVars']].to_dict(orient="index")
             out_rule= {v: os.path.join(outDirs['tertiaryVariables'],
-                                        "{dataset}",
-                                        v,
+                                       thisKey,
                                         f"{{dataset}}_{v}_{{leaf}}.nc") 
                         for v in thisTV['outputVars']
                         }
@@ -404,10 +397,9 @@ def getWorkflow(config):
                 for output_var in thisTV['outputVars']:
                     output_file= rw["dataset"] +f"_{output_var}_" + rw['grid']+"_"+rw["expt"]+"_"+rw["stem"]+".nc"
                     this_TV_dict['outputs'] +=[os.path.join(outDirs["tertiaryVariables"], 
-                                                          rw["dataset"],
-                                                          output_var,
-                                                          output_file)]
-
+                                                            thisKey,
+                                                            output_file)]
+                                                         
             # Add to output dict
             tvDict[thisTV['id']] = this_TV_dict
 
@@ -452,8 +444,7 @@ def getWorkflow(config):
         #Setup dict
         inp_dict =wide_ind_tbl.set_index("id")[thisInd['variables']].to_dict(orient="index")
         out_rule= {v: os.path.join(outDirs['indicators'],
-                                    "{dataset}",
-                                    v,
+                                   indKey,
                                     f"{{dataset}}_{v}_{{leaf}}.nc") 
                     for v in thisInd['indicator_codes']
                     }
@@ -464,8 +455,7 @@ def getWorkflow(config):
             for ind_id in thisInd['indicator_codes']:
                 output_file= rw["dataset"] +f"_{ind_id}_" + rw['grid']+"_"+rw["expt"]+"_"+rw["stem"]+".nc"
                 this_ind_dict['outputs'] += [os.path.join(outDirs["indicators"], 
-                                                            rw["dataset"],
-                                                            ind_id,
+                                                          indKey,
                                                             output_file)]
 
         # Add to output dict
@@ -563,50 +553,6 @@ def getWorkflow(config):
     #the database output
     mergedCSVDict= asTbl.groupby("type").apply(lambda x: list(x["as_path"]), include_groups=False).to_dict()
 
-    # # Plots----------------------------------------------------
-    # #Get list of areal statistics csv files (in the ensstats version)
-    # csvTbl = pd.DataFrame(asDict['outputs'], columns=["path"])
-    # csvTbl["fname"] = [os.path.basename(f) for f in csvTbl["path"]]
-    # csvTbl["indicator_id"] = csvTbl["fname"].str.extract("^([^_]+)_.*$")
-    # csvTbl["member_id"] = csvTbl["fname"].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.+).*$")
-    # csvTbl=csvTbl[csvTbl["member_id"]=='ensstats.csv']
-    # csvDict = (
-    #     csvTbl.groupby("indicator_id")
-    #     .apply(lambda x: list(x["path"]), include_groups=False)
-    #     .to_dict()
-    # )
-    
-    # #And of the netcdf files
-    # ncList = pd.DataFrame(list(ensDict.keys()), columns=["path"])
-    # ncList["fname"] = [os.path.basename(f) for f in ncList["path"]]
-    # ncList["indId"] = ncList["fname"].str.extract("^([^_]+)_.*$")
-    # ncDict = (
-    #     ncList.groupby("indId")
-    #     .apply(lambda x: list(x["path"]), include_groups=False)
-    #     .to_dict()
-    # )
-
-    # # Loop over available indicators to make plots
-    # pltDict = {}
-    # for thisInd in config["indicators"].values():
-    #     # But what should we plot? It depends on the nature of the indicator
-    #     # * Period-based indicators should plot the spatial map and the plots, derived
-    #     #   from the ensemble statistics
-    #     # * Yearly (or monthly) based indicators show a time series, also for ensemble statistcs
-    #     if thisInd["timeBinning"] == "periods":
-    #         # Box plot - requires ensemble csv files
-    #         bxpFname = os.path.join(outDirs["outputs"],'plots', f"{thisInd['id']}_boxplot.png")
-    #         pltDict[bxpFname] = csvDict[str(thisInd["id"])]
-
-    #         # Spatial plot - requires ensemble netcdf files
-    #         spFname = os.path.join(outDirs["outputs"],'plots', f"{thisInd['id']}_spatial.png")
-    #         pltDict[spFname] = ncDict[str(thisInd["id"])]
-
-    #     elif thisInd["timeBinning"] in ["years", "months"]:
-    #         # Time series plot - requires ensemble csv files
-    #         lpFname = os.path.join(outDirs["outputs"],'plots', f"{thisInd['id']}_lineplot.png")
-    #         pltDict[lpFname] = csvDict[str(thisInd["id"])]
-
     # Collate and round off----------------------------------------------
     rtn = {
         "primary_vars": pvDict,
@@ -618,8 +564,6 @@ def getWorkflow(config):
         "ensstats": ensDict,
         "arealstats": asDict,
         "mergedCSVs":mergedCSVDict}
-    #     "plots": pltDict,
-    # }
 
     # Create an "all" dict  containing 
     # all targets in the workflow
@@ -641,9 +585,28 @@ def getWorkflow(config):
         else:
             allList += v["outputs"]
     rtn["all"] = allList
+    rtn["all"]+= [config['outputs']["ensembleMembersCSV"]]
+    rtn["all"]+= [config['outputs']["ensembleStatisticsCSV"]]
+    rtn["all"]+= [config['outputs']["database"]]
 
     # Fin-----------------------------------
     return rtn
 
+if __name__ == "__main__":
+    #Setup for debugging
+    from pathlib import Path
+    pd.set_option('display.max_colwidth', None)
+    from config import getConfig
 
+    #Setup working directory. Its not pretty, but..
+    this_path = Path(__file__).resolve().parent.parent.parent
+    os.chdir(this_path)
+    
+    #Test standard config first
+    config=getConfig("./config/config.yaml")
+    WORKFLOW=getWorkflow(config)
+
+    #Then test the testing config
+    config=getConfig("./workflow/testing/config.yaml")
+    WORKFLOW=getWorkflow(config)
 
