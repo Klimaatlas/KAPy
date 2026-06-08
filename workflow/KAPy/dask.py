@@ -36,9 +36,9 @@ def setupDaskCluster(threads, resources):
         if "mem" in resource_dict:
             memList.append(parse_size(resource_dict.get("mem")))
         if "mem_mb" in resource_dict:
-            memList.append(parse_size(f"{resource_dict.get("mem_mb")}MB"))
+            memList.append(parse_size(f"{resource_dict.get('mem_mb')}MB"))
         if "mem_mib" in resource_dict:
-            memList.append(parse_size(f"{resource_dict.get("mem_mb")}MiB"))
+            memList.append(parse_size(f"{resource_dict.get('mem_mb')}MiB"))
         if not memList:
             raise ValueError(
                 "Use of dask LocalCluster requires the specification of total memory useage but it cannot be inferred from the supplied arguments. Please specify at least one of 'mem', 'mem_mb' or 'mem_mib' in the snakemake profile."
