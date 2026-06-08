@@ -53,7 +53,7 @@ outDirs={key : Path(p) for key,p in config['dirs'].items()}
 #relevant for that output file. 
 for thisID, thisRow in WORKFLOW['primary_vars'].items():
     rule:
-        name: f"_01_primaryVar_{thisID}"
+        name: f"._rule_01_primary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow, pvID=thisID: rw["input_dict"][os.path.join(pvID,wc.file)])
         output: thisRow['output_rule']
         params: 
@@ -71,7 +71,7 @@ for thisID, thisRow in WORKFLOW['primary_vars'].items():
 # Good examples include FWI, PoteEvap and SPI. 
 for thisID, thisRow in WORKFLOW['secondary_vars'].items():
     rule:
-        name: f"_02_secondaryVar_{thisID}"
+        name: f"._rule_02_secondary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: **config['secondaryVars'][thisID]
@@ -85,7 +85,7 @@ for thisID, thisRow in WORKFLOW['secondary_vars'].items():
 # Bias Adjustment 
 for thisID, thisRow in WORKFLOW['bias_adj'].items():
     rule:
-        name: f"_03_biasAdjustment_{thisID}"
+        name: f"._rule_03_bias_adjustment_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw['input_dict'][wc.leaf])
         output: **thisRow['output_rule']
         params: 
@@ -103,7 +103,7 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
 # variables, rather than raw input variables.
 for thisID, thisRow in WORKFLOW['tertiary_vars'].items():
     rule:
-        name: f"_04_tertiaryVar_{thisID}"
+        name: f"._rule_04_tertiary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: **config['tertiaryVars'][thisID]
@@ -119,7 +119,7 @@ for thisID, thisRow in WORKFLOW['tertiary_vars'].items():
 # as well as the combined run
 for thisID, thisRow in WORKFLOW['indicators'].items():
     rule:
-        name: f"_05_indicator_{thisID}"
+        name: f"._rule_05_indicator_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: 
@@ -137,7 +137,8 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
 # Combining everything into an ensemble requires that they are all on a common grid
 # This step is optional but if the models are not on a common grid, this will cause failure 
 # when we come to the ensstats generation
-rule _06_regrid:
+rule:
+    name: "._rule_06_regrid"
     input:
         unpack(lambda wc: WORKFLOW['regrid']["input_dict"][os.path.join(outDirs['regridded'],wc.outfile)])
     output:
@@ -155,7 +156,8 @@ rule _06_regrid:
 
 # Enssemble Statistics 
 # Now we can combine them into ensembles
-rule _07_ensstats:
+rule:
+    name: "._rule_07_ensemble_statistics"
     input:
         unpack(lambda wc: WORKFLOW['ensstats']["input_dict"][os.path.join(outDirs['ensstats'],wc.es)])
     output:
@@ -169,7 +171,8 @@ rule _07_ensstats:
 #Areal statistics are calculated for both the enssemble statistics and individual members
 #Depending on whether we are using a shapefile or not, we may want to include the shapefile
 #as a dependency
-rule _08_arealstats:
+rule:
+    name: "._rule_08_areal_statistics"
     input:
         inputFile=lambda wildcards: WORKFLOW['arealstats']["input_dict"][os.path.join(outDirs['arealstats'],
                                                                                     wildcards.fname)],
@@ -187,12 +190,14 @@ rule _08_arealstats:
 # # These are individual files that are produced, rather than a collection of files
 
 #Make the variable overview
-rule OVERVIEW:
+rule:
+    name: ".OVERVIEW"
     run:
         KAPy.VariableOverview(config)
 
 #Merged csvs
-rule _09_areal_ensstats:
+rule:
+    name: "._rule_09a_ensemble_statistics"
     input:
         WORKFLOW['mergedCSVs']['ensstats']
     output:
@@ -200,7 +205,8 @@ rule _09_areal_ensstats:
     run:
         KAPy.mergeCSVs(outFile=output,inFiles=input)
 
-rule _09_areal_members:
+rule:
+    name:  "._rule_09b_member_statistics"
     input:
         WORKFLOW['mergedCSVs']['members']
     output:
@@ -209,10 +215,11 @@ rule _09_areal_members:
         KAPy.mergeCSVs(outFile=output,inFiles=input)
 
 # Database 
-rule _09_database:
+rule:
+    name: "._rule_09c_database"
     input:
-        ensemble_stats=rules._09_areal_ensstats.output,
-        ensemble_members=rules._09_areal_members.output,
+        ensemble_stats=config['outputs']["ensembleStatisticsCSV"],
+        ensemble_members=config['outputs']["ensembleMembersCSV"],
         indicators=config['configurationTables']['indicators'],
         periods=config['configurationTables']['periods'],
         seasons=config['configurationTables']['seasons'],
@@ -232,83 +239,77 @@ rule _09_database:
 # necessary, but is a nice help for the user.
 
 #Primary variables
-rule PRIMARY_VARIABLES:
+rule:
+    name: ".PRIMARY_VARIABLES"
     input:
         [t for v in WORKFLOW['primary_vars'].values() for t in v['outputs']]
 
 #Secondary variables  
 if "secondaryVars" in config:
-    rule SECONDARY_VARIABLES:
+    rule:
+        name: ".SECONDARY_VARIABLES"
         input:
             [t for v in WORKFLOW['secondary_vars'].values() for t in v['outputs']]
 
 #Bias adjustment
 if "biasAdjustment" in config:
-    rule BIAS_ADJUSTMENT:
+    rule:
+        name: ".BIAS_ADJUSTMENT"
         input:
             [v['outputs'] for v in WORKFLOW['bias_adj'].values() ]
 
 #Tertiary variables
 if "tertiaryVars" in config:
-    rule TERTIARY_VARIABLES:
+    rule:
+        name: ".TERTIARY_VARIABLES"
         input:
             [t for v in WORKFLOW['tertiary_vars'].values() for t in v['outputs']]
 
 #Indicator variables
-rule INDICATORS:
+rule:
+    name: ".INDICATORS"
     input:
         [k for thisInd in WORKFLOW['indicators'].values() for k in thisInd["outputs"]]
 
 #Regridding
 if config['outputGrid']['templateType']!='none':
-    rule REGRIDDING:
+    rule:
+        name: ".REGRIDDING"
         input:
             WORKFLOW['regrid']['outputs']
 
 #Ensemble statistics
-rule ENSEMBLE_STATISTICS:
+rule:
+    name: ".ENSEMBLE_STATISTICS"
     input:
         WORKFLOW['ensstats']['outputs']
 
 
 #Ensemble statistics
-rule AREAL_STATISTICS:
+rule:
+    name: ".AREAL_STATISTICS"
     input:
         WORKFLOW['arealstats']['outputs']
 
-# #Plots
-# rule plots:
-#     input:
-#         list(wf['plots'].keys())
-
-rule OUTPUTS:
+rule:
+    name: ".OUTPUTS"
     input:
-        rules._09_areal_ensstats.output,
-        rules._09_areal_members.output,
-        rules._09_database.output
+        config['outputs']["ensembleMembersCSV"],
+        config['outputs']["ensembleStatisticsCSV"],
+        config['outputs']["database"]
 
 #All
-rule ALL:
+rule:
+    name: ".ALL"
     input:
-        WORKFLOW['all'],
-        rules.OUTPUTS.input
+        WORKFLOW['all']
     default_target: True
-
 
 #And finally, one target for each configuration group.
 for wf_key in WORKFLOW.keys():
     if wf_key in ['primary_vars','secondary_vars',"bias_adj",'tertiary_vars','indicators']:
         for item_key in WORKFLOW[wf_key].keys():
             rule:
-                name: f".{item_key}"
+                name: f"{item_key}"
                 input: WORKFLOW[wf_key][item_key]["outputs"]
                     
-#Primary variables are a bit trickey, and require processing the entire dict first
-# primary_var_output_groups={out['groupID'] : [] for out in WORKFLOW['primary_vars'].values()}
-# for out in WORKFLOW['primary_vars'].values():
-#     primary_var_output_groups[out['groupID']] += [out['outputs']]
-# for item_key,outputs in primary_var_output_groups.items():
-#     rule:
-#         name: f".{item_key}"
-#         input: outputs
-
