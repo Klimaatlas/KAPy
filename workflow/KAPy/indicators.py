@@ -1,37 +1,59 @@
+"""
+Indicators.py
+
+Given one or more climate variables, the functions here will calculate indicators, with time binning either across
+defined periods or annual time bins. 
+"""
+
 import xarray as xr
 import xclim as xc
 import numpy as np
 import cftime
 import json
 import pandas as pd
-from . import helpers 
+try:  #Differentiate between importing when in a module and running the script locally
+    from . import helpers
+except ImportError:
+    import helpers
 
-"""
-#Setup for debugging with VS code
-import os
-print(os.getcwd())
-os.chdir("..")
-import workflow.KAPy as KAPy
-import workflow.KAPy.helpers as helpers
-config=KAPy.getConfig("./config/config.yaml")  
-wf=KAPy.getWorkflow(config)
-indID='q95'
-leaf=next(iter(wf['indicators'][indID]['input_dict']))
-inFiles=wf['indicators'][indID]['input_dict'][leaf]
-%matplotlib inline
-seasonsTable=config['seasons']
-periodsTable=config['periods']
-seasons=config['indicators'][indID]['seasons']
-timeBinning=config['indicators'][indID]['timeBinning']
-statistic=config['indicators'][indID]['statistic']
-deltaType=config['indicators'][indID]['deltaType']
-additionalArgs=config['indicators'][indID]['additionalArgs']
-customScriptPath=config['indicators'][indID]['customScriptPath']
-customScriptFunction=config['indicators'][indID]['customScriptFunction']
-"""
+# Private functions-------------------------
+
+def _stat_mean(d : xr.DataArray,skipna: bool) -> xr.DataArray:
+    return d.mean("time", keep_attrs=True,skipna=skipna)
+
+def _stat_mean(d : xr.DataArray, skipna:bool) -> xr.DataArray:
+    return d.mean("time", keep_attrs=True,skipna=skipna)
+
+def _stat_max(d : xr.DataArray,skipna: bool) -> xr.DataArray:
+    return d.max("time",keep_attrs=True,skipna=skipna)
+
+def _stat_min(d : xr.DataArray, skipna: bool) -> xr.DataArray:
+    return d.min("time",keep_attrs=True,skipna=skipna)
+
+def _stat_meanmax(d : xr.DataArray,skipna:bool) -> xr.DataArray:
+    return d.groupby("time.year").max(skipna=skipna).mean(dim="year", keep_attrs=True,skipna=skipna)
+
+def _stat_meanmin(d : xr.DataArray, skipna:bool) -> xr.DataArray:
+    return d.groupby("time.year").min(skipna=skipna).mean(dim="year", keep_attrs=True,skipna=skipna)
+
+def _stat_count(d : xr.DataArray,op: str,threshold:float,skipna:bool) -> xr.DataArray:
+        #Do count
+        comp = xc.indices.generic.compare(left=d,
+                                        op=op,
+                                        right=threshold)
+        #Python doesn't handle comparisons against NaNs very nicely and returns false.
+        #we work around this by reinserting nans into the comparison array
+        comp=comp.where(d.notnull(),np.nan)
+        res=comp.groupby("time.year").sum(skipna=skipna).mean(dim="year",skipna=skipna)
+        return res
+
+def _stat_quantile(d : xr.DataArray,qtile: float,skipna:bool) -> xr.DataArray:
+        return d.quantile(q=qtile,dim="time",skipna=skipna).drop_vars("quantile")
 
 
-def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,statistic,deltaType,
+#Public functions-----------------------------------------------------
+
+def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,statistic,skipna,deltaType,
                         additionalArgs,customScriptPath,customScriptFunction,**kwargs):
 
     #Setup seasons
@@ -42,76 +64,70 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
 
     # Read the relevant datasets back from disk and build into a dataset
     # If there is only one input variable, keep it all as a dataarray - otherwise,
-    # merge it a dataset
+    # merge it a dataset to take advantage of the overloaded time slicing functions of Xarray.
+    # However, we also want to enforce passing by named arguments to our custom function and therefore
+    # split the Xarray dataset into a dict again at a later point
     if(len(inFiles)==1):
         thisDat=helpers.readFile(next(iter(inFiles.values())))
     else:
         thisDat=xr.Dataset({thisKey: helpers.readFile(thisPath) for thisKey, thisPath in inFiles.items()})
 
-    #Internal function to choose and apply the indicator statistic
-    def applyStat(d,thisStat,args):
-        if thisStat=="mean":
-            res = d.mean("time", keep_attrs=True)
-        elif thisStat=="max":
-            res =d.max("time",keep_attrs=True)
-        elif thisStat=="min":
-            res =d.min("time",keep_attrs=True)
-        elif thisStat=="meanmax":
-            res =d.groupby("time.year").max().mean(dim="year", keep_attrs=True)
-        elif thisStat=="meanmin":
-            res =d.groupby("time.year").min().mean(dim="year", keep_attrs=True)
-        elif thisStat=="count":
-            #Check input arguments
-            if not (('op' in args) & ('threshold' in args)):
-                raise ValueError("The 'additionalArgs' field must contain both 'op' and 'threshold' when using the 'count' statistic. ")
-            try:
-                num = float(args['threshold'])
-            except ValueError:
-                raise ValueError(f"Cannot convert 'threshold' value in 'additionalArgs' to a float. 'Threshold' string value: {args['threshold']}")
-            #Do count
-            comp = xc.indices.generic.compare(left=d,
-                                            op=args['op'],
-                                            right=float(args['threshold']))
-            res=comp.groupby("time.year").sum().mean(dim="year")
-        elif thisStat=="quantile":
-            #Check input arguments
-            if not (('q' in args) ):
-                raise ValueError("The 'additionalArgs' field must define the quantile via the 'q' argument e.g q:0.5 ")
-            try:
-                qtile = float(args['q'])
-            except ValueError:
-                raise ValueError(f"Cannot convert 'q' value in 'additionalArgs' to a float. 'q' string value: {args['q']}")
-            #Calculate quantile
-            res =d.quantile(q=qtile,dim="time").drop_vars("quantile")
-        elif thisStat=="custom":
-            #When working with multiple indicators, it is easiest to merge everything into a single
-            #dataset and then apply the overloaded time slicing functions of Xarray. However,
-            #we also want to enforce passing by named arguments to our custom function and therefore
-            #split the Xarray dataset into a dict again.
-            if isinstance(d, xr.DataArray):
-                datDict={list(inFiles.keys())[0]: d  }
-            elif isinstance(d, xr.Dataset): 
-                datDict={thisKey: d[thisKey] for thisKey in inFiles.keys()}
-            else:
-                raise ValueError("Unknown object type.")
+    #Get statistical operator
+    if statistic=="mean":
+        stat_function=_stat_mean
+        stat_args={"skipna":skipna}
+    elif statistic=="max":
+        stat_function=_stat_max
+        stat_args={"skipna":skipna}
+    elif statistic=="min":
+        stat_function=_stat_min
+        stat_args={"skipna":skipna}
+    elif statistic=="meanmax":
+        stat_function=_stat_meanmax
+        stat_args={"skipna":skipna}
+    elif statistic=="meanmin":
+        stat_function=_stat_meanmin
+        stat_args={"skipna":skipna}
+    elif statistic=="count":
+        stat_function=_stat_count
+        #Check input arguments
+        if not (('op' in additionalArgs) & ('threshold' in additionalArgs)):
+            raise ValueError("The 'additionalArgs' field must contain both 'op' and 'threshold' when using the 'count' statistic. ")
+        try:
+            threshold = float(additionalArgs['threshold'])
+        except ValueError:
+            raise ValueError(f"Cannot convert 'threshold' value in 'additionalArgs' to a float. 'Threshold' string value: {additionalArgs['threshold']}")
+        stat_args={'op':additionalArgs['op'],
+                   'threshold':threshold,
+                   "skipna":skipna}
+    elif statistic=="quantile":
+        stat_function=_stat_quantile
+        #Check input arguments        
+        if not (('q' in additionalArgs) ):
+            raise ValueError("The 'additionalArgs' field must define the quantile via the 'q' argument e.g q:0.5 ")
+        try:
+            qtile = float(additionalArgs['q'])
+        except ValueError:
+            raise ValueError(f"Cannot convert 'q' value in 'additionalArgs' to a float. 'q' string value: {additionalArgs['q']}")
+        stat_args={"qtile":qtile,"skipna":skipna}
+    elif statistic=="custom":
+        #Retrieve the custom function. We check that the signature of the function
+        #can accept at least the variables that we want
+        stat_function=helpers.getExternalFunction(customScriptPath,customScriptFunction)
+        try:
+            helpers.checkSignature(stat_function, inFiles)
+        except ValueError as e:
+            raise ValueError(
+                f"Error in the signature of the external function '{customScriptFunction}' "
+                f"in '{customScriptPath}': {e}"
+            ) from None            
 
-            #Retrieve the custom function. We check that the signature of the function
-            #can accept at least the variables that we want
-            custFn=helpers.getExternalFunction(customScriptPath,
-                                               customScriptFunction)
-            try:
-                helpers.checkSignature(custFn, inFiles)
-            except ValueError as e:
-                raise ValueError(
-                    f"Error in the signature of the external function '{customScriptFunction}' "
-                    f"in '{customScriptPath}': {e}"
-                ) from None            
+        #Addition args are just passed directly to the function
+        stat_args=additionalArgs
+        stat_args["skipna"] =skipna
+    else:
+        raise ValueError(f"Unknown indicator statistic, '{statistic}'")
 
-            #Call function
-            res = custFn(**datDict,**additionalArgs)  
-        else:
-            raise ValueError(f"Unknown indicator statistic, '{thisStat}'")
-        return(res)
 
     # Time binning over periods
     # ----------------------------------
@@ -140,9 +156,16 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
 
                 # Only attempt a calculation if there is something left
                 if datPeriodSeason.time.size != 0:
-                    res=applyStat(datPeriodSeason,
-                                statistic,
-                                additionalArgs)
+                    if statistic=="custom":
+                        #split the Xarray dataset into a dict again for passing
+                        if isinstance(datPeriodSeason, xr.DataArray):
+                            datDict={list(inFiles.keys())[0]: datPeriodSeason  }
+                        elif isinstance(datPeriodSeason, xr.Dataset): 
+                            datDict={thisKey: datPeriodSeason[thisKey] for thisKey in inFiles.keys()}
+                        #Apply operator and store
+                        res=stat_function(**datDict,**stat_args)
+                    else:
+                        res=stat_function(datPeriodSeason,**stat_args)
                     res["seasonID"] = thisSeason
                     seasonSlices.append(res)
             
@@ -172,10 +195,16 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
             datGroupped = datSeason.resample(time="YS")
         
             # Apply the operator
-            res=applyStat(datGroupped,
-                            statistic,
-                            additionalArgs)
-                            # Store output
+            if statistic=="custom":
+                #split the Xarray dataset into a dict again for passing
+                if isinstance(datGroupped, xr.DataArray):
+                    datDict={list(inFiles.keys())[0]: datGroupped  }
+                elif isinstance(datGroupped, xr.Dataset): 
+                    datDict={thisKey: datGroupped[thisKey] for thisKey in inFiles.keys()}
+                #Apply operator and store
+                res=stat_function(**datDict,**stat_args)
+            else:
+                res=stat_function(datGroupped,**stat_args)
             #Store the results
             res["seasonID"] = thisSeason
             seasonTimeseries.append(res)
@@ -262,3 +291,53 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
         rtn=decorate_dataset(out)
     
     return rtn
+
+
+# Validation ----------------------------
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
+
+    #Load xarray tutotrial data and convert to degrees C.
+    air_temp = xr.tutorial.load_dataset("air_temperature")
+    tas = air_temp.air.resample(time="D").mean() - 273.15
+
+    #Add some stripes of NaNs to test response to NaNs
+    tas[0,10,:]=np.nan  # Set a horizontal band in first time slice
+    tas[:,:,25]=np.nan  # Set a vertical band across all time steps
+    #View    
+    tas.isel(time=0).plot()
+    plt.show()
+    tas.isel(time=1).plot()
+    plt.show()
+
+    #Now iterate over the operators and plot
+    import matplotlib.pyplot as plt
+
+    fig, axes = plt.subplots(
+        nrows=7,
+        ncols=2,
+        figsize=(12, 28),
+        constrained_layout=True,
+    )
+
+    plots = [
+        ("Mean",        lambda s: _stat_mean(tas, skipna=s)),
+        ("Max",         lambda s: _stat_max(tas, skipna=s)),
+        ("Min",         lambda s: _stat_min(tas, skipna=s)),
+        ("Meanmax",     lambda s: _stat_meanmax(tas, skipna=s)),
+        ("Meanmin",     lambda s: _stat_meanmin(tas, skipna=s)),
+        ("Count > 0",   lambda s: _stat_count(tas, skipna=s,
+                                            op="gt", threshold=0)),
+        ("95th pct",    lambda s: _stat_quantile(tas, skipna=s,
+                                                qtile=0.95)),
+    ]
+
+    for row, (name, func) in enumerate(plots):
+
+        func(True).plot(ax=axes[row, 0])
+        axes[row, 0].set_title(f"{name} - skip NaNs")
+
+        func(False).plot(ax=axes[row, 1])
+        axes[row, 1].set_title(f"{name} - propigate NaNs")
+
+    plt.show()

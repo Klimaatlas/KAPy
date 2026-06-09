@@ -10,6 +10,8 @@ Parameters
 tas : xr.DataArray
     Daily averaged temperature, in degrees C.
 
+Additional keyword arguments (kwargs) e.g. skipna are accepted but ignored.    
+
 Returns
 -------
 xr.Dataset
@@ -18,7 +20,7 @@ xr.Dataset
 """
 import xarray as xr
 
-def hotdays(tas: xr.DataArray) -> xr.Dataset:
+def hotdays(tas: xr.DataArray,**kwargs) -> xr.Dataset:
     #Calculate number of days above 20
     t20 = tas > 20
     t20.attrs["long_name"]="Days per year above 20 C"
