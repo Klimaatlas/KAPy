@@ -90,8 +90,8 @@
       "type": "string",
       "description": "Should the set of input files be merged into composite files (e.g. merging years and/or experiments) (`TRUE) or should they each be handled as is (`FALSE`)? In cases where this parameter is set to `FALSE`, subsequent fields defining how merging should be structured are ignored.,",
       "enum": [
-        "TRUE",
-        "FALSE"
+        "true",
+        "false"
       ]
     },
     "fieldSeparator": {

@@ -29,7 +29,7 @@ def buildDerivedVar(inFiles, passXarrays, scriptPath, scriptFunction,
                     additionalArgs,**kwargs):
 
     # Load input files
-    if passXarrays=='True':  # Then load the paths into xarrays. Otherwise just pass the path.
+    if passXarrays:  # Then load the paths into xarrays. Otherwise just pass the path.
         inFiles = {thisKey: helpers.readFile(thisPath) for thisKey, thisPath in inFiles.items()}
 
     # Now get the function to call

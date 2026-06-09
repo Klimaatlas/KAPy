@@ -295,6 +295,7 @@ def calculateIndicators(inFiles,seasonsTable,periodsTable,seasons,timeBinning,st
 
 # Validation ----------------------------
 if __name__ == "__main__":
+    #Setup for debugging
     import matplotlib.pyplot as plt
 
     #Load xarray tutotrial data and convert to degrees C.

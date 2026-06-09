@@ -81,9 +81,10 @@
     },
     "skipna": {
       "description": "If True, NaN values in the climate variables are ignored and statistics e.g. means are calculated around them. If False, NaNs propigate, and the presence of a single NaN in a time series will cause all subsequent values to be NaN. It is generally recommended to set this parameter to False, unless there is a specific use-case where missing values need to be handled. Note that if all values in a timeseries are NaN, the resulting indicator will also be NaN.",
+      "type":"string",
       "enum": [
-          "True",
-          "False"
+          "true",
+          "false"
       ]
   },
 

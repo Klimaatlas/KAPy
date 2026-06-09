@@ -90,7 +90,7 @@ def getWorkflow(config):
         #So we have multiple files. In cases where we don't want to merge them into combined files, the
         #input file is just mapped onto an output file (albeit it with the standard filenaming structure). Note
         #however, that in some cases we may want to use the ensemble ID definitions anyway
-        elif thisInp['mergeFiles']=="FALSE":
+        elif not thisInp['mergeFiles']:
             #Set exp
             if (thisInp['experimentField']!='') and (thisInp['fieldSeparator']!=''):
                 inpTbl['split']=inpTbl['inFname'].str.split(thisInp['fieldSeparator'])
