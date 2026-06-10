@@ -4,6 +4,7 @@ from snakemake.utils import validate
 import os
 import ast
 import jsonschema
+from pathlib import Path
 
 
 def readConfig(configfile):
