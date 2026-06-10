@@ -33,16 +33,8 @@ def validateConfig(config):
     file), inflates it by loading the configuration tables, and validates all elements
     against the appropriate validation schema. Returns the inflated validated config.
     """
-    # Setup debugging
-    # config=readConfig("./config/config.yaml")
-    # config=readConfig("./workflow/testing/config.yaml")
-
     # Setup location of validation schemas
-    # schemaDir="./workflow/schemas/"
-    # schemaDir="./KAPy/workflow/schemas/"
-    schemaDir = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "schemas"
-    )
+    schemaDir = Path(__file__).resolve().parent.parent / "schemas"
 
     # Do custom validation handling rather the using Snakemake's. The goal
     # here is to give a more user friendly error, when we fail. Thanks to ChatGPT
@@ -159,6 +151,12 @@ def validateConfig(config):
                     f'❌ Validation of "{thisCfgFile}" failed at row {i+1}, column "{".".join(map(str, e.path))}": {e.message}'
                 )
 
+        # Modifications----------------
+        # If indicator_code column is empty, use the id instead
+        if thisTblKey == "indicators":
+            thisTbl["indicator_codes"]=[rw["id"] if rw["indicator_codes"]=="" else rw["indicator_codes"]  for idx,rw in thisTbl.iterrows()]
+
+
         # We allow some columns to be defined as lists, but
         # note that Snakemake doesn't validate arrays in tabular configurations at the moment
         # https://github.com/snakemake/snakemake/issues/2601
@@ -193,8 +191,10 @@ def validateConfig(config):
         # Force id column to be a string. Set to as the index so it can be used as the key
         thisTbl["id"] = [str(x) for x in thisTbl["id"]]
         thisTbl = thisTbl.set_index("id", drop=False)
-        # Make dict
+
+        # Put back into the config
         config[thisTblKey] = thisTbl.to_dict(orient="index")
+
 
     # Manual validation -----------------
     # Some things are a bit tricky to validate with JSON schemas alone, particular where
@@ -273,8 +273,8 @@ if __name__ == "__main__":
 
     # Validate base configuration
     config = readConfig("./config/config.yaml")
-    validateConfig(config)
+    cfg=validateConfig(config)
 
     # Testing configuration
     config = readConfig("./workflow/testing/config.yaml")
-    validateConfig(config)
+    cfg=validateConfig(config)

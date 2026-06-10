@@ -22,8 +22,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "description": "A unique id for this processing group. Cannot contain a space.",
-      "pattern": "^[^ ]+$",            
+      "description": "A unique id for this processing group. Cannot contain a space or comma.",
+      "pattern": "^[^ ,]+$",            
       "uniqueItems": true
     },
     "indicator_codes": {

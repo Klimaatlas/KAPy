@@ -20,8 +20,8 @@
     "id": {
       "type": "string",
       "uniqueItems": true,
-      "pattern": "^[^ ]+$",
-      "description": "Unique identifier for the bias adjustment task."
+      "pattern": "^[^ ,]+$",
+      "description": "Unique identifier for the bias adjustment task. Cannot contain a space or comma"
     },
     "enabled": {
       "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",

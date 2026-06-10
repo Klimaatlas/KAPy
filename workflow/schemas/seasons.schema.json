@@ -7,10 +7,10 @@
   "type": "object",
   "properties": {
     "id": {
-      "description": "Unique identifier for the season. It is recommended to use a short descriptive string e.g `JJA`. Note that the id `all` cannot be used, as this is reserved for use in selecting all seasons in the indicator table. Must not contain spaces.",
+      "description": "Unique identifier for the season. It is recommended to use a short descriptive string e.g `JJA`. Note that the id `all` cannot be used, as this is reserved for use in selecting all seasons in the indicator table. Must not contain spaces or commas.",
       "type": "string",
       "uniqueItems": true,
-      "pattern": "^[^ ]+$",  
+      "pattern": "^[^ ,]+$",  
       "not": {
         "enum": ["all"]
       }
