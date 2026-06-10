@@ -47,3 +47,4 @@
   - <a id="properties/outputGrid/properties/gridName"></a>**`gridName`** *(string)*: String giving the name of the grid to be used in regridding filenames.
   - <a id="properties/outputGrid/properties/method"></a>**`method`** *(string)*: Method used by the xESMF Regridder function to do the regridding. See documentaiton for xESMF for details. Must be one of: "bilinear", "conservative", "conservative_normed", "patch", "nearest_s2d", or "nearest_d2s".
   - <a id="properties/outputGrid/properties/path"></a>**`path`** *(string)*: Path to the file to be used as a template, in the case of a `file` templateType, or the cdo grid descriptor, in the case of `cdo` templateType.
+- <a id="properties/dask_resources"></a>**`dask_resources`** *(string or null, required)*: Paths to dask resource specification type.

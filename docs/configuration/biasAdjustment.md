@@ -10,7 +10,7 @@
 
 ## Properties
 
-- <a id="properties/id"></a>**`id`** *(string, required)*: Unique identifier for the bias adjustment task. Must match pattern: `^[^ ]+$` ([Test](https://regexr.com/?expression=%5E%5B%5E%20%5D%2B%24)). Items must be unique.
+- <a id="properties/id"></a>**`id`** *(string, required)*: Unique identifier for the bias adjustment task. Cannot contain a space or comma. Must match pattern: `^[^ ,]+$` ([Test](https://regexr.com/?expression=%5E%5B%5E%20%2C%5D%2B%24)). Items must be unique.
 - <a id="properties/enabled"></a>**`enabled`** *(string or null, required)*: Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.
 - <a id="properties/outDatasetCode"></a>**`outDatasetCode`** *(string, required)*: DatasetCode that will be associated with bias-adjusted output. Note that the cominbation of variable name and DatasetCode must not be a duplicate of other combinations names found in the configuration of KAPy. This variable primarily serves to distinguish between raw and bias-adjusted variables e.g. `CORDEX` and `CORDEX-cal` The exact choice is not important, but it is recommended to adopt a consistent approach throughout the project.
 - <a id="properties/baVariable"></a>**`baVariable`** *(string, required)*: The name of the variable to bias adjust, drawn from the list of primary and secondary variables. If the variable cannot be found, an error will be raised. KAPy assumes that the same variable name is used for both the model and observational data sources.
