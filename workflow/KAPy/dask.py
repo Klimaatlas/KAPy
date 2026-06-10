@@ -137,9 +137,10 @@ def get_dask_resources(resource_table, family, id):
     # Return dict
     rtn = {
         "enabled": this.get("enabled", None),
-        "mem_mb": mem / 1e6,
+        "mem_mb": int(mem / 1e6),
         "n_workers": n_workers,
         "memory_limit": this.get("memory_limit"),
-        "threads_per_worker": int(this.get("threads_per_worker")),
+        "threads_per_worker": int(this.get("threads_per_worker"))
     }
+
     return rtn
