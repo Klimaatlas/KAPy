@@ -41,10 +41,12 @@ def _stat_count(d : xr.DataArray,op: str,threshold:float,skipna:bool) -> xr.Data
         comp = xc.indices.generic.compare(left=d,
                                         op=op,
                                         right=threshold)
-        #Python doesn't handle comparisons against NaNs very nicely and returns false.
-        #we work around this by reinserting nans into the comparison array
-        comp=comp.where(d.notnull(),np.nan)
-        res=comp.groupby("time.year").sum(skipna=skipna).mean(dim="year",skipna=skipna)
+        #Python doesn't handle comparisons against NaNs very nicely: NaN > 0 returns false (rather than NaN)
+        #We work around this by reinserting nans into the comparison array
+        #Note that we apply a minimum count criteria in the first summation step - everything is
+        #NaN, then we want to get NaN, rather than 0.
+        comp=comp.astype("int8").where(d.notnull(),np.nan)
+        res=comp.groupby("time.year").sum(skipna=skipna,min_count=1).mean(dim="year",skipna=skipna)
         return res
 
 def _stat_quantile(d : xr.DataArray,qtile: float,skipna:bool) -> xr.DataArray:
@@ -336,9 +338,9 @@ if __name__ == "__main__":
     for row, (name, func) in enumerate(plots):
 
         func(True).plot(ax=axes[row, 0])
-        axes[row, 0].set_title(f"{name} - skip NaNs")
+        axes[row, 0].set_title(f"{name} - skipna={True}")
 
         func(False).plot(ax=axes[row, 1])
-        axes[row, 1].set_title(f"{name} - propigate NaNs")
+        axes[row, 1].set_title(f"{name} - skipna={False}")
 
     plt.show()
