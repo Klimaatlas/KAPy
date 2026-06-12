@@ -2,6 +2,8 @@ import pandas as pd
 import os
 import xarray as xr
 import pickle
+from pathlib import Path
+import shutil
 
 """
 #Setup for debugging with VS code 
@@ -88,14 +90,17 @@ def write_variables(obj: xr.DataArray | xr.Dataset | dict,
                         var_name=next(iter(path.keys())),
                         output_path = next(iter(path.values())))
     
-    elif isinstance(obj, xr.Dataset):
-        for var in path.keys():
-            if var not in obj:
-                raise KeyError(f"Cannot find variable '{var}' in provided dataset")
-            dat=obj[var]
-            write_dataarray(dat,
-                            var_name=var,
-                            output_path = path[var])
+    elif isinstance(obj,dict):
+        #Accept instances where the object is a dict of paths to a file.
+        #There should be agreement between the keys in the path and obj file.
+        #Check this first
+        if not obj.keys()== path.keys():
+            raise ValueError(f"Mismatch between variables expected and returned by the function. Expected: {list(path.keys())}. Returned: {list(obj.keys())}")
+        #Loop over the dicts. If the path contained in the object matches the desired output path,
+        #then the result should already be in the right place. Else move the file in  obj to the output path
+        for this_key in obj.keys():
+            if obj[this_key]!=path[this_key]:
+                shutil.move(Path(obj[this_key]),Path(path[this_key]))
         
     else:
         raise TypeError(f"Unsupported type: {type(obj)}")
