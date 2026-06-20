@@ -58,7 +58,7 @@ def getWorkflow(config):
             #Case 4. Just read the file line-by-line
             else:
                 with open(input_path) as f:
-                    filelist=f.read().splitlines()
+                    filelist=[line.strip() for line in f if line.strip() and not line.lstrip().startswith("#")]
 
         #Handle case where we don't find any files. We could ignore it,
         # but it's best to throw an error
