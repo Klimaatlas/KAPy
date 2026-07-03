@@ -260,18 +260,49 @@ class database:
     # --------------------------------------------------
  
     def import_geometries(self):
+        # Close any existing connection so we can safely overwrite the DB
         if self.conn:
             self.conn.close()
             self.conn = None
- 
+
         gdf = gpd.read_file(self.geometry)
-        gdf["AreaKey"] = gdf.index
- 
-        gdf.to_file(self.db_path, layer="Areas", driver="GPKG", engine="pyogrio", fid="AreaKey")
- 
+        gdf = gdf.reset_index(drop=True)
+        gdf.index.name = "AreaKey"
+
+        # Extract CRS as WKT 
+        crs_wkt = gdf.crs.to_wkt() if gdf.crs is not None else None
+
+        # Convert geometry to WKT strings
+        gdf["geom_wkt"] = gdf.geometry.apply(
+            lambda geom: geom.wkt if geom is not None else None
+        )
+
+        # Create / connect DB
         self.conn = sqlite3.connect(self.db_path)
         self.conn.execute("PRAGMA foreign_keys=ON;")
- 
+        cur = self.conn.cursor()
+
+        # Write the entire GeoDataFrame (minus geometry) to a normal table
+        # This creates (or replaces) the Areas table with all columns from df.
+        df = gdf.drop(columns="geometry")
+        df.to_sql("Areas", self.conn, if_exists="replace", index=True)
+
+        # Simple metadata table to store CRS
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS SpatialMetadata (
+                id      INTEGER PRIMARY KEY,
+                crs_wkt TEXT
+            );
+        """)
+        cur.execute("DELETE FROM SpatialMetadata;")
+        cur.execute(
+            "INSERT INTO SpatialMetadata (id, crs_wkt) VALUES (1, ?);",
+            (crs_wkt,)
+        )
+
+        self.conn.commit()
+
+
     # --------------------------------------------------
     # MAPPINGS
     # --------------------------------------------------
@@ -515,18 +546,6 @@ class database:
  
         conn.commit()
  
-        # Register views in gpkg_contents so GeoPackage-aware clients
-        # (QGIS, ArcGIS, etc.) can discover and display them.
-        # But only if we have geometry in the first place.
-        if self.include_geometry:
-            for view_name in ("view_Ensemble_statistics", "view_Indicator_data"):
-                cur.execute("""
-                INSERT OR REPLACE INTO gpkg_contents
-                    (table_name, data_type, identifier, description, srs_id)
-                VALUES (?, 'attributes', ?, '', NULL)
-                """, (view_name, view_name))
- 
-            conn.commit()
         print("Indexes and views created.")
  
     # --------------------------------------------------
