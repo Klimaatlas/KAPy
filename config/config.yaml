@@ -13,6 +13,7 @@
 # For a more complete configuration, taking advantage of all features, see the configuration
 # in ./workflow/testing
 
+outputDir: "outputs"
 configurationTables:
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
@@ -21,19 +22,7 @@ configurationTables:
     secondaryVars: ''   
     biasAdjustment: '' 
     tertiaryVars: ''  
-dirs:
-    primaryVariables: 'outputs/01.primaryVars'
-    secondaryVariables: 'outputs/02.secondaryVars'
-    biasAdjustment: 'outputs/03.biasAdjustment'
-    tertiaryVariables: 'outputs/04.tertiaryVars'
-    indicators: 'outputs/05.indicators'
-    regridded: 'outputs/06.commmon_grid'
-    ensstats: 'outputs/07.ensstats'
-    arealstats: 'outputs/08.areal_statistics'
-outputs:
-    ensembleStatisticsCSV: 'outputs/Ensemble_statistics.csv'
-    ensembleMembersCSV: 'outputs/Ensemble_members.csv'
-    database: 'outputs/KAPy_outputs.sqlite'
+
 
 # Configuration options------------------------------------
 arealstats:

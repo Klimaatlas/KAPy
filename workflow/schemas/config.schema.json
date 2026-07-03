@@ -7,8 +7,7 @@
         "configurationTables",
         "outputGrid",
         "arealstats",
-        "dirs",
-        "outputs",
+        "outputDir",
         "ensembles",
         "dask_resources"
     ],
@@ -57,77 +56,9 @@
                 }
             }
         },
-        "dirs": {
-            "description": "Directories for storing output and intermediate files. Can be specified as either absolute paths, or relative to the working directory. See the [KAPy concepts](../KAPy_concepts.md) documentation for a more detailed description of these items",
-            "type": "object",
-            "required": [
-                "primaryVariables",
-                "secondaryVariables",
-                "biasAdjustment",
-                "tertiaryVariables",
-                "indicators",
-                "regridded",
-                "ensstats",
-                "arealstats"
-            ],
-            "additionalProperties": false,
-            "properties": {
-                "primaryVariables": {
-                    "description": "Directory for storing primary variables.",
-                    "type": "string"
-                },
-                "secondaryVariables": {
-                    "description": "Directory for storing secondary variables.",
-                    "type": "string"
-                },
-                "biasAdjustment": {
-                    "description": "Directory for storing bias-adjusted variables.",
-                    "type": "string"
-                },
-                "tertiaryVariables": {
-                    "description": "Directory for storing tertiary variables.",
-                    "type": "string"
-                },
-                "indicators": {
-                    "description": "Directory for storing indicators.",
-                    "type": "string"
-                },
-                "regridded": {
-                    "description": "Directory for storing indicators regridded to a common grid.",
-                    "type": "string"
-                },
-                "ensstats": {
-                    "description": "Directory for storing ensemble statistics.",
-                    "type": "string"
-                },
-                "arealstats": {
-                    "description": "Directory for storing statistics calculated over areas.",
-                    "type": "string"
-                }            }
-        },
-        "outputs": {
-            "description": "Paths for writing output files",
-            "type": "object",
-            "required": [
-                "ensembleStatisticsCSV",
-                "ensembleMembersCSV",
-                "database"
-            ],
-            "additionalProperties": false,
-            "properties": {
-                "ensembleStatisticsCSV": {
-                    "description": "Path to .csv file combining all areal statistics summarised across the entire ensemble.",
-                    "type": "string"
-                },
-                "ensembleMembersCSV": {
-                    "description": "Path to .csv file combining the  areal statistics for each individual ensemble member.",
-                    "type": "string"
-                },
-                "database": {
-                    "description": "Path to SQLite database / Geopackage merging all outputs from the pipeline.",
-                    "type": "string"
-                }
-            }
+        "outputDir": {
+            "description": "Path for writing output files",
+            "type": "string"
         },
         "arealstats": {
             "required": [

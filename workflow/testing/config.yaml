@@ -17,19 +17,7 @@ configurationTables:
     tertiaryVars: 'workflow/testing/tertiaryVars.tsv'
     periods:  'workflow/testing/periods.tsv'
     seasons: 'workflow/testing/seasons.tsv'
-dirs:
-    primaryVariables: 'testing/01.primaryVars'
-    secondaryVariables: 'testing/02.secondaryVars'
-    biasAdjustment: 'testing/03.biasAdjustment'
-    tertiaryVariables: 'testing/04.tertiaryVars'
-    indicators: 'testing/05.indicators'
-    regridded: 'testing/06.commmon_grid'
-    ensstats: 'testing/07.ensstats'
-    arealstats: 'testing/08.areal_statistics'
-outputs:
-    ensembleStatisticsCSV: 'testing/Ensemble_statistics.csv'
-    ensembleMembersCSV: 'testing/Ensemble_members.csv'
-    database: 'testing/KAPy_outputs.sqlite'
+outputDir: "testing"
 
 # Configuration options------------------------------------
 arealstats:

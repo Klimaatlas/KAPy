@@ -13,7 +13,7 @@ import importlib
 from inspect import signature
 from pathlib import Path
 import uuid
-
+from .constants import PATHS
 
 def readFile(thisPath,format=None,chunks={}):
     """
@@ -128,3 +128,5 @@ def checkSignature(fn,argList):
         #Looks good
         return None
     
+def get_OUTPUT_PATHS(outputDir):
+        return {key : Path(outputDir) / p for key,p in PATHS.items()}

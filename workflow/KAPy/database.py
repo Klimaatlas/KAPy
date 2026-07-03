@@ -7,6 +7,7 @@ import yaml
 import csv, json
 import tempfile
 import shutil
+from . import helpers
   
 class database:
  
@@ -53,12 +54,13 @@ class database:
                                                 suffix=".sqlite").name
         print("TEMPORARY PATH: ",self.db_path)
 
+        OUTPUT_PATHS=helpers.get_OUTPUT_PATHS(self.config["outputDir"])
 
-        self.db_output_path = self.config['outputs']['database']
+        self.db_output_path = OUTPUT_PATHS['database']
 
         #Populate rest of object
-        self.stats_csv = self.config['outputs']['ensembleStatisticsCSV']
-        self.members_csv = self.config['outputs']['ensembleMembersCSV']
+        self.stats_csv = OUTPUT_PATHS['ensembleStatisticsCSV']
+        self.members_csv = OUTPUT_PATHS['ensembleMembersCSV']
         self.geometry = self.config['arealstats']['shapefile']
         self.include_geometry = (self.config['arealstats']['shapefile'] is not None)
  
@@ -560,17 +562,27 @@ class database:
 # -------------------------------------------
 
 if __name__ == "__main__":
-    #Setup for debugging with VS code 
-    #Assumes a working directory
-    import sys
+    #Libraries
     from pathlib import Path
-    sys.path.append(str(Path(__file__).resolve().parents[1]))
+    import sys
+
+    #Rely on the presence of .git to find the repo ROOT and
+    #set as working directory
+    ROOT = Path.cwd()
+    while not (ROOT / ".git").exists():
+        ROOT = ROOT.parent
+    os.chdir(ROOT)
+
+    #Setup for development
+    sys.path.append(str(ROOT / "workflow"))
     import KAPy
+        
+    #Set the path to configuration file
+    configfile= ROOT / "config" /"config.yaml"
+    #configfile= ROOT / "workflow" / "testing"/"config.yaml"
 
-    configfile="./config/config.yaml"
-    #configfile="./workflow/testing/config.yaml"
-
-    db = database(config_file=configfile)
+    db = database(config_file=str(configfile),
+                  tempDir=tempfile.gettempdir())
     
     try:
         db.create_full_database()
