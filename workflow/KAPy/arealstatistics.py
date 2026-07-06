@@ -58,7 +58,10 @@ def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile):
     # If we have a shapefile defined, then work with it
     if shapefile is not None:
         #Import shapefile
+        #Reset the index to be 0..N so that we avoid any potential auto-indexing from geopandas
         shpFile = gpd.read_file(shapefile)
+        shpFile = shpFile.reset_index(drop=True)
+
 
         #If the shapefile is missing a CRS, stop - we don't want to assume anything here
         if shpFile.crs is None:
