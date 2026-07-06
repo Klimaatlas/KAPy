@@ -269,13 +269,14 @@ class database:
         gdf = gdf.reset_index(drop=True)
         gdf.index.name = "AreaKey"
 
-        # Extract CRS as WKT 
-        crs_wkt = gdf.crs.to_wkt() if gdf.crs is not None else None
 
         # Convert geometry to WKT strings
         gdf["geom_wkt"] = gdf.geometry.apply(
             lambda geom: geom.wkt if geom is not None else None
         )
+
+        # Store the CRS as a column; same value for all rows
+        gdf["geom_crs"] = gdf.crs.to_wkt() if gdf.crs is not None else None
 
         # Create / connect DB
         self.conn = sqlite3.connect(self.db_path)
@@ -286,19 +287,6 @@ class database:
         # This creates (or replaces) the Areas table with all columns from df.
         df = gdf.drop(columns="geometry")
         df.to_sql("Areas", self.conn, if_exists="replace", index=True)
-
-        # Simple metadata table to store CRS
-        cur.execute("""
-            CREATE TABLE IF NOT EXISTS SpatialMetadata (
-                id      INTEGER PRIMARY KEY,
-                crs_wkt TEXT
-            );
-        """)
-        cur.execute("DELETE FROM SpatialMetadata;")
-        cur.execute(
-            "INSERT INTO SpatialMetadata (id, crs_wkt) VALUES (1, ?);",
-            (crs_wkt,)
-        )
 
         self.conn.commit()
 
