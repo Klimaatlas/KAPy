@@ -21,16 +21,17 @@ xr.Dataset
 import xarray as xr
 
 def hotdays(tas: xr.DataArray,**kwargs) -> xr.Dataset:
-    #Calculate number of days above 20
-    t20 = tas > 20
-    t20.attrs["long_name"]="Days per year above 20 C"
-    t20.attrs["units"]="Days per year"
+    #Calculate number of days above 30
+    t30 = tas > 30
+    t30.attrs["long_name"]="Days per year above 30 C"
+    t30.attrs["units"]="Days per year"
 
     #And above 25
     t25 = tas > 25
     t25.attrs["long_name"]= "Days per year above 25 C"
     t25.attrs["units"]="Days per year"
-    combined=xr.Dataset({"T20":t20,"T25":t25})
+
+    combined=xr.Dataset({"T30":t30,"T25":t25})
     res=combined.groupby("time.year").sum().mean(dim="year")
     
     return res
