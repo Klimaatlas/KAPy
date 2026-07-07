@@ -11,10 +11,11 @@ import glob
 import os
 from . import helpers 
 from . import workflow
+from .constants import CHUNKING_TIME
 
 #-----------------------------------------------------------------
 def defaultImport(inFiles,varCode,internalVarName,checks,
-				  chunks={"time": 256}):
+				  chunks={"time": CHUNKING_TIME}):
 	# Make dataset object using xarray lazy load approach.
 	#
 	# Setup	

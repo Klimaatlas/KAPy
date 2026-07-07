@@ -4,6 +4,7 @@ import xarray as xr
 import pickle
 from pathlib import Path
 import shutil
+from . import helpers
 
 """
 #Setup for debugging with VS code 
@@ -71,7 +72,7 @@ def write_variables(obj: xr.DataArray | xr.Dataset | dict,
             format = os.path.splitext(os.path.basename(output_path))[1]
             if format == ".nc":
                 da.name = var_name
-                chunkThisWay=[min([256,16,16][i],da.shape[i]) for i in range(0,3)]
+                chunkThisWay=helpers.align_chunking(da)
                 da.to_netcdf(output_path,
                             encoding={var_name:{'chunksizes':chunkThisWay,
                                             'zlib': True,

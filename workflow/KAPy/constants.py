@@ -1,6 +1,8 @@
 """
-Constants for internal output layout used by KAPy.
+Constants for internal used by KAPy.
+"""
 
+"""
 The `PATHS` mapping defines the *relative* subdirectories and filenames
 used for KAPy outputs. These are joined with a configurable base output
 directory elsewhere in the code, e.g.:
@@ -16,9 +18,6 @@ relative paths (directories or filenames) and should be treated as
 internal, stable implementation details rather than user-configurable
 settings.
 """
-
-# Mapping of logical output names to their relative subdirectories/filenames.
-# These are joined with the configured base output directory at runtime.
 PATHS = {
     "primaryVariables": "01.primaryVars",
     "secondaryVariables": "02.secondaryVars",
@@ -32,3 +31,17 @@ PATHS = {
     "ensembleMembersCSV": "Ensemble_members.csv",
     "database": "KAPy_outputs.sqlite",
 }
+
+
+"""
+Chunking - an adventure in time and space
+
+These constants control the dask-chunking used throughout KAPy. They are primarily used in the creation
+of output files to ensure somewhat efficient read patterns that also work well with time-series dependent
+operations such as bias adjustment. The spatial chunking is determined by the need to limit chunk-size to around 10-100MB when data is being
+read for bias-adjustment (with all data in one contiguous block). The temporal chunking is more oriented towards seasonal subsetting when
+calculating indicators - we want to avoid having to read the entire data block every time. The combination of the two also reflects a tradeoff to avoid excessive 
+reading overhead.
+"""
+CHUNKING_TIME=256
+CHUNKING_SPACE=16
