@@ -22,12 +22,12 @@ class database:
                                              "description_column":"IndicatorDescription"},
                             "Seasons":{"configuration_table":"seasons",
                                              "description_column":"SeasonDescription"},
-                            "Periods":{"configuration_table":"periods",
-                                             "description_column":"PeriodDescription"}}
+                            "TimeBins":{"configuration_table":"periods",
+                                             "description_column":"TimeBinDescription"}}
 
     LOOKUP_TABLES = {
         "Seasons": dict(table="Seasons", id="SeasonKey", code="SeasonCode", src="seasonID"),
-        "Periods": dict(table="Periods", id="PeriodKey", code="PeriodCode", src="periodID"),
+        "TimeBins": dict(table="TimeBins", id="TimeBinKey", code="TimeBinCode", src="timeBinID"),
         "Indicators": dict(table="Indicators", id="IndicatorKey", code="IndicatorCode", src="indID"),
         "Scenarios": dict(table="Scenarios", id="ScenarioKey", code="ScenarioCode", src="expt"),
         "Grids": dict(table="Grids", id="GridKey", code="GridCode", src="gridID"),
@@ -162,7 +162,7 @@ class database:
     def create_data_tables(self):
         #Create Ensemble_stats and Ensemble_members with FK references.
         #Must be called after all referenced parent tables have been created
-        #(Indicators, Time_Periods, Seasons via import_metadata; lookup tables
+        #(Indicators, TimeBins, Seasons via import_metadata; lookup tables
         #via build_lookup_tables; Areas via import_geometries).
         conn = self.connect()
         cur = conn.cursor()
@@ -175,7 +175,7 @@ class database:
             GridKey           INTEGER  REFERENCES Grids(GridKey),
             IndicatorKey      INTEGER  REFERENCES Indicators(IndicatorKey),
             AreaKey           INTEGER  REFERENCES Areas(AreaKey),
-            PeriodKey         INTEGER  REFERENCES Time_Periods(PeriodKey),
+            TimeBinKey         INTEGER  REFERENCES TimeBins(TimeBinKey),
             SeasonKey         INTEGER  REFERENCES Seasons(SeasonKey),
             Delta            BOOLEAN,
             StatisticTypeKey INTEGER  REFERENCES StatisticTypes(StatisticTypeKey),
@@ -193,7 +193,7 @@ class database:
             GridKey           INTEGER  REFERENCES Grids(GridKey),
             IndicatorKey      INTEGER  REFERENCES Indicators(IndicatorKey),
             AreaKey           INTEGER  REFERENCES Areas(AreaKey),
-            PeriodKey         INTEGER  REFERENCES Time_Periods(PeriodKey),
+            TimeBinKey         INTEGER  REFERENCES TimeBins(TimeBinKey),
             SeasonKey         INTEGER  REFERENCES Seasons(SeasonKey),
             Delta            BOOLEAN,
             StatisticTypeKey INTEGER  REFERENCES StatisticTypes(StatisticTypeKey),
@@ -559,7 +559,7 @@ class database:
         cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_area        ON ArealEnsembleStatistics(AreaKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_indicator   ON ArealEnsembleStatistics(IndicatorKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_scenario    ON ArealEnsembleStatistics(ScenarioKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_period      ON ArealEnsembleStatistics(PeriodKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_TimeBin      ON ArealEnsembleStatistics(TimeBinKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_season      ON ArealEnsembleStatistics(SeasonKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_grid        ON ArealEnsembleStatistics(GridKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_dataset      ON ArealEnsembleStatistics(DatasetKey);")
@@ -567,14 +567,14 @@ class database:
         cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_delta       ON ArealEnsembleStatistics(Delta);")
         cur.execute("""
         CREATE INDEX IF NOT EXISTS idx_stats_composite
-            ON ArealEnsembleStatistics(IndicatorKey, ScenarioKey, PeriodKey, SeasonKey, Delta);
+            ON ArealEnsembleStatistics(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
         """)
  
         # -- Indexes on Ensemble_members --
         cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_area          ON ArealMemberValues(AreaKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_indicator     ON ArealMemberValues(IndicatorKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_scenario      ON ArealMemberValues(ScenarioKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_period        ON ArealMemberValues(PeriodKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_TimeBin        ON ArealMemberValues(TimeBinKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_season        ON ArealMemberValues(SeasonKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_dataset       ON ArealMemberValues(DatasetKey);")
         cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_grid          ON ArealMemberValues(GridKey);")
@@ -583,7 +583,7 @@ class database:
         cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_delta         ON ArealMemberValues(Delta);")
         cur.execute("""
         CREATE INDEX IF NOT EXISTS idx_mem_composite
-            ON ArealMemberValues(IndicatorKey, ScenarioKey, PeriodKey, SeasonKey, Delta);
+            ON ArealMemberValues(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
         """)
  
         # -- View: Ensemble_stats with all metadata decoded --
@@ -597,8 +597,8 @@ class database:
             i.IndicatorCode         AS IndicatorCode,
             i.IndicatorDescription  AS IndicatorDescription,
             es.AreaKey              AS AreaKey,
-            p.PeriodCode            AS PeriodCode,
-            p.PeriodDescription     AS PeriodDescription,
+            p.TimeBinCode            AS TimeBinCode,
+            p.TimeBinDescription     AS TimeBinDescription,
             se.SeasonCode           AS SeasonCode,
             se.SeasonDescription    AS SeasonDescription,
             ar.StatisticTypeCode   AS StatisticTypeCode,
@@ -608,7 +608,7 @@ class database:
         FROM ArealEnsembleStatistics AS es
         JOIN Indicators      AS i  ON es.IndicatorKey      = i.IndicatorKey
         JOIN Scenarios       AS sc ON es.ScenarioKey       = sc.ScenarioKey
-        JOIN Periods         AS p  ON es.PeriodKey         = p.PeriodKey
+        JOIN TimeBins        AS p  ON es.TimeBinKey         = p.TimeBinKey
         JOIN Seasons         AS se ON es.SeasonKey         = se.SeasonKey
         JOIN Grids           AS gr ON es.GridKey           = gr.GridKey
         JOIN Datasets        AS ds ON es.DatasetKey        = ds.DatasetKey
@@ -627,8 +627,8 @@ class database:
             i.IndicatorCode         AS IndicatorCode,
             i.IndicatorDescription  AS IndicatorDescription,
             em.AreaKey              AS AreaKey,
-            p.PeriodCode            AS PeriodCode,
-            p.PeriodDescription     AS PeriodDescription,
+            p.TimeBinCode            AS TimeBinCode,
+            p.TimeBinDescription     AS TimeBinDescription,
             se.SeasonCode           AS SeasonCode,
             se.SeasonDescription    AS SeasonDescription,
             ar.StatisticTypeCode   AS StatisticTypeCode,
@@ -637,7 +637,7 @@ class database:
         FROM ArealMemberValues AS em
         JOIN Indicators      AS i  ON em.IndicatorKey      = i.IndicatorKey
         JOIN Scenarios       AS sc ON em.ScenarioKey       = sc.ScenarioKey
-        JOIN Periods         AS p  ON em.PeriodKey         = p.PeriodKey
+        JOIN TimeBins        AS p  ON em.TimeBinKey       = p.TimeBinKey
         JOIN Seasons         AS se ON em.SeasonKey         = se.SeasonKey
         JOIN Datasets        AS ds ON em.DatasetKey        = ds.DatasetKey
         JOIN Grids           AS gr ON em.GridKey           = gr.GridKey
@@ -724,7 +724,7 @@ if __name__ == "__main__":
         
     #Set the path to configuration file
     configfile= ROOT / "config" /"config.yaml"
-    #configfile= ROOT / "workflow" / "testing"/"config.yaml"
+    configfile= ROOT / "workflow" / "testing"/"config.yaml"
 
     db = database(config_file=str(configfile),
                   tempDir=tempfile.gettempdir())

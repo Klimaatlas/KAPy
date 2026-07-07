@@ -1,6 +1,6 @@
 id	indicator_codes	enabled	description	variables	datasets	seasons	timeBinning	statistic	skipna	deltaType	additionalArgs	customScriptPath	customScriptFunction
 mean-tas		x	Annual mean temperature	tas	all	all	periods	mean	false	subtract	{}		
 mean-tasK		x	Annual mean temperature (K)	tasK	all	all	periods	mean	false	subtract	{}		
-i101		x	Annual mean temperature	tas	CORDEX-BA	all	years	mean	false	subtract	{}		
-q95		x	Annual mean temperature	tas	CORDEX-BA	all	periods	quantile	false	subtract	{'q':'0.95'}		
-hotdays	T20,T25	x	Number of days above 30	tas	CORDEX-BA	all	periods	custom	false	subtract	{}	workflow/testing/hotdays.py	hotdays
+i101		x	Annual mean temperature (yearly binning)	tas	CORDEX-BA	all	years	mean	false	subtract	{}		
+q95		x	95th percentile of temperature	tas	CORDEX-BA	all	periods	quantile	false	subtract	{'q':'0.95'}		
+hotdays	T20,T25	x	Number of days above threshold	tas	CORDEX-BA	all	periods	custom	false	subtract	{}	workflow/testing/hotdays.py	hotdays

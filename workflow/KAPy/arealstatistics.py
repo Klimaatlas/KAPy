@@ -5,40 +5,45 @@ from cdo import Cdo
 import regionmask
 import numpy as np
 
-"""
-#Setup for debugging with VS code 
-import os
-print(os.getcwd())
-os.chdir("..")
-import workflow.KAPy as KAPy
-config=KAPy.getConfig("./workflow/testing/config.yaml") 
-config=KAPy.getConfig("./config/config.yaml") 
-wf=KAPy.getWorkflow(config)
-asID=list(wf['arealstats']['input_dict'].keys())[0]
-inFile=wf['arealstats']['input_dict'][asID]
-shapefile=config["arealstats"]['shapefile']
-useAreaWeighting=config["arealstats"]['useAreaWeighting']
-tempDir=config['dirs']['tempDir']
-%matplotlib inline
-"""
+def generateArealstats(inFile, tempDir,useAreaWeighting,shapefile):
+    """
+    Generate statistics over an area by applying a polygon mask and averaging
 
-def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile):
-    # Generate statistics over an area by applying a polygon mask and averaging
+    Parameters
+    ----------
+    inFile : _type_
+        _description_
+    tempDir : _type_
+        _description_
+    useAreaWeighting : _type_
+        _description_
+    shapefile : _type_
+        _description_
+
+    Returns
+    -------
+    _type_
+        _description_
+
+    Raises
+    ------
+    ValueError
+        _description_
+    ImportError
+        _description_
+    """
+
     # Setup xarray
     # Note that we need to use open_dataset here, as the ensemble files have
     # multiple data variables in them
     time_coder=xr.coders.CFDatetimeCoder(use_cftime=True)
-    thisDat = xr.open_dataset(inFile[0],
+    thisDat = xr.open_dataset(inFile,
                               decode_times=time_coder,
                               decode_timedelta=False)
 
-    #Identify the time / period coordinate first
-    if 'time' in thisDat.dims:
-        tCoord='time'
-    elif 'periodID' in thisDat.dims:
-        tCoord='periodID'
-    else:
-        raise ValueError(f'Cannot find time or periodID coordinate in "{inFile[0]}".')
+    #Check for the presence  the time / period coordinate first
+    if not any(coord in thisDat.dims for coord in ["time", "periodID"]):
+        raise ValueError(f'Cannot find time or periodID coordinate in "{inFile}".')
     
     #Identify coordinate types. Some logic is required here, as the coordinates
     #presented can vary based on time_binning and whether it is an ensemble stat or member
@@ -119,12 +124,38 @@ def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile):
         dfOut.insert(0,'areaID',"NA" )
         dfOut=dfOut.reset_index()
 
-    #Write out date without time for easier handling
+    #Align different time axes into a "timebin" axis.
     if 'time' in dfOut.columns:
         dfOut['time']=[d.strftime("%Y-%m-%d") for d in dfOut['time']]
+        dfOut=dfOut.rename(columns={"time": "timeBinID"})
+    if 'periodID' in dfOut.columns:
+        dfOut=dfOut.rename(columns={"periodID": "timeBinID"})
+
+    #Return dfOut. Writing is handled by the calling function
+    return dfOut
+
+
+# Development setup -----------------------------------------------------
+# Uses the testing dataset
+if __name__ == "__main__":
+    #Set the working directory 
+    from pathlib import Path
+    ROOT = Path(__file__).resolve().parent.parent.parent
+
+    #Import KAPy
+    os.chdir(ROOT/ "workflow")
+    import KAPy
+   
+    #Setup configuration parameters
+    import tempfile
+    inFile= ROOT / "testing" / "07.ensstats" / "CORDEX-BA_i101_Ghana025_historical+rcp85_ensstats.nc"
+    inFile= ROOT / "testing" / "07.ensstats" / "CORDEX-BA_T25_Ghana025_historical+rcp85_ensstats.nc"
+    inFile= ROOT / "testing" / "07.ensstats" / "CORDEX-BA_mean-tas_Ghana025_historical+rcp85_ensstats.nc"
+    tempDir=tempfile.gettempdir()
+    useAreaWeighting=True
+    shapefile= ROOT / 'docs/tutorials/Tutorial05_files/Ghana_regions.shp'
     
-    #Write results out
-    dfOut.to_csv(outFile[0],index=False)
-
-
+    #Run the function
+    dfOut=generateArealstats(inFile,tempDir,useAreaWeighting,shapefile)
+   
 

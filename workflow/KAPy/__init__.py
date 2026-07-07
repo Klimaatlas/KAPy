@@ -9,9 +9,9 @@ from .ensembles import *
 from .regridding import *
 from .indicators import *
 from .workflow import getWorkflow
-#from .plots import *
 from .helpers import *
-from .outputs import *
+from .outputs_nc import *
+from .outputs_csv import *
 from .database import database
 from .dask_helpers import *
 from .constants import PATHS
