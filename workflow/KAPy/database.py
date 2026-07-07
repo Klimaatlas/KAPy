@@ -7,7 +7,10 @@ import yaml
 import csv, json
 import tempfile
 import shutil
-from . import helpers
+from pathlib import Path
+from KAPy import helpers
+from KAPy import config
+from KAPy import workflow
   
 class database:
  
@@ -30,8 +33,13 @@ class database:
         "Grids": dict(table="Grids", id="GridKey", code="GridCode", src="gridID"),
         "Members": dict(table="Members", id="MemberKey", code="MemberCode", src="memberID"),
         "Datasets": dict(table="Datasets", id="DatasetKey", code="DatasetCode", src="datasetID"),
-        "ArealStatistics": dict(table="ArealStatistics", id="ArealStatisticKey", code="ArealStatisticCode", src="arealStatistic"),
+        "StatisticTypes": dict(table="StatisticTypes", id="StatisticTypeKey", code="StatisticTypeCode", src="statisticType")
+
     }
+
+    PIPELINE_STEPS = {"indicators": 5,
+                     "regrid" : 6,
+                     "ensstats":7}
  
     # --------------------------------------------------
     # INIT
@@ -44,8 +52,10 @@ class database:
     ):
         #Load configuration file and populate self from there
         self.config_file=config_file
-        with open(config_file, "r") as f:
-            self.config = yaml.safe_load(f)
+        self.config=config.getConfig(self.config_file)
+
+        #Then add the workflow configuration
+        self.workflow=workflow.getWorkflow(self.config)
 
         #Setup paths
         self.db_path=tempfile.NamedTemporaryFile(dir=tempDir,
@@ -140,6 +150,13 @@ class database:
         );
         """)
 
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS PipelineSteps(
+            PipelineStepKey INTEGER PRIMARY KEY,
+            PipelineStepCode TEXT UNIQUE NOT NULL
+        );
+        """) 
+
         conn.commit()
  
     def create_data_tables(self):
@@ -151,7 +168,7 @@ class database:
         cur = conn.cursor()
  
         cur.execute("""
-        CREATE TABLE IF NOT EXISTS Ensemble_statistics (
+        CREATE TABLE IF NOT EXISTS ArealEnsembleStatistics (
             id               INTEGER PRIMARY KEY,
             DatasetKey        INTEGER  REFERENCES Datasets(DatasetKey),
             ScenarioKey       INTEGER  REFERENCES Scenarios(ScenarioKey),
@@ -161,14 +178,14 @@ class database:
             PeriodKey         INTEGER  REFERENCES Time_Periods(PeriodKey),
             SeasonKey         INTEGER  REFERENCES Seasons(SeasonKey),
             Delta            BOOLEAN,
-            ArealStatisticKey INTEGER  REFERENCES ArealStatistics(ArealStatisticKey),
+            StatisticTypeKey INTEGER  REFERENCES StatisticTypes(StatisticTypeKey),
             Percentile       REAL,
             Value            REAL
         );
         """)
  
         cur.execute("""
-        CREATE TABLE IF NOT EXISTS Indicator_data(
+        CREATE TABLE IF NOT EXISTS ArealMemberValues(
             id               INTEGER PRIMARY KEY,
             DatasetKey        INTEGER  REFERENCES Datasets(DatasetKey),
             MemberKey         INTEGER  REFERENCES Members(MemberKey),
@@ -179,11 +196,23 @@ class database:
             PeriodKey         INTEGER  REFERENCES Time_Periods(PeriodKey),
             SeasonKey         INTEGER  REFERENCES Seasons(SeasonKey),
             Delta            BOOLEAN,
-            ArealStatisticKey INTEGER  REFERENCES ArealStatistics(ArealStatisticKey),
+            StatisticTypeKey INTEGER  REFERENCES StatisticTypes(StatisticTypeKey),
             Value            REAL
         );
         """)
- 
+
+        cur.execute("""
+        CREATE TABLE IF NOT EXISTS GriddedFiles (
+            id            INTEGER PRIMARY KEY,
+            IndicatorKey  INTEGER REFERENCES Indicators(IndicatorKey),
+            DatasetKey    INTEGER REFERENCES Datasets(DatasetKey),
+            GridKey       INTEGER REFERENCES Grids(GridKey),
+            ScenarioKey   INTEGER REFERENCES Scenarios(ScenarioKey),
+            MemberKey     INTEGER REFERENCES Members(MemberKey),
+            PipelineStep  INTEGER REFERENCES PipelineSteps(PipelineStepKey),
+            Path      TEXT UNIQUE NOT NULL
+        );
+        """)
         conn.commit()
  
     # --------------------------------------------------
@@ -252,8 +281,22 @@ class database:
                 rows,
             )
             print(cfg["table"], len(rows))
- 
+
         conn.commit()
+
+
+    def build_pipelineSteps_lookup(self):
+        conn = self.connect()
+        cur = conn.cursor()
+
+        for code, key in self.PIPELINE_STEPS.items():
+            cur.execute(
+                "INSERT OR IGNORE INTO PipelineSteps (PipelineStepKey, PipelineStepCode) VALUES (?, ?)",
+                (key, code)
+            )
+
+        conn.commit()
+
  
     # --------------------------------------------------
     # AREAS
@@ -331,7 +374,7 @@ class database:
  
         # Output
         # Get list of column names and order from the existing table - use this to filter df
-        cursor = self.conn.execute("PRAGMA table_info(Ensemble_statistics);")
+        cursor = self.conn.execute("PRAGMA table_info(ArealEnsembleStatistics);")
         columns = cursor.fetchall()
         output_columns = [col[1] for col in columns if col[1] != "id"]
         df=df[output_columns]
@@ -358,7 +401,7 @@ class database:
  
         # Output
         # Get list of column names and order from the existing table - use this to filter df
-        cursor = self.conn.execute("PRAGMA table_info(Indicator_data);")
+        cursor = self.conn.execute("PRAGMA table_info(ArealMemberValues);")
         columns = cursor.fetchall()
         output_columns = [col[1] for col in columns if col[1] != "id"]
         df=df[output_columns]
@@ -377,7 +420,7 @@ class database:
  
         #Data order is taken from the table, so no need to worry about specify the column names here
         cur.executemany("""
-        INSERT INTO Ensemble_statistics
+        INSERT INTO ArealEnsembleStatistics
         VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?)
         """,rows)
  
@@ -396,7 +439,7 @@ class database:
  
         #Data order is taken from the database table, so no need to worry about specify the column names here
         cur.executemany("""
-        INSERT INTO Indicator_data
+        INSERT INTO ArealMemberValues
         VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?)
         """,rows)
  
@@ -429,11 +472,81 @@ class database:
             INSERT INTO Configuration 
             VALUES (NULL, ?, ?,?)
             """, (key, self.config["configurationTables"][key], tbl.to_json()))
-            
 
         conn.commit()
 
-    
+
+    def register_gridded_files(self):
+        conn = self.connect()
+        cur = conn.cursor()
+
+        #Get Filelists
+        indicator_filelist=[k for thisInd in self.workflow["indicators"].values() for k in thisInd["outputs"]]
+        filelists={"indicators": indicator_filelist,
+                   "regrid": self.workflow["regrid"]["outputs"],
+                   "ensstats":self.workflow["ensstats"]["outputs"]}
+        
+        #Build into a dataframe, and encode the pipeline step codes
+        df = pd.DataFrame([{"PipelineStep": code, "Path": path}
+                            for code, paths in filelists.items()
+                            for path in paths
+                            ])
+        df["PipelineStep"] = df["PipelineStep"].map(self.PIPELINE_STEPS)
+        
+        #Adjust the filepath to be relative to the SQLITE database and convert to str
+        df["Path"]=[str(Path(p).relative_to(self.db_output_path.parent)) for p in df["Path"]]
+
+        #Now extract fields from the filename
+        extracted=df[["Path"]].copy()        
+        extracted["filename"]=[Path(p).stem for p in extracted["Path"]]
+        extract_column_names= ["Datasets","Indicators","Grids","Scenarios","Members"]
+        for i,n in enumerate(extract_column_names):
+            extracted[n]=extracted["filename"].str.split("_").str[i]
+        extracted["Members"]=extracted["filename"].str.split("_").str[4:].str.join("_")
+
+        #Update grid mappings - in principle the source grids won't come through to the areal statistics and are therefore
+        # not included in the original Grid mapping table. Add them to the Grids table and update the mapping.
+        existing_grids = pd.read_sql_query("SELECT GridCode FROM Grids", conn)["GridCode"].tolist()
+        new_grids = extracted["Grids"].unique()
+        grids_to_add = [grid for grid in new_grids if grid not in existing_grids]
+        if grids_to_add:
+            rows = [(i + 1, grid) for i, grid in enumerate(grids_to_add, start=len(existing_grids))]
+            cur.executemany(
+                "INSERT INTO Grids (GridKey, GridCode) VALUES (?, ?)",
+                rows
+            )
+            conn.commit()
+            print(f"Added {len(grids_to_add)} new grids to the Grids table.")
+
+
+        #Build mappings to convert codes to keys and write to df
+        maps=self.build_mappings()
+        for n in extract_column_names:
+            lookup_dict=self.LOOKUP_TABLES[n]
+            df[lookup_dict["id"]]= extracted[n].astype(str).map(maps[lookup_dict["table"]])
+
+        # Ensure the DataFrame has the correct columns in the correct order
+        # Retrieve the structure of the GriddedFiles table
+        cur.execute("PRAGMA table_info(GriddedFiles);")
+        table_info = cur.fetchall()
+        table_columns = [col[1] for col in table_info if col[1] != "id"]
+        out=df[table_columns]
+
+        #Write to database
+        conn.execute("PRAGMA foreign_keys=OFF;")
+        cur=conn.cursor()
+ 
+        #Data order is taken from the table, so no need to worry about specify the column names here
+        cur.executemany("""
+        INSERT INTO GriddedFiles
+        VALUES (NULL,?,?,?,?,?,?,?)
+        """,out.itertuples(index=False,name=None))
+ 
+        conn.commit()
+        conn.execute("PRAGMA foreign_keys=ON;")
+        print("Registered gridded files:",len(df))
+
+
     # --------------------------------------------------
     # INDEXES AND VIEWS
     # --------------------------------------------------
@@ -443,39 +556,39 @@ class database:
         cur = conn.cursor()
  
         # -- Indexes on Ensemble_stats --
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_area        ON Ensemble_statistics(AreaKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_indicator   ON Ensemble_statistics(IndicatorKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_scenario    ON Ensemble_statistics(ScenarioKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_period      ON Ensemble_statistics(PeriodKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_season      ON Ensemble_statistics(SeasonKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_grid        ON Ensemble_statistics(GridKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_dataset      ON Ensemble_statistics(DatasetKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_arealstat   ON Ensemble_statistics(ArealStatisticKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_delta       ON Ensemble_statistics(Delta);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_area        ON ArealEnsembleStatistics(AreaKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_indicator   ON ArealEnsembleStatistics(IndicatorKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_scenario    ON ArealEnsembleStatistics(ScenarioKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_period      ON ArealEnsembleStatistics(PeriodKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_season      ON ArealEnsembleStatistics(SeasonKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_grid        ON ArealEnsembleStatistics(GridKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_dataset      ON ArealEnsembleStatistics(DatasetKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_arealstat   ON ArealEnsembleStatistics(StatisticTypeKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_stats_delta       ON ArealEnsembleStatistics(Delta);")
         cur.execute("""
         CREATE INDEX IF NOT EXISTS idx_stats_composite
-            ON Ensemble_statistics(IndicatorKey, ScenarioKey, PeriodKey, SeasonKey, Delta);
+            ON ArealEnsembleStatistics(IndicatorKey, ScenarioKey, PeriodKey, SeasonKey, Delta);
         """)
  
         # -- Indexes on Ensemble_members --
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_area          ON Indicator_data(AreaKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_indicator     ON Indicator_data(IndicatorKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_scenario      ON Indicator_data(ScenarioKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_period        ON Indicator_data(PeriodKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_season        ON Indicator_data(SeasonKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_dataset       ON Indicator_data(DatasetKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_grid          ON Indicator_data(GridKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_member        ON Indicator_data(MemberKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_arealstat     ON Indicator_data(ArealStatisticKey);")
-        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_delta         ON Indicator_data(Delta);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_area          ON ArealMemberValues(AreaKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_indicator     ON ArealMemberValues(IndicatorKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_scenario      ON ArealMemberValues(ScenarioKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_period        ON ArealMemberValues(PeriodKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_season        ON ArealMemberValues(SeasonKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_dataset       ON ArealMemberValues(DatasetKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_grid          ON ArealMemberValues(GridKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_member        ON ArealMemberValues(MemberKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_arealstat     ON ArealMemberValues(StatisticTypeKey);")
+        cur.execute("CREATE INDEX IF NOT EXISTS idx_mem_delta         ON ArealMemberValues(Delta);")
         cur.execute("""
         CREATE INDEX IF NOT EXISTS idx_mem_composite
-            ON Indicator_data(IndicatorKey, ScenarioKey, PeriodKey, SeasonKey, Delta);
+            ON ArealMemberValues(IndicatorKey, ScenarioKey, PeriodKey, SeasonKey, Delta);
         """)
  
         # -- View: Ensemble_stats with all metadata decoded --
         cur.execute("""
-        CREATE VIEW IF NOT EXISTS view_Ensemble_statistics AS
+        CREATE VIEW IF NOT EXISTS view_ArealEnsembleStatistics AS
         SELECT
             es.id                   AS id,
             ds.DatasetCode          AS DatasetCode,
@@ -488,23 +601,23 @@ class database:
             p.PeriodDescription     AS PeriodDescription,
             se.SeasonCode           AS SeasonCode,
             se.SeasonDescription    AS SeasonDescription,
-            ar.ArealStatisticCode   AS ArealStatisticCode,
+            ar.StatisticTypeCode   AS StatisticTypeCode,
             es.Delta                AS Delta,
             es.Percentile           AS Percentile,
             es.Value                AS Value
-        FROM Ensemble_statistics AS es
+        FROM ArealEnsembleStatistics AS es
         JOIN Indicators      AS i  ON es.IndicatorKey      = i.IndicatorKey
         JOIN Scenarios       AS sc ON es.ScenarioKey       = sc.ScenarioKey
         JOIN Periods         AS p  ON es.PeriodKey         = p.PeriodKey
         JOIN Seasons         AS se ON es.SeasonKey         = se.SeasonKey
         JOIN Grids           AS gr ON es.GridKey           = gr.GridKey
         JOIN Datasets        AS ds ON es.DatasetKey        = ds.DatasetKey
-        JOIN ArealStatistics AS ar ON es.ArealStatisticKey = ar.ArealStatisticKey;
+        JOIN StatisticTypes AS ar ON es.StatisticTypeKey = ar.StatisticTypeKey;
         """)
  
         # -- View: Ensemble_members with all metadata decoded --
         cur.execute("""
-        CREATE VIEW IF NOT EXISTS view_Indicator_data AS
+        CREATE VIEW IF NOT EXISTS view_ArealMemberValues AS
         SELECT
             em.id                   AS id,
             ds.DatasetCode          AS DatasetCode,
@@ -518,10 +631,10 @@ class database:
             p.PeriodDescription     AS PeriodDescription,
             se.SeasonCode           AS SeasonCode,
             se.SeasonDescription    AS SeasonDescription,
-            ar.ArealStatisticCode   AS ArealStatisticCode,
+            ar.StatisticTypeCode   AS StatisticTypeCode,
             em.Delta                AS Delta,
             em.Value                AS Value
-        FROM Indicator_data AS em
+        FROM ArealMemberValues AS em
         JOIN Indicators      AS i  ON em.IndicatorKey      = i.IndicatorKey
         JOIN Scenarios       AS sc ON em.ScenarioKey       = sc.ScenarioKey
         JOIN Periods         AS p  ON em.PeriodKey         = p.PeriodKey
@@ -529,7 +642,30 @@ class database:
         JOIN Datasets        AS ds ON em.DatasetKey        = ds.DatasetKey
         JOIN Grids           AS gr ON em.GridKey           = gr.GridKey
         JOIN Members         AS me ON em.MemberKey         = me.MemberKey
-        JOIN ArealStatistics AS ar ON em.ArealStatisticKey = ar.ArealStatisticKey;
+        JOIN StatisticTypes AS ar ON em.StatisticTypeKey = ar.StatisticTypeKey;
+        """)
+
+        # -- View: Gridded files with all metadata decoded --
+        cur.execute("""
+        CREATE VIEW IF NOT EXISTS view_GriddedFiles AS
+        SELECT
+            gf.id                   AS id,
+            ds.DatasetCode          AS DatasetCode,
+            i.IndicatorCode         AS IndicatorCode,
+            i.IndicatorDescription  AS IndicatorDescription,
+            gr.GridCode             AS GridCode,
+            me.MemberCode           AS MemberCode,
+            sc.ScenarioCode         AS ScenarioCode,
+            ps.PipelineStepKey     AS PipelineStepKey,
+            ps.PipelineStepCode     AS PipelineStepCode,
+            gf.Path                 AS Path
+        FROM GriddedFiles AS gf
+        JOIN Indicators      AS i  ON gf.IndicatorKey      = i.IndicatorKey
+        JOIN Datasets        AS ds ON gf.DatasetKey        = ds.DatasetKey
+        JOIN Grids           AS gr ON gf.GridKey           = gr.GridKey
+        JOIN Scenarios       AS sc ON gf.ScenarioKey       = sc.ScenarioKey
+        JOIN Members         AS me ON gf.MemberKey         = me.MemberKey
+        JOIN PipelineSteps   AS ps ON gf.PipelineStep      = ps.PipelineStepKey;
         """)
  
         conn.commit()
@@ -547,11 +683,13 @@ class database:
  
             self.create_database_schema()
             self.build_lookup_tables()
+            self.build_pipelineSteps_lookup()
             self.create_data_tables()
             self.import_descriptions()
             self.import_stats()
             self.import_members()
             self.import_configuration()
+            self.register_gridded_files()
             self.create_indexes_and_views()
             print("\nSUCCESS")
         finally:

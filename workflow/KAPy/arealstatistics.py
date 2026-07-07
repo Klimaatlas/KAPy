@@ -94,9 +94,9 @@ def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile):
             
             #Apply masking and weighting and calculate
             wtMeanDf = thisDat.weighted(pxlWts).mean(dim=spDims).to_dataframe().reset_index()
-            wtMeanDf['arealStatistic']='mean'
+            wtMeanDf['statisticType']='mean'
             wtSdDf = thisDat.weighted(pxlWts).std(dim=spDims).to_dataframe().reset_index()
-            wtSdDf['arealStatistic']='sd'
+            wtSdDf['statisticType']='sd'
 
             #Output object
             thisOut=pd.concat([wtMeanDf,wtSdDf])
@@ -109,10 +109,10 @@ def generateArealstats(outFile, inFile, tempDir,useAreaWeighting,shapefile):
         # Average spatially over the time dimension
         spMean = thisDat.weighted(pxlSize).mean(dim=spDims)
         spMeanDf=spMean.to_dataframe()
-        spMeanDf['arealStatistic']='mean'
+        spMeanDf['statisticType']='mean'
         spSd = thisDat.weighted(pxlSize).std(dim=spDims)
         spSdDf=spSd.to_dataframe()
-        spSdDf['arealStatistic']='sd'
+        spSdDf['statisticType']='sd'
 
         # Save files pandas. Set the areaID to NA
         dfOut = pd.concat([spMeanDf,spSdDf])
