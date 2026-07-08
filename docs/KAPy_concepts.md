@@ -66,9 +66,6 @@ The KAPy workflow involves a set of discrete steps to process climate data, cove
 * `arealstats` : Areal statistics
   * Indicator statistics are calculated for all polygons area defined in `config.yaml`. 
  
-* `plots` : Outputs
-  * Produce output plots summarising all indicators
-
 * `all` : Make everything
   * Produce all outputs.
   * The default target - if no target is defined when calling snakemake, everything will be produced.
