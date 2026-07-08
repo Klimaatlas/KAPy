@@ -3,8 +3,7 @@ import tempfile
 import xesmf as xe
 import json
 from . import helpers
-#from dask.distributed import Client
-
+from . import constants
 
 """
 #Setup for debugging 
@@ -88,7 +87,7 @@ def biasAdjust(target_file,reference_file,tempDir,outputGrid,trainPeriodStart,tr
                                                 prefix="regridded_",
                                                 suffix=".nc").name
     regridded=regrdr(rechunked,output_chunks=(-1,-1),keep_attrs=True)
-    chunkThisWay=[min([256,16,16][i],regridded.shape[i]) for i in range(0,3)]
+    chunkThisWay=helpers.align_chunking(regridded)
     regridded.to_netcdf(regridded_filename,
               encoding={regridded.name:{'chunksizes':chunkThisWay}})
 

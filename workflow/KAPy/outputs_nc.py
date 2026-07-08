@@ -1,52 +1,9 @@
-import pandas as pd
 import os
 import xarray as xr
 import pickle
 from pathlib import Path
 import shutil
-
-"""
-#Setup for debugging with VS code 
-import os
-print(os.getcwd())
-os.chdir("..")
-import KAPy
-os.chdir("../..")
-config=KAPy.getConfig("./config/config.yaml")  
-wf=KAPy.getWorkflow(config)
-%matplotlib inline
-inFiles=wf['mergedCSVs']['members']
-"""
-
-def mergeCSVs(outFile, inFiles):
-    #Load data file function
-    def prepareDataFile(thisPath):
-        #Load file
-        datIn=pd.read_csv(thisPath,dtype=str,keep_default_na=False)
-        
-        #Process filename 
-        datIn.insert(0,'filename',os.path.basename(thisPath))
-        datIn.insert(2,'memberID',datIn['filename'].str.extract("^[^_]+_[^_]+_[^_]+_[^_]+_(.*).csv$"))
-        datIn.insert(2,'expt',datIn['filename'].str.extract("^[^_]+_[^_]+_[^_]+_([^_]+)_.*$"))
-        datIn.insert(2,'gridID',datIn['filename'].str.extract("^[^_]+_[^_]+_([^_]+)_.*$"))
-        datIn.insert(2,'datasetID',datIn['filename'].str.extract("^([^_]+)_.*$"))
-        datIn.insert(2,'indID',datIn['filename'].str.extract("^[^_]+_([^_]+)_.*$"))
-
-        #Finish
-        datOut=datIn.drop(columns=["filename"])
-        return(datOut)
-    
-    # Delete the output file if it exists
-    if os.path.exists(outFile[0]):
-        os.remove(outFile[0])
-    
-    #Load and then write data individually to a merged file
-    #Only write the header if the file doesn't exist
-    hasHeader=False
-    for f in inFiles:
-        df = prepareDataFile(f)
-        df.to_csv(outFile[0],index=False,mode="a",header=not hasHeader)
-        hasHeader=True
+from . import helpers
 
 
 def write_variables(obj: xr.DataArray | xr.Dataset | dict, 
@@ -71,7 +28,7 @@ def write_variables(obj: xr.DataArray | xr.Dataset | dict,
             format = os.path.splitext(os.path.basename(output_path))[1]
             if format == ".nc":
                 da.name = var_name
-                chunkThisWay=[min([256,16,16][i],da.shape[i]) for i in range(0,3)]
+                chunkThisWay=helpers.align_chunking(da)
                 da.to_netcdf(output_path,
                             encoding={var_name:{'chunksizes':chunkThisWay,
                                             'zlib': True,

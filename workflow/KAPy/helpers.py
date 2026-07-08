@@ -13,7 +13,7 @@ import importlib
 from inspect import signature
 from pathlib import Path
 import uuid
-
+from .constants import PATHS, CHUNKING_TIME, CHUNKING_SPACE
 
 def readFile(thisPath,format=None,chunks={}):
     """
@@ -128,3 +128,9 @@ def checkSignature(fn,argList):
         #Looks good
         return None
     
+def get_OUTPUT_PATHS(outputDir):
+        return {key : Path(outputDir) / p for key,p in PATHS.items()}
+
+
+def align_chunking(d):
+    return [min([CHUNKING_TIME,CHUNKING_SPACE,CHUNKING_SPACE][i],d.shape[i]) for i in range(0,3)]

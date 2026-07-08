@@ -1,20 +1,3 @@
-"""
-#Setup for debugging with VSCode
-import os
-print(os.getcwd())
-os.chdir("KAPy/workflow")
-import KAPy
-os.chdir("../..")
-print(os.getcwd())
-config=KAPy.getConfig("./config/config.yaml")  
-wf=KAPy.getWorkflow(config)
-inpID=list(wf['primVars'].keys())[0]
-outFile=list(wf['primVars'][inpID])[0]
-inFiles=wf['primVars'][inpID][outFile]
-import KAPy.helpers as helpers
-import KAPy.workflow as workflow
-%matplotlib inline
-"""
 
 # Given a set of input files, create objects that can be worked with
 import xarray as xr
@@ -28,10 +11,11 @@ import glob
 import os
 from . import helpers 
 from . import workflow
+from .constants import CHUNKING_TIME
 
 #-----------------------------------------------------------------
 def defaultImport(inFiles,varCode,internalVarName,checks,
-				  chunks={"time": 256}):
+				  chunks={"time": CHUNKING_TIME}):
 	# Make dataset object using xarray lazy load approach.
 	#
 	# Setup	
@@ -264,3 +248,40 @@ def VariableOverview(config):
 	print(f"\nWriting output to '{outFname}'.\n")
 	out.to_csv(outFname,index=False)
 
+# Validation----------------
+if __name__ == "__main__":
+    # Setup for debugging
+    from pathlib import Path
+
+    pd.set_option('display.max_colwidth', None)
+    from config import getConfig
+
+    # Setup working directory. Its not pretty, but..
+    this_path = Path(__file__).resolve().parent.parent.parent
+    os.chdir(this_path)
+
+    # Test standard config first
+    config = getConfig("./config/config.yaml")
+    WORKFLOW = getWorkflow(config)
+
+    # Then test the testing config
+    config = getConfig("./workflow/testing/config.yaml")
+    WORKFLOW = getWorkflow(config)
+
+"""
+#Setup for debugging with VSCode
+import os
+print(os.getcwd())
+os.chdir("KAPy/workflow")
+import KAPy
+os.chdir("../..")
+print(os.getcwd())
+config=KAPy.getConfig("./config/config.yaml")  
+wf=KAPy.getWorkflow(config)
+inpID=list(wf['primVars'].keys())[0]
+outFile=list(wf['primVars'][inpID])[0]
+inFiles=wf['primVars'][inpID][outFile]
+import KAPy.helpers as helpers
+import KAPy.workflow as workflow
+%matplotlib inline
+"""

@@ -35,7 +35,7 @@ WORKFLOW=KAPy.getWorkflow(config)
 
 #Setup helpers
 from pathlib import Path
-outDirs={key : Path(p) for key,p in config['dirs'].items()}
+OUTPUT_PATHS=KAPy.get_OUTPUT_PATHS(config["outputDir"]) 
 
 # Wildcard rules -------------------------------------------
 # Wildcard rules are generic rules in Snakemake that deal with many files at a time -
@@ -140,9 +140,9 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
 rule:
     name: "._rule_06_regrid"
     input:
-        unpack(lambda wc: WORKFLOW['regrid']["input_dict"][os.path.join(outDirs['regridded'],wc.outfile)])
+        unpack(lambda wc: WORKFLOW['regrid']["input_dict"][str(OUTPUT_PATHS['regridded'] / wc.outfile)])
     output:
-        output=os.path.join(outDirs['regridded'],"{outfile}")
+        output=OUTPUT_PATHS['regridded'] /"{outfile}"
     params:
         templateType=config["outputGrid"]["templateType"],
         path=config["outputGrid"].get("path",""),
@@ -159,9 +159,9 @@ rule:
 rule:
     name: "._rule_07_ensemble_statistics"
     input:
-        unpack(lambda wc: WORKFLOW['ensstats']["input_dict"][os.path.join(outDirs['ensstats'],wc.es)])
+        unpack(lambda wc: WORKFLOW['ensstats']["input_dict"][str(OUTPUT_PATHS['ensstats'] /wc.es)])
     output:
-        os.path.join(outDirs['ensstats'],"{es}")
+        OUTPUT_PATHS['ensstats'] / "{es}"
     params:
         **config['ensembles']
     script:
@@ -174,11 +174,11 @@ rule:
 rule:
     name: "._rule_08_areal_statistics"
     input:
-        inputFile=lambda wildcards: WORKFLOW['arealstats']["input_dict"][os.path.join(outDirs['arealstats'],
+        inputFile=lambda wildcards: WORKFLOW['arealstats']["input_dict"][str(OUTPUT_PATHS['arealstats'] /
                                                                                     wildcards.fname)],
         shapefile=lambda wildcards: config['arealstats']['shapefile'] if config['arealstats']['shapefile'] is not None else []
     output:
-        os.path.join(outDirs['arealstats'],'{fname}')
+        OUTPUT_PATHS['arealstats'] /'{fname}'
     params:
         shapefile=config['arealstats']['shapefile'],
         useAreaWeighting=config['arealstats']['useAreaWeighting']
@@ -201,31 +201,31 @@ rule:
     input:
         WORKFLOW['mergedCSVs']['ensstats']
     output:
-        config['outputs']["ensembleStatisticsCSV"]
+        OUTPUT_PATHS["ensembleStatisticsCSV"]
     run:
-        KAPy.mergeCSVs(outFile=output,inFiles=input)
+        KAPy.mergeCSVs(outFile=output[0],inFiles=input)
 
 rule:
     name:  "._rule_09b_member_statistics"
     input:
         WORKFLOW['mergedCSVs']['members']
     output:
-        config['outputs']["ensembleMembersCSV"]
+        OUTPUT_PATHS["ensembleMembersCSV"]
     run:
-        KAPy.mergeCSVs(outFile=output,inFiles=input)
+        KAPy.mergeCSVs(outFile=output[0],inFiles=input)
 
 # Database 
 rule:
     name: "._rule_09c_database"
     input:
-        ensemble_stats=config['outputs']["ensembleStatisticsCSV"],
-        ensemble_members=config['outputs']["ensembleMembersCSV"],
+        ensemble_stats=OUTPUT_PATHS["ensembleStatisticsCSV"],
+        ensemble_members=OUTPUT_PATHS["ensembleMembersCSV"],
         indicators=config['configurationTables']['indicators'],
         periods=config['configurationTables']['periods'],
         seasons=config['configurationTables']['seasons'],
         config_file=configfile_path
     output:
-        database=config['outputs']["database"]
+        database=OUTPUT_PATHS["database"]
     params:
     run:
         db = KAPy.database(input.config_file,tempDir=resources.tmpdir)
@@ -294,9 +294,9 @@ rule:
 rule:
     name: ".OUTPUTS"
     input:
-        config['outputs']["ensembleMembersCSV"],
-        config['outputs']["ensembleStatisticsCSV"],
-        config['outputs']["database"]
+        OUTPUT_PATHS["ensembleMembersCSV"],
+        OUTPUT_PATHS["ensembleStatisticsCSV"],
+        OUTPUT_PATHS["database"]
 
 #All
 rule:
