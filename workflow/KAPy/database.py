@@ -240,7 +240,14 @@ class database:
 
             #Handle Indicator codes, which are specified as a comma-separated list, separately.
             if key =="Indicators":
-                cfg['id'] = cfg["indicator_codes"].apply(lambda x: [item.strip() for item in x.split(",")] if pd.notnull(x) else [])
+                #Use id if indicator codes is empty or NaN
+                cfg["indicator_codes"] = [
+                    rw["id"] if pd.isna(rw["indicator_codes"]) or rw["indicator_codes"] == "" 
+                    else rw["indicator_codes"] 
+                    for _, rw in cfg.iterrows()
+                ]
+                #Split indicator codes into lists
+                cfg['id'] = cfg["indicator_codes"].apply(lambda x: [item.strip() for item in x.split(",")] if pd.notna(x) else [x])
                 cfg=cfg.explode("id")
             cfg=cfg[["id","description"]]
             cfg=cfg.rename(columns={"id": tbl['code'],
