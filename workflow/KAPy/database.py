@@ -362,12 +362,12 @@ class database:
             df[lookup_dict["id"]]= df[lookup_dict["src"]].astype(str).map(maps[lookup_dict["table"]])
 
         #Pivot delta columns longer
-        base=df[df.indicator_mean.notna()].copy()
-        base["Value"]=base.indicator_mean
+        base=df[df.indicator_percentiles.notna()].copy()
+        base["Value"]=base.indicator_percentiles
         base["Delta"]=False
  
-        delta=df[df.delta_mean.notna()].copy()
-        delta["Value"]=delta.delta_mean
+        delta=df[df.delta_percentiles.notna()].copy()
+        delta["Value"]=delta.delta_percentiles
         delta["Delta"]=True
  
         df=pd.concat([base,delta])
