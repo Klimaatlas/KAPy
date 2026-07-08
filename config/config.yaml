@@ -35,7 +35,7 @@ cutouts:
     ymin: 4
     ymax: 12
 ensembles:
-    percentiles: [10,50,90]
+    percentiles: [0,50,100]  #Use full data range due to small ensemble size.
     method: "linear"
 outputGrid:
     templateType: 'cdo'
