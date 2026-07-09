@@ -15,7 +15,7 @@ inFiles=wf['ensstats'][outFile[0]]
 import xarray as xr
 import numpy as np
 
-def generateEnsstats(outFile, inFiles, percentiles,method):
+def generateEnsstats(inFiles, percentiles,method):
     # Setup the ensemble
     # Given that all input files have been regridded onto a common grid,
     # they can then be concatenated into a single object. There are
@@ -79,5 +79,5 @@ def generateEnsstats(outFile, inFiles, percentiles,method):
     ensOut = ensOut.assign_coords(auxCoords)
     ensOut.attrs=thisEns.attrs
 
-    #Write out
-    ensOut.to_netcdf(outFile[0])
+    return ensOut
+
