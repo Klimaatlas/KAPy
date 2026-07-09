@@ -52,10 +52,10 @@ def buildDerivedVar(inFiles, passXarrays, scriptPath, scriptFunction,
     #Check output
     if passXarrays:  # Then load the paths into xarrays. Otherwise just pass the path.
         if not isinstance(out,xr.DataArray):
-            raise TypeError(f("When passXarrays is true, KAPy expects  {scriptPath} - {scriptFunction} to return  an xarray dataarray but actually recieved {type(out)}"))
+            raise TypeError(f"When passXarrays is true, KAPy expects  {scriptPath} - {scriptFunction} to return  an xarray dataarray but actually recieved {type(out)}")
     else:
         if not isinstance(out,dict):
-            raise TypeError(f("When passXarrays is false, KAPy expects  {scriptPath} - {scriptFunction} to return  a dict of paths to the output files but actually recieved {type(out)}"))
+            raise TypeError(f"When passXarrays is false, KAPy expects  {scriptPath} - {scriptFunction} to return  a dict of paths to the output files but actually recieved {type(out)}")
 
     return out
 

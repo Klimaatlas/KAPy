@@ -487,11 +487,12 @@ class database:
         conn = self.connect()
         cur = conn.cursor()
 
-        #Get Filelists
+        #Get Filelists. Regridding may or may be included in the pipeline, and needs to be handled separate
         indicator_filelist=[k for thisInd in self.workflow["indicators"].values() for k in thisInd["outputs"]]
         filelists={"indicators": indicator_filelist,
-                   "regrid": self.workflow["regrid"]["outputs"],
                    "ensstats":self.workflow["ensstats"]["outputs"]}
+        if "outputs" in self.workflow["regrid"]:
+            filelists["regrid"]= self.workflow["regrid"]["outputs"]
         
         #Build into a dataframe, and encode the pipeline step codes
         df = pd.DataFrame([{"PipelineStep": code, "Path": path}
