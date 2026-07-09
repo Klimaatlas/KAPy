@@ -9,7 +9,10 @@ import os
 import pandas as pd
 import glob
 from pathlib import Path
-from . import helpers      
+try:  #Differentiate between importing when in a module and running the script locally
+    from . import helpers
+except ImportError:
+    import helpers
 
 def getWorkflow(config):
     """
@@ -234,11 +237,17 @@ def getWorkflow(config):
     svDict = {}
     if "secondaryVars" in config:
         for thisKey,thisSV in config["secondaryVars"].items():
-            # Now filter by the input variables needed for this derived variable
-            selThese = [v in thisSV["inputVars"] for v in varPal["var"]]
+            # Find the right files to consider first
+            correct_variable = varPal["var"].isin(thisSV["inputVars"])
+            correct_dataset = varPal["dataset"].isin(thisSV["datasets"])
+
+            if "all" in thisSV['datasets']:
+                selThese = correct_variable
+            else:
+                selThese = correct_variable & correct_dataset
+            if not any(selThese):
+                raise ValueError(f"Cannot find variable(s) '{thisSV['inputVars']}' for datasets '{thisSV['datasets']}' in secondary variable row {thisSV['id']}.")
             longSVTbl = varPal[selThese]
-            if longSVTbl.size == 0:
-                    raise ValueError(f"Cannot find any input variables for {thisSV['id']}. ")
 
             # Pivot and retain only those in common
             svTbl = longSVTbl.pivot(
@@ -364,9 +373,16 @@ def getWorkflow(config):
     if ("tertiaryVars" in config) and ("biasAdjustment" in config):
         postBAPal = parseFilelist(BA_outputs,"biasAdjustment")
         for thisKey,thisTV in config["tertiaryVars"].items():
-
             # Filter by the input variables needed for this derived variable
-            selThese = [v in thisTV["inputVars"] for v in postBAPal["var"]]
+            correct_variable = postBAPal["var"].isin(thisTV["inputVars"])
+            correct_dataset = postBAPal["dataset"].isin(thisTV["datasets"])
+
+            if "all" in thisTV['datasets']:
+                selThese = correct_variable
+            else:
+                selThese = correct_variable & correct_dataset
+            if not any(selThese):
+                raise ValueError(f"Cannot find variable(s) '{thisTV['inputVars']}' for datasets '{thisTV['datasets']}' in secondary variable row {thisTV['id']}.")
             longTVTbl = postBAPal[selThese]
             if longTVTbl.size == 0:
                     raise ValueError(f"Cannot find any input variables for tertiary variable '{thisTV['id']}'. ")

@@ -6,6 +6,7 @@
     "required": [
         "id",
         "enabled",
+        "datasets",
         "inputVars",
         "outputVars",
         "passXarrays",
@@ -25,6 +26,11 @@
             "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
             "type": ["string","null"]
         },
+        "datasets": {
+            "description": "Comma-separated list of dataset IDs for which the derived variable is to be calculated. IDs should match those defined as primary (input), secondary, bias-adjusted or tertiary variables. In addition, `all` selects all datasets.",
+            "type": "string"
+          },
+      
         "inputVars": {
             "description": "Comma-separated list of input variables to be used in generating this new variable.",
             "type": "string"
