@@ -1,8 +1,8 @@
 # Overview of documentation for KAPy - *Klimaatlases* in Python
 
-Documentation for KAPy is contained in the repository `./docs` folder and is generally divided in three areas as follows.
+Documentation for KAPy is contained in the repository `./docs` folder. This README provides an overview of the available documentation.
 
-Installation of KAPy is documented in the "Getting Started" section of the [README](..README.md) in the root directory.
+Installation of KAPy is documented in the "Getting Started" section of the [README](../README.md) in the root directory.
 
 ## Learning KAPy
 
@@ -18,11 +18,14 @@ Here we have provided a set of worked examples to help you learn the basics of K
 In addition, the following tutorials provide more information, but need not be taken in any particular order
 * [Visualisation and working with KAPy outputs](./tutorials/Visualisation/Visualisation.md)
 
-## Background and definitions
+## Background, definitions and conepts
 
 * [Background](Background.md) - Background knowledge useful for getting started with KAPy.
 * [KAPy concepts](KAPy_concepts.md) - Explains key concepts and definitions used in KAPy.
+* [User Defined Functions](UDFs.md) - Describes how to write your own "user defined functions" (UDFs) for use in KAPy.
 
 ## Reference
 
 * [Configuration](Configuration.md) - Details the configuration system and options available in KAPy.
+* [Workflow](Workflow.md) - Details the workflow targets available when calling Snakemake
+* [SQLlite database description](SQLlite.md) - Description of the KAPy SQLlite database structure

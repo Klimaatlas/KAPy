@@ -44,7 +44,7 @@ conda env create --file ./workflow/envs/env.yaml
 
 ## Documentation
 
-Documentation for KAPy is contained in the `./docs` folder. For more details, please see the following [Documentation Overivew](./docs/README.md).
+Documentation for KAPy is contained in the `./docs` folder. For more details, please see the following [Documentation Overview](./docs/README.md).
 
 ## Contributing
 
