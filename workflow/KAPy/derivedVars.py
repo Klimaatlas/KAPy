@@ -20,42 +20,44 @@ from KAPy import helpers
 """
 
 import xarray as xr
-import importlib
-import os
 from . import helpers
 
 
-def buildDerivedVar(inFiles, passXarrays, scriptPath, scriptFunction,
-                    additionalArgs,**kwargs):
+def buildDerivedVar(
+    inFiles, passXarrays, scriptPath, scriptFunction, additionalArgs, **kwargs
+):
 
     # Load input files
     if passXarrays:  # Then load the paths into xarrays. Otherwise just pass the path.
-        inFiles = {thisKey: helpers.readFile(thisPath) for thisKey, thisPath in inFiles.items()}
+        inFiles = {
+            thisKey: helpers.readFile(thisPath) for thisKey, thisPath in inFiles.items()
+        }
 
     # Now get the function to call
-    thisFn=helpers.getExternalFunction(scriptPath,
-                                        scriptFunction)
-    #Check the signature
+    thisFn = helpers.getExternalFunction(scriptPath, scriptFunction)
+    # Check the signature
     try:
         helpers.checkSignature(thisFn, inFiles)
     except ValueError as e:
         raise ValueError(
             f"Error in the signature of the external function '{scriptFunction}' "
             f"in '{scriptPath}': {e}"
-        ) from None            
-
+        ) from None
 
     # Call function
     theseArgs = {**inFiles, **additionalArgs}
     out = thisFn(**theseArgs)
 
-    #Check output
+    # Check output
     if passXarrays:  # Then load the paths into xarrays. Otherwise just pass the path.
-        if not isinstance(out,xr.DataArray):
-            raise TypeError(f"When passXarrays is true, KAPy expects  {scriptPath} - {scriptFunction} to return  an xarray dataarray but actually recieved {type(out)}")
+        if not isinstance(out, xr.DataArray):
+            raise TypeError(
+                f"When passXarrays is true, KAPy expects  {scriptPath} - {scriptFunction} to return  an xarray dataarray but actually recieved {type(out)}"
+            )
     else:
-        if not isinstance(out,dict):
-            raise TypeError(f"When passXarrays is false, KAPy expects  {scriptPath} - {scriptFunction} to return  a dict of paths to the output files but actually recieved {type(out)}")
+        if not isinstance(out, dict):
+            raise TypeError(
+                f"When passXarrays is false, KAPy expects  {scriptPath} - {scriptFunction} to return  a dict of paths to the output files but actually recieved {type(out)}"
+            )
 
     return out
-

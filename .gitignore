@@ -8,3 +8,5 @@ config.yaml
 *.Rproj
 testing/*
 outputs/*
+.vscode/launch.json
+.Rhistory

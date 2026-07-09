@@ -43,5 +43,5 @@ read for bias-adjustment (with all data in one contiguous block). The temporal c
 calculating indicators - we want to avoid having to read the entire data block every time. The combination of the two also reflects a tradeoff to avoid excessive 
 reading overhead.
 """
-CHUNKING_TIME=256
-CHUNKING_SPACE=16
+CHUNKING_TIME = 256
+CHUNKING_SPACE = 16

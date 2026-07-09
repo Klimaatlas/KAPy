@@ -1,6 +1,5 @@
 import yaml
 import pandas as pd
-from snakemake.utils import validate
 import os
 import ast
 import jsonschema
@@ -74,7 +73,7 @@ def validateConfig(config):
             "optional": False,
         },
         "secondaryVars": {
-            "listCols": ["datasets","inputVars", "outputVars"],
+            "listCols": ["datasets", "inputVars", "outputVars"],
             "boolCols": ["passXarrays"],
             "dictCols": ["additionalArgs"],
             "schema": "derivedVars",
@@ -88,7 +87,7 @@ def validateConfig(config):
             "optional": True,
         },
         "tertiaryVars": {
-            "listCols": ["datasets","inputVars", "outputVars"],
+            "listCols": ["datasets", "inputVars", "outputVars"],
             "boolCols": ["passXarrays"],
             "dictCols": ["additionalArgs"],
             "schema": "derivedVars",
@@ -116,7 +115,7 @@ def validateConfig(config):
         else:
             thisCfgFile = config["configurationTables"][thisTblKey]
 
-        if ((thisCfgFile == "") | (thisCfgFile == None)) & theseVals["optional"]:
+        if ((thisCfgFile == "") | (thisCfgFile is None)) & theseVals["optional"]:
             continue  # Not using this option
         elif (thisCfgFile == "") & theseVals["optional"]:
             raise ValueError(f"'{thisTblKey}' configuration table must be specified.")
@@ -155,8 +154,10 @@ def validateConfig(config):
         # Modifications----------------
         # If indicator_code column is empty, use the id instead
         if thisTblKey == "indicators":
-            thisTbl["indicator_codes"]=[rw["id"] if rw["indicator_codes"]=="" else rw["indicator_codes"]  for idx,rw in thisTbl.iterrows()]
-
+            thisTbl["indicator_codes"] = [
+                rw["id"] if rw["indicator_codes"] == "" else rw["indicator_codes"]
+                for idx, rw in thisTbl.iterrows()
+            ]
 
         # We allow some columns to be defined as lists, but
         # note that Snakemake doesn't validate arrays in tabular configurations at the moment
@@ -196,7 +197,6 @@ def validateConfig(config):
         # Put back into the config
         config[thisTblKey] = thisTbl.to_dict(orient="index")
 
-
     # Manual validation -----------------
     # Some things are a bit tricky to validate with JSON schemas alone, particular where
     # we have validations that cross schemes. The following checks are therefore done
@@ -229,7 +229,7 @@ def validateConfig(config):
     validSeasons = list(config["seasons"].keys()) + ["all"]
     for idx, thisrw in indTbl.iterrows():
         for requestSeason in thisrw["seasons"]:
-            if not (requestSeason in validSeasons):
+            if requestSeason not in validSeasons:
                 raise ValueError(
                     f"Unknown season '{requestSeason}' requested for indicator '{thisrw['id']}'."
                 )
@@ -274,8 +274,8 @@ if __name__ == "__main__":
 
     # Validate base configuration
     config = readConfig("./config/config.yaml")
-    cfg=validateConfig(config)
+    cfg = validateConfig(config)
 
     # Testing configuration
     config = readConfig("./workflow/testing/config.yaml")
-    cfg=validateConfig(config)
+    cfg = validateConfig(config)

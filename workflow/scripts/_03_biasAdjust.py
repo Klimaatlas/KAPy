@@ -1,17 +1,18 @@
-#Bias adjustment script
+# Bias adjustment script
 
 import KAPy
 
 # Prevent execution during Dask worker re-import
 if "snakemake" in globals():
-    client = KAPy.setupDaskCluster(threads=snakemake.threads,
-                                   resources=snakemake.resources)
+    client = KAPy.setupDaskCluster(
+        threads=snakemake.threads, resources=snakemake.resources
+    )
 
     BA = KAPy.biasAdjust(
         target_file=snakemake.input.target,
         reference_file=snakemake.input.ref,
-        tempDir= snakemake.resources.tmpdir,
-        **snakemake.params
+        tempDir=snakemake.resources.tmpdir,
+        **snakemake.params,
     )
 
     KAPy.write_variables(BA, dict(snakemake.output))

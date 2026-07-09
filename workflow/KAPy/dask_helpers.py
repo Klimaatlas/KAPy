@@ -1,5 +1,4 @@
 from dask.distributed import Client, LocalCluster
-from inspect import signature
 from humanfriendly import parse_size
 import logging
 import os
@@ -140,7 +139,7 @@ def get_dask_resources(resource_table, family, id):
         "mem_mb": int(mem / 1e6),
         "n_workers": n_workers,
         "memory_limit": this.get("memory_limit"),
-        "threads_per_worker": int(this.get("threads_per_worker"))
+        "threads_per_worker": int(this.get("threads_per_worker")),
     }
 
     return rtn

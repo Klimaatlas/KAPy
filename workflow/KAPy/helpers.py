@@ -13,9 +13,14 @@ import importlib
 from inspect import signature
 from pathlib import Path
 import uuid
-from .constants import PATHS, CHUNKING_TIME, CHUNKING_SPACE
 
-def readFile(thisPath,format=None,chunks={}):
+try:  # Differentiate between importing when in a module and running the script locally
+    from .constants import PATHS, CHUNKING_TIME, CHUNKING_SPACE
+except ImportError:
+    from constants import PATHS, CHUNKING_TIME, CHUNKING_SPACE
+
+
+def readFile(thisPath, format=None, chunks={}):
     """
     Read a file from given path.
 
@@ -27,7 +32,7 @@ def readFile(thisPath,format=None,chunks={}):
     thisPath : _type_
         Path to the file
     format : _type_, optional
-        In cases where the format of the file cannot be inferred from the extension, use 
+        In cases where the format of the file cannot be inferred from the extension, use
         this argument to tell which format to use.
     chunks: _type_ dict
         Chunks argument to be supplied when opening file(s). The default, "{}", tells
@@ -47,21 +52,23 @@ def readFile(thisPath,format=None,chunks={}):
     """
     # Reads a dataset from disk, determining dynmaically whether it is
     # pickled or NetCDF based on the file extension
-    if format==None:
+    if format is None:
         format = os.path.splitext(os.path.basename(thisPath))[1]
     if format == ".nc":
         try:
-            time_coder=xr.coders.CFDatetimeCoder(use_cftime=True)
-            thisDat = xr.open_dataarray(thisPath,
-                                        chunks=chunks, #Use supplied chunking
-                                        decode_times=time_coder)
+            time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
+            thisDat = xr.open_dataarray(
+                thisPath,
+                chunks=chunks,  # Use supplied chunking
+                decode_times=time_coder,
+            )
         except Exception as e:
             raise IOError(f"Failed to open NetCDF file '{thisPath}': {e}")
-    
-        #Each file should only contain one variable, but we also need
-        #to handle the situation where there is CRS information stored
-        #as a variable. Hence, we open as a dataset, and then proceed
-        #from there
+
+        # Each file should only contain one variable, but we also need
+        # to handle the situation where there is CRS information stored
+        # as a variable. Hence, we open as a dataset, and then proceed
+        # from there
         # if useDask:
         #     thisDS = xr.open_mfdataset(thisPath,
         #                                 use_cftime=True)
@@ -85,7 +92,7 @@ def readFile(thisPath,format=None,chunks={}):
     return thisDat
 
 
-def timeslice(this,startYr,endYr):
+def timeslice(this, startYr, endYr):
     # Slice dataset
     timemin = this.time.dt.year >= int(startYr)
     timemax = this.time.dt.year <= int(endYr)
@@ -93,44 +100,51 @@ def timeslice(this,startYr,endYr):
     return sliced
 
 
-def getExternalFunction(scriptPath,functionName):
+def getExternalFunction(scriptPath, functionName):
     """
-    Retrieves a function from an external file 
+    Retrieves a function from an external file
 
     Args:
         scriptPath (_type_): Path to the script file containing the function
         functionName (_type_): Name of the function to retrieve
     """
-    #Check that file exists first
+    # Check that file exists first
     if not Path(scriptPath).exists():
         raise FileNotFoundError(f"Cannot find requested script: {scriptPath}.")
 
-    #Import
-    module_name = f"customScript_{uuid.uuid4().hex}"    
+    # Import
+    module_name = f"customScript_{uuid.uuid4().hex}"
     spec = importlib.util.spec_from_file_location(module_name, scriptPath)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    thisFn = getattr(module, functionName)    
+    thisFn = getattr(module, functionName)
     if thisFn is None:
         raise AttributeError(f"Function '{functionName}' not found in {scriptPath}")
-    return(thisFn)
+    return thisFn
 
-def checkSignature(fn,argList):
-    #Get the signature of the function
-    thisSig=signature(fn).parameters
 
-    #Check what is missing
-    missing = [key for key in argList.keys()if key not in thisSig]
+def checkSignature(fn, argList):
+    # Get the signature of the function
+    thisSig = signature(fn).parameters
+
+    # Check what is missing
+    missing = [key for key in argList.keys() if key not in thisSig]
 
     if missing:
-        raise ValueError(f"The function does not accept the required argument(s): {missing}.")
+        raise ValueError(
+            f"The function does not accept the required argument(s): {missing}."
+        )
     else:
-        #Looks good
+        # Looks good
         return None
-    
+
+
 def get_OUTPUT_PATHS(outputDir):
-        return {key : Path(outputDir) / p for key,p in PATHS.items()}
+    return {key: Path(outputDir) / p for key, p in PATHS.items()}
 
 
 def align_chunking(d):
-    return [min([CHUNKING_TIME,CHUNKING_SPACE,CHUNKING_SPACE][i],d.shape[i]) for i in range(0,3)]
+    return [
+        min([CHUNKING_TIME, CHUNKING_SPACE, CHUNKING_SPACE][i], d.shape[i])
+        for i in range(0, 3)
+    ]
