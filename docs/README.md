@@ -23,6 +23,7 @@ In addition, the following tutorials provide more information, but need not be t
 * [Background](Background.md) - Background knowledge useful for getting started with KAPy.
 * [KAPy concepts](KAPy_concepts.md) - Explains key concepts and definitions used in KAPy.
 * [User Defined Functions](UDFs.md) - Describes how to write your own "user defined functions" (UDFs) for use in KAPy.
+* [Working with Big Problems - Dask](dask.md) - Describes how to work with really large datasets using dask
 
 ## Reference
 
