@@ -14,6 +14,7 @@
     "training_period_start",
     "training_period_end",
     "method",
+    "kind",
     "additional_arguments"
   ],
   "properties": {
@@ -78,6 +79,13 @@
         "dayofyear",
         "month",
         "season"]
+    },
+    "kind": {
+      "type": "string",
+      "description": "The adjustment kind, either additive ('+') or multiplicative ('*').",
+      "enum": [
+        "+",
+        "*"]
     },
     "additional_arguments": {
       "type": "string",

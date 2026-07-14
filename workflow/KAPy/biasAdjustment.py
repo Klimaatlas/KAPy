@@ -42,6 +42,7 @@ def biasAdjust(
     variable_to_adjust,
     method,
     grouping,
+    kind,
     additional_arguments,
     **kwargs,
 ):
@@ -182,7 +183,7 @@ def biasAdjust(
             from xsdba.adjustment import EmpiricalQuantileMapping
 
             EQM = EmpiricalQuantileMapping.train(
-                rfTP, tgTP, group=groupThisWay, **additional_arguments
+                rfTP, tgTP, group=groupThisWay, kind=kind, **additional_arguments
             )
             res = EQM.adjust(tg, extrapolation="constant", interp="nearest")
 
@@ -191,7 +192,7 @@ def biasAdjust(
             from xsdba.adjustment import DetrendedQuantileMapping
 
             DQM = DetrendedQuantileMapping.train(
-                rfTP, tgTP, group=groupThisWay, **additional_arguments
+                rfTP, tgTP, group=groupThisWay, kind=kind, **additional_arguments
             )
             res = DQM.adjust(tg, extrapolation="constant", interp="nearest")
 
@@ -199,7 +200,9 @@ def biasAdjust(
             # Xclim - Scaling--------------------------------
             from xsdba.adjustment import Scaling
 
-            this = Scaling.train(rfTP, tgTP, group=groupThisWay, **additional_arguments)
+            this = Scaling.train(
+                rfTP, tgTP, group=groupThisWay, kind=kind, **additional_arguments
+            )
             res = this.adjust(tg, interp="nearest")
 
         elif method == "custom":
