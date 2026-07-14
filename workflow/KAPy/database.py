@@ -85,8 +85,8 @@ class database:
         self.db_output_path = OUTPUT_PATHS["database"]
 
         # Populate rest of object
-        self.stats_csv = OUTPUT_PATHS["ensembleStatisticsCSV"]
-        self.members_csv = OUTPUT_PATHS["ensembleMembersCSV"]
+        self.stats_csv = OUTPUT_PATHS["ensemble_statistics_csv"]
+        self.members_csv = OUTPUT_PATHS["ensemble_members_csv"]
         self.geometry = self.config["arealstats"]["shapefile"]
         self.include_geometry = self.config["arealstats"]["shapefile"] is not None
 

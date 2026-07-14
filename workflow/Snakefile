@@ -140,9 +140,9 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
 rule:
     name: "._rule_06_regrid"
     input:
-        unpack(lambda wc: WORKFLOW['regrid']["input_dict"][str(OUTPUT_PATHS['regridded'] / wc.outfile)])
+        unpack(lambda wc: WORKFLOW['regrid']["input_dict"][str(OUTPUT_PATHS['regrid'] / wc.outfile)])
     output:
-        output=OUTPUT_PATHS['regridded'] /"{outfile}"
+        output=OUTPUT_PATHS['regrid'] /"{outfile}"
     params:
         templateType=config["outputGrid"]["templateType"],
         path=config["outputGrid"].get("path",""),
@@ -159,9 +159,9 @@ rule:
 rule:
     name: "._rule_07_ensemble_statistics"
     input:
-        unpack(lambda wc: WORKFLOW['ensstats']["input_dict"][str(OUTPUT_PATHS['ensstats'] /wc.es)])
+        unpack(lambda wc: WORKFLOW['ensstats']["input_dict"][str(OUTPUT_PATHS['ensemble_statistics'] /wc.es)])
     output:
-        OUTPUT_PATHS['ensstats'] / "{es}"
+        OUTPUT_PATHS['ensemble_statistics'] / "{es}"
     params:
         **config['ensembles']
     script:
@@ -174,11 +174,11 @@ rule:
 rule:
     name: "._rule_08_areal_statistics"
     input:
-        inputFile=lambda wildcards: WORKFLOW['arealstats']["input_dict"][str(OUTPUT_PATHS['arealstats'] /
+        inputFile=lambda wildcards: WORKFLOW['arealstats']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] /
                                                                                     wildcards.fname)],
         shapefile=lambda wildcards: config['arealstats']['shapefile'] if config['arealstats']['shapefile'] is not None else []
     output:
-        OUTPUT_PATHS['arealstats'] /'{fname}'
+        OUTPUT_PATHS['areal_statistics'] /'{fname}'
     params:
         shapefile=config['arealstats']['shapefile'],
         useAreaWeighting=config['arealstats']['useAreaWeighting']
@@ -201,7 +201,7 @@ rule:
     input:
         WORKFLOW['mergedCSVs']['ensstats']
     output:
-        OUTPUT_PATHS["ensembleStatisticsCSV"]
+        OUTPUT_PATHS["ensemble_statistics_csv"]
     run:
         KAPy.mergeCSVs(outFile=output[0],inFiles=input)
 
@@ -210,7 +210,7 @@ rule:
     input:
         WORKFLOW['mergedCSVs']['members']
     output:
-        OUTPUT_PATHS["ensembleMembersCSV"]
+        OUTPUT_PATHS["ensemble_members_csv"]
     run:
         KAPy.mergeCSVs(outFile=output[0],inFiles=input)
 
@@ -218,8 +218,8 @@ rule:
 rule:
     name: "._rule_09c_database"
     input:
-        ensemble_stats=OUTPUT_PATHS["ensembleStatisticsCSV"],
-        ensemble_members=OUTPUT_PATHS["ensembleMembersCSV"],
+        ensemble_stats=OUTPUT_PATHS["ensemble_statistics_csv"],
+        ensemble_members=OUTPUT_PATHS["ensemble_members_csv"],
         indicators=config['configurationTables']['indicators'],
         periods=config['configurationTables']['periods'],
         seasons=config['configurationTables']['seasons'],
@@ -274,7 +274,7 @@ rule:
 #Regridding
 if config['outputGrid']['templateType']!='none':
     rule:
-        name: ".REGRIDDING"
+        name: ".REGRID"
         input:
             WORKFLOW['regrid']['outputs']
 
@@ -294,8 +294,8 @@ rule:
 rule:
     name: ".OUTPUTS"
     input:
-        OUTPUT_PATHS["ensembleMembersCSV"],
-        OUTPUT_PATHS["ensembleStatisticsCSV"],
+        OUTPUT_PATHS["ensemble_members_csv"],
+        OUTPUT_PATHS["ensemble_statistics_csv"],
         OUTPUT_PATHS["database"]
 
 #All

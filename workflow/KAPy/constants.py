@@ -19,16 +19,16 @@ internal, stable implementation details rather than user-configurable
 settings.
 """
 PATHS = {
-    "primaryVariables": "01.primaryVars",
-    "secondaryVariables": "02.secondaryVars",
-    "biasAdjustment": "03.biasAdjustment",
-    "tertiaryVariables": "04.tertiaryVars",
+    "primary_variables": "01.primary_variables",
+    "secondary_variables": "02.secondary_variables",
+    "bias_adjustment": "03.bias_adjustment",
+    "tertiary_variables": "04.tertiaryVars",
     "indicators": "05.indicators",
-    "regridded": "06.commmon_grid",
-    "ensstats": "07.ensstats",
-    "arealstats": "08.areal_statistics",
-    "ensembleStatisticsCSV": "Ensemble_statistics.csv",
-    "ensembleMembersCSV": "Ensemble_members.csv",
+    "regrid": "06.regrid",
+    "ensemble_statistics": "07.ensemble_statistics",
+    "areal_statistics": "08.areal_statistics",
+    "ensemble_statistics_csv": "Ensemble_statistics.csv",
+    "ensemble_members_csv": "Ensemble_members.csv",
     "database": "KAPy_outputs.sqlite",
 }
 

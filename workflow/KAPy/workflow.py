@@ -259,12 +259,12 @@ def getWorkflow(config):
             .apply(lambda x: list(x["inPath"]), include_groups=False)
             .to_dict()
         )
-        out_rule = os.path.join(OUTPUT_PATHS["primaryVariables"], thisKey, "{file}")
+        out_rule = os.path.join(OUTPUT_PATHS["primary_variables"], thisKey, "{file}")
         this_PV_dict = {
             "input_dict": inp_dict,
             "output_rule": out_rule,
             "outputs": [
-                os.path.join(OUTPUT_PATHS["primaryVariables"], f)
+                os.path.join(OUTPUT_PATHS["primary_variables"], f)
                 for f in inp_dict.keys()
             ],
         }
@@ -338,7 +338,7 @@ def getWorkflow(config):
             )
             out_rule = {
                 v: os.path.join(
-                    OUTPUT_PATHS["secondaryVariables"],
+                    OUTPUT_PATHS["secondary_variables"],
                     thisKey,
                     f"{{dataset}}_{v}_{{leaf}}.nc",
                 )
@@ -363,7 +363,7 @@ def getWorkflow(config):
                     )
                     this_SV_dict["outputs"] += [
                         os.path.join(
-                            OUTPUT_PATHS["secondaryVariables"], thisKey, output_file
+                            OUTPUT_PATHS["secondary_variables"], thisKey, output_file
                         )
                     ]
 
@@ -452,7 +452,7 @@ def getWorkflow(config):
                 inp_dict[rw["id"]] = {"target": rw["path"], "ref": refDict["path"]}
             out_rule = {
                 thisBA["baVariable"]: os.path.join(
-                    OUTPUT_PATHS["biasAdjustment"], thisKey, "{leaf}"
+                    OUTPUT_PATHS["bias_adjustment"], thisKey, "{leaf}"
                 )
                 # f"{thisBA["outDatasetCode"]}_{thisBA['baVariable']}_{{leaf}}.nc")
             }
@@ -460,7 +460,9 @@ def getWorkflow(config):
                 "input_dict": inp_dict,
                 "output_rule": out_rule,
                 "outputs": [
-                    os.path.join(OUTPUT_PATHS["biasAdjustment"], thisKey, this_out_file)
+                    os.path.join(
+                        OUTPUT_PATHS["bias_adjustment"], thisKey, this_out_file
+                    )
                     for this_out_file in BAtbl["outfile"]
                 ],
             }
@@ -530,7 +532,7 @@ def getWorkflow(config):
             )
             out_rule = {
                 v: os.path.join(
-                    OUTPUT_PATHS["tertiaryVariables"],
+                    OUTPUT_PATHS["tertiary_variables"],
                     thisKey,
                     f"{{dataset}}_{v}_{{leaf}}.nc",
                 )
@@ -555,7 +557,7 @@ def getWorkflow(config):
                     )
                     this_TV_dict["outputs"] += [
                         os.path.join(
-                            OUTPUT_PATHS["tertiaryVariables"], thisKey, output_file
+                            OUTPUT_PATHS["tertiary_variables"], thisKey, output_file
                         )
                     ]
 
@@ -656,7 +658,7 @@ def getWorkflow(config):
         # Update filenames and directories, replacing thegrid code in the filename
         # and the output path
         rgTbl["output_dir"] = rgTbl["input_dir"].str.replace(
-            str(OUTPUT_PATHS["indicators"]), str(OUTPUT_PATHS["regridded"]), regex=False
+            str(OUTPUT_PATHS["indicators"]), str(OUTPUT_PATHS["regrid"]), regex=False
         )
         rgTbl["output_fname"] = rgTbl["input_fname"].str.replace(
             r"^([^_]+_[^_]+_)[^_]+(_.*$)",
@@ -702,7 +704,7 @@ def getWorkflow(config):
         "^([^_]+_[^_]+_[^_]+_[^_]+)_.*$"
     )
     ensTbl["ensemble_path"] = [
-        os.path.join(OUTPUT_PATHS["ensstats"], f + "_ensstats.nc")
+        os.path.join(OUTPUT_PATHS["ensemble_statistics"], f + "_ensemble-statistics.nc")
         for f in ensTbl["ensemble_id"]
     ]
 
@@ -728,7 +730,7 @@ def getWorkflow(config):
     asTbl["source_fname"] = [os.path.basename(p) for p in asTbl["source_path"]]
     asTbl["as_fname"] = asTbl["source_fname"].str.replace("nc", "csv", regex=False)
     asTbl["as_path"] = [
-        os.path.join(OUTPUT_PATHS["arealstats"], rw["type"], rw["as_fname"])
+        os.path.join(OUTPUT_PATHS["areal_statistics"], rw["type"], rw["as_fname"])
         for idx, rw in asTbl.iterrows()
     ]
     # Make the dict
@@ -782,8 +784,8 @@ def getWorkflow(config):
         else:
             allList += v["outputs"]
     rtn["all"] = allList
-    rtn["all"] += [OUTPUT_PATHS["ensembleMembersCSV"]]
-    rtn["all"] += [OUTPUT_PATHS["ensembleStatisticsCSV"]]
+    rtn["all"] += [OUTPUT_PATHS["ensemble_members_csv"]]
+    rtn["all"] += [OUTPUT_PATHS["ensemble_statistics_csv"]]
     rtn["all"] += [OUTPUT_PATHS["database"]]
 
     # Fin-----------------------------------
