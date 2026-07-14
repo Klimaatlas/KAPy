@@ -76,8 +76,8 @@ def _stat_quantile(d: xr.DataArray, qtile: float, skipna: bool) -> xr.DataArray:
 # Public functions-----------------------------------------------------
 
 
-def calculateIndicators(
-    inFiles,
+def calculate_indicators(
+    input_files,
     seasonsTable,
     periodsTable,
     seasons,
@@ -102,13 +102,13 @@ def calculateIndicators(
     # merge it a dataset to take advantage of the overloaded time slicing functions of Xarray.
     # However, we also want to enforce passing by named arguments to our custom function and therefore
     # split the Xarray dataset into a dict again at a later point
-    if len(inFiles) == 1:
-        thisDat = helpers.readFile(next(iter(inFiles.values())))
+    if len(input_files) == 1:
+        thisDat = helpers.read_file(next(iter(input_files.values())))
     else:
         thisDat = xr.Dataset(
             {
-                thisKey: helpers.readFile(thisPath)
-                for thisKey, thisPath in inFiles.items()
+                thisKey: helpers.read_file(thisPath)
+                for thisKey, thisPath in input_files.items()
             }
         )
 
@@ -163,9 +163,9 @@ def calculateIndicators(
     elif statistic == "custom":
         # Retrieve the custom function. We check that the signature of the function
         # can accept at least the variables that we want
-        stat_function = helpers.getExternalFunction(custom_script, custom_function)
+        stat_function = helpers.get_external_function(custom_script, custom_function)
         try:
-            helpers.checkSignature(stat_function, inFiles)
+            helpers.check_signature(stat_function, input_files)
         except ValueError as e:
             raise ValueError(
                 f"Error in the signature of the external function '{custom_function}' "
@@ -212,11 +212,11 @@ def calculateIndicators(
                     if statistic == "custom":
                         # split the Xarray dataset into a dict again for passing
                         if isinstance(datPeriodSeason, xr.DataArray):
-                            datDict = {list(inFiles.keys())[0]: datPeriodSeason}
+                            datDict = {list(input_files.keys())[0]: datPeriodSeason}
                         elif isinstance(datPeriodSeason, xr.Dataset):
                             datDict = {
                                 thisKey: datPeriodSeason[thisKey]
-                                for thisKey in inFiles.keys()
+                                for thisKey in input_files.keys()
                             }
                         # Apply operator and store
                         res = stat_function(**datDict, **stat_args)
@@ -254,10 +254,10 @@ def calculateIndicators(
             if statistic == "custom":
                 # split the Xarray dataset into a dict again for passing
                 if isinstance(datGroupped, xr.DataArray):
-                    datDict = {list(inFiles.keys())[0]: datGroupped}
+                    datDict = {list(input_files.keys())[0]: datGroupped}
                 elif isinstance(datGroupped, xr.Dataset):
                     datDict = {
-                        thisKey: datGroupped[thisKey] for thisKey in inFiles.keys()
+                        thisKey: datGroupped[thisKey] for thisKey in input_files.keys()
                     }
                 # Apply operator and store
                 res = stat_function(**datDict, **stat_args)

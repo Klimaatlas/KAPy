@@ -20,7 +20,7 @@ except ImportError:
     from constants import PATHS, CHUNKING_TIME, CHUNKING_SPACE
 
 
-def readFile(thisPath, format=None, chunks={}):
+def read_file(thisPath, format=None, chunks={}):
     """
     Read a file from given path.
 
@@ -100,7 +100,7 @@ def timeslice(this, startYr, endYr):
     return sliced
 
 
-def getExternalFunction(scriptPath, functionName):
+def get_external_function(scriptPath, functionName):
     """
     Retrieves a function from an external file
 
@@ -123,7 +123,7 @@ def getExternalFunction(scriptPath, functionName):
     return thisFn
 
 
-def checkSignature(fn, argList):
+def check_signature(fn, argList):
     # Get the signature of the function
     thisSig = signature(fn).parameters
 

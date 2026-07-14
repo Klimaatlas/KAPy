@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 
-def mergeCSVs(outFile, inFiles):
+def merge_csvs(input_files, output_file):
     # Load data file function
     def prepareDataFile(thisPath):
         # Load file
@@ -32,20 +32,20 @@ def mergeCSVs(outFile, inFiles):
         return datOut
 
     # Delete the output file if it exists
-    if os.path.exists(outFile):
-        os.remove(outFile)
+    if os.path.exists(output_file):
+        os.remove(output_file)
 
     # Load and then write data individually to a merged file
     # Only write the header if the file doesn't exist
     firstFile = True
-    for f in inFiles:
+    for f in input_files:
         df = prepareDataFile(f)
         if firstFile:
             column_order = (
                 df.columns
             )  # Fix column order to match the first file. Avoid problems with switching
         df.to_csv(
-            outFile, index=False, columns=column_order, mode="a", header=firstFile
+            output_file, index=False, columns=column_order, mode="a", header=firstFile
         )
         firstFile = False
 
@@ -64,13 +64,13 @@ if __name__ == "__main__":
     os.chdir(ROOT)
 
     # Get configuration file and therefore filelist
-    config = KAPy.getConfig("./config/config.yaml")
-    wf = KAPy.getWorkflow(config)
-    inFiles = wf["mergedCSVs"]["members"]
+    config = KAPy.get_config("./config/config.yaml")
+    wf = KAPy.get_workflow(config)
+    input_files = wf["mergedCSVs"]["members"]
 
     # And the output file
     OUTPUT_PATHS = KAPy.get_OUTPUT_PATHS(config["outputDir"])
-    outFile = OUTPUT_PATHS["ensembleMembersCSV"]
+    output_file = OUTPUT_PATHS["ensembleMembersCSV"]
 
     # Run the function
-    mergeCSVs(outFile, inFiles)
+    merge_csvs(input_files, output_file)

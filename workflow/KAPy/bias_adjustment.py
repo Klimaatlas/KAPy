@@ -12,13 +12,13 @@ os.chdir("KAPy/workflow")
 import KAPy
 import KAPy.helpers as helpers
 os.chdir("../..")
-config=KAPy.getConfig("./config/config.yaml")  
-config=KAPy.getConfig("./workflow/testing/config.yaml")
-wf=KAPy.getWorkflow(config)
+config=KAPy.get_config("./config/config.yaml")  
+config=KAPy.get_config("./workflow/testing/config.yaml")
+wf=KAPy.get_workflow(config)
 thisCal='tas-ba'
-outFile=list(wf['bias_adj'][thisCal]['input_dict'].keys())[0]
-target_file=   wf['bias_adj'][thisCal]['input_dict'][outFile]['target']
-reference_file=wf['bias_adj'][thisCal]['input_dict'][outFile]['ref']
+output_file=list(wf['bias_adj'][thisCal]['input_dict'].keys())[0]
+target_file=   wf['bias_adj'][thisCal]['input_dict'][output_file]['target']
+reference_file=wf['bias_adj'][thisCal]['input_dict'][output_file]['ref']
 tempDir=config['dirs']['tempDir']
 output_grid=config['biasAdjustment'][thisCal]['output_grid']
 training_period_start=config['biasAdjustment'][thisCal]['training_period_start']
@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 """
 
 
-def biasAdjust(
+def bias_adjustment(
     target_file,
     reference_file,
     tempDir,
@@ -56,8 +56,8 @@ def biasAdjust(
     # * Apply the bias-adjustment function to chunks of the combined dataset using dask
 
     # Setup ------------------------
-    target = helpers.readFile(target_file)
-    reference = helpers.readFile(reference_file)
+    target = helpers.read_file(target_file)
+    reference = helpers.read_file(reference_file)
     #   client=Client()
     #  print(client.dashboard_link)
 
@@ -108,13 +108,15 @@ def biasAdjust(
     # Now reopen with a time-oriented chunking - one file will be the source
     # file, the other will be the regridded file.
     if output_grid == "reference":
-        target = helpers.readFile(
+        target = helpers.read_file(
             regridded_filename, chunks={"time": -1}
         ).unify_chunks()
-        reference = helpers.readFile(reference_file, chunks={"time": -1}).unify_chunks()
+        reference = helpers.read_file(
+            reference_file, chunks={"time": -1}
+        ).unify_chunks()
     elif output_grid == "target":
-        target = helpers.readFile(target_file, chunks={"time": -1}).unify_chunks()
-        reference = helpers.readFile(
+        target = helpers.read_file(target_file, chunks={"time": -1}).unify_chunks()
+        reference = helpers.read_file(
             regridded_filename, chunks={"time": -1}
         ).unify_chunks()
 

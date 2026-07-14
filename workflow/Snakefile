@@ -28,10 +28,10 @@ if workflow.overwrite_configfiles:
 else:
     configfile_path = DEFAULT_CONFIG
 print(f'KAPy configuration file: {configfile_path}')
-config=KAPy.getConfig(configfile_path)
+config=KAPy.get_config(configfile_path)
 
 #Generate filename dicts
-WORKFLOW=KAPy.getWorkflow(config)
+WORKFLOW=KAPy.get_workflow(config)
 
 #Setup helpers
 from pathlib import Path
@@ -64,7 +64,7 @@ for thisID, thisRow in WORKFLOW['primary_variables'].items():
         resources:
             **KAPy.get_dask_resources(config['dask_resources'],"PRIMARY_VARIABLES",thisID)
         script:
-            "scripts/_01_primaryVar.py"        
+            "scripts/_01_primary_variables.py"        
 
 # Secondary variables 
 # "Secondary variables" are calculated as new variables derived from primary variables.  
@@ -80,7 +80,7 @@ for thisID, thisRow in WORKFLOW['secondary_variables'].items():
         resources:
             **KAPy.get_dask_resources(config['dask_resources'],"SECONDARY_VARIABLES",thisID)
         script:
-            "scripts/_02_secondaryVars.py"
+            "scripts/_02_secondary_variables.py"
 
 # Bias Adjustment 
 for thisID, thisRow in WORKFLOW['bias_adjustment'].items():
@@ -95,7 +95,7 @@ for thisID, thisRow in WORKFLOW['bias_adjustment'].items():
         resources:
             **KAPy.get_dask_resources(config['dask_resources'],"BIAS_ADJUSTMENT",thisID)
         script:
-            "scripts/_03_biasAdjust.py"
+            "scripts/_03_bias_adjustment.py"
 
 # Tertiary variables 
 # "Tertiary variables" are calculated as new variables derived from variables created
@@ -112,7 +112,7 @@ for thisID, thisRow in WORKFLOW['tertiary_variables'].items():
         resources:
             **KAPy.get_dask_resources(config['dask_resources'],"TERTIARY_VARIABLES",thisID)
         script:
-            "scripts/_04_tertiaryVar.py"
+            "scripts/_04_tertiary_variables.py"
 
 # Indicators 
 # Create a loop over the indicators that defines the singular and plural rules
@@ -152,7 +152,7 @@ rule:
     resources:
         **KAPy.get_dask_resources(config['dask_resources'],"REGRIDDING",thisID)
     script:
-        "scripts/_06_regridding.py"        
+        "scripts/_06_regrid.py"        
 
 # Enssemble Statistics 
 # Now we can combine them into ensembles
@@ -165,7 +165,7 @@ rule:
     params:
         **config['ensembles']
     script:
-        "scripts/_07_ensstats.py"        
+        "scripts/_07_ensemble_statistics.py"        
 
 #Areal statistics
 #Areal statistics are calculated for both the enssemble statistics and individual members
@@ -183,7 +183,7 @@ rule:
         shapefile=config['areal_statistics']['shapefile'],
         useAreaWeighting=config['areal_statistics']['use_area_weighting']
     script:
-        "scripts/_08_arealstats.py"
+        "scripts/_08_areal_statistics.py"
  
 
 # # Individual targets -------------------------------
@@ -203,7 +203,7 @@ rule:
     output:
         OUTPUT_PATHS["ensemble_statistics_csv"]
     run:
-        KAPy.mergeCSVs(outFile=output[0],inFiles=input)
+        KAPy.merge_csvs(input_files=input,output_file=output[0])
 
 rule:
     name:  "._rule_09b_member_statistics"
@@ -212,7 +212,7 @@ rule:
     output:
         OUTPUT_PATHS["ensemble_members_csv"]
     run:
-        KAPy.mergeCSVs(outFile=output[0],inFiles=input)
+        KAPy.merge_csvs(input_files=input,output_file=output[0])
 
 # Database 
 rule:

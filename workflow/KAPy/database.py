@@ -69,10 +69,10 @@ class database:
     def __init__(self, config_file: str, tempDir: str):
         # Load configuration file and populate self from there
         self.config_file = config_file
-        self.config = config.getConfig(self.config_file)
+        self.config = config.get_config(self.config_file)
 
         # Then add the workflow configuration
-        self.workflow = workflow.getWorkflow(self.config)
+        self.workflow = workflow.get_workflow(self.config)
 
         # Setup paths
         self.db_path = tempfile.NamedTemporaryFile(

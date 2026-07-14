@@ -6,7 +6,7 @@ import jsonschema
 from pathlib import Path
 
 
-def readConfig(configfile):
+def read_config(configfile):
     """
     Read config file
 
@@ -25,7 +25,7 @@ def readConfig(configfile):
     return cfg
 
 
-def validateConfig(config):
+def validate_config(config):
     """
     Inflate and validate config file
 
@@ -251,15 +251,15 @@ def validateConfig(config):
     return config
 
 
-def getConfig(configfile):
+def get_config(configfile):
     """
     Load and validate config file
 
-    Reads the KAPy config master file specified in the yaml format using readConfig()
-    and then validates it using validateConfig()
+    Reads the KAPy config master file specified in the yaml format using read_config()
+    and then validates it using validate_config()
     """
-    cfg = readConfig(configfile)
-    cfg = validateConfig(cfg)
+    cfg = read_config(configfile)
+    cfg = validate_config(cfg)
     return cfg
 
 
@@ -273,9 +273,9 @@ if __name__ == "__main__":
     os.chdir(this_path)
 
     # Validate base configuration
-    config = readConfig("./config/config.yaml")
-    cfg = validateConfig(config)
+    config = read_config("./config/config.yaml")
+    cfg = validate_config(config)
 
     # Testing configuration
-    config = readConfig("./workflow/testing/config.yaml")
-    cfg = validateConfig(config)
+    config = read_config("./workflow/testing/config.yaml")
+    cfg = validate_config(config)

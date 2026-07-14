@@ -13,8 +13,8 @@ from .constants import CHUNKING_TIME
 
 
 # -----------------------------------------------------------------
-def defaultImport(
-    inFiles,
+def default_import(
+    input_files,
     variable_code,
     internal_variable_name,
     checks,
@@ -26,7 +26,7 @@ def defaultImport(
     time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
     try:
         dsIn = xr.open_mfdataset(
-            inFiles,
+            input_files,
             combine="by_coords" if checks == "all" else "nested",
             concat_dim=None if checks == "all" else "time",
             decode_times=time_coder,
@@ -40,7 +40,7 @@ def defaultImport(
 
     except Exception as e:
         raise RuntimeError(
-            f"Opening following NetCDF files:\n '{inFiles}'\n failed with error:\n{e}"
+            f"Opening following NetCDF files:\n '{input_files}'\n failed with error:\n{e}"
         )
 
     # Select the desired variable to give a and rename to the variable code
@@ -118,8 +118,8 @@ def cutout_lonlat(thisDat, xmin, xmax, ymin, ymax, variable_code, **kwargs):
 
 
 # -----------------------------------------------------------------
-def buildPrimVar(
-    inFiles,
+def build_primary_variable(
+    input_files,
     variable_code,
     internal_variable_name,
     checks,
@@ -132,8 +132,8 @@ def buildPrimVar(
     # If an import function is defined, use that. Otherwise use the default
     if custom_script == "":
         # Use default import
-        da = defaultImport(
-            inFiles=inFiles,
+        da = default_import(
+            input_files=input_files,
             variable_code=variable_code,
             internal_variable_name=internal_variable_name,
             checks=checks,
@@ -144,9 +144,9 @@ def buildPrimVar(
 
     else:
         # Use a custom import
-        imptFn = helpers.getExternalFunction(custom_script, custom_function)
+        imptFn = helpers.get_external_function(custom_script, custom_function)
         da = imptFn(
-            inFiles,
+            input_files,
             variable_code=variable_code,
             internal_variable_name=internal_variable_name,
             units=units,
@@ -181,9 +181,11 @@ def buildPrimVar(
     # Checks -----------------------------------------
     # We need to do some checks on at least the time dimension
     if not da.indexes["time"].is_monotonic_increasing:
-        raise ValueError(f"Time coordinate is not monotonic in file set: '{inFiles}'.")
+        raise ValueError(
+            f"Time coordinate is not monotonic in file set: '{input_files}'."
+        )
     if da.indexes["time"].has_duplicates:
-        raise ValueError(f"Duplicate timestamps detected file set: '{inFiles}'.")
+        raise ValueError(f"Duplicate timestamps detected file set: '{input_files}'.")
 
     # Output --------------------
     # We also apply a little trick here, by forcing everything to be stored as
@@ -193,9 +195,9 @@ def buildPrimVar(
     return daFloat
 
 
-def VariableOverview(config):
+def make_variable_overview(config):
     # Get workflow
-    wf = workflow.getWorkflow(config)
+    wf = workflow.get_workflow(config)
 
     # Get the list of primaryVar files from the workflow and
     # complement with directory search of existing files.
@@ -245,7 +247,7 @@ def VariableOverview(config):
         if thisrw["file_exists"]:
             # Try to load the file
             try:
-                dat = helpers.readFile(thisrw["path"])
+                dat = helpers.read_file(thisrw["path"])
                 thisrw["loadsOK"] = True
             except Exception:
                 thisrw["loadsOK"] = False
@@ -279,17 +281,17 @@ if __name__ == "__main__":
     from pathlib import Path
 
     pd.set_option("display.max_colwidth", None)
-    from config import getConfig
+    from config import get_config
 
     # Setup working directory. Its not pretty, but..
     this_path = Path(__file__).resolve().parent.parent.parent
     os.chdir(this_path)
 
     # Test standard config first
-    config = getConfig("./config/config.yaml")
+    config = get_config("./config/config.yaml")
 
     # Then test the testing config
-    config = getConfig("./workflow/testing/config.yaml")
+    config = get_config("./workflow/testing/config.yaml")
 
 """
 #Setup for debugging with VSCode
@@ -299,11 +301,11 @@ os.chdir("KAPy/workflow")
 import KAPy
 os.chdir("../..")
 print(os.getcwd())
-config=KAPy.getConfig("./config/config.yaml")  
-wf=KAPy.getWorkflow(config)
+config=KAPy.get_config("./config/config.yaml")  
+wf=KAPy.get_workflow(config)
 inpID=list(wf['primVars'].keys())[0]
-outFile=list(wf['primVars'][inpID])[0]
-inFiles=wf['primVars'][inpID][outFile]
+output_file=list(wf['primVars'][inpID])[0]
+input_files=wf['primVars'][inpID][output_file]
 import KAPy.helpers as helpers
 import KAPy.workflow as workflow
 %matplotlib inline

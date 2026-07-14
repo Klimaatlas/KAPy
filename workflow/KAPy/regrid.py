@@ -13,10 +13,10 @@ import helpers
 os.chdir("..")
 import KAPy
 os.chdir("../..")
-config=KAPy.getConfig("./config/config.yaml")  
-wf=KAPy.getWorkflow(config)
-outFile=[list(wf['regrid']['input_dict'].keys())[0]]
-input_path=[wf['regrid']['input_dict'][outFile[0]]['input_path']]
+config=KAPy.get_config("./config/config.yaml")  
+wf=KAPy.get_workflow(config)
+output_file=[list(wf['regrid']['input_dict'].keys())[0]]
+input_path=[wf['regrid']['input_dict'][output_file[0]]['input_path']]
 templateType=config['output_grid']['templateType']
 path=config['output_grid']['path']
 method=config['output_grid']['method']

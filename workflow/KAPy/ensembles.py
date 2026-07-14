@@ -5,10 +5,10 @@ print(os.getcwd())
 os.chdir("KAPy/workflow")
 import KAPy
 os.chdir("../..")
-config=KAPy.getConfig("./config/config.yaml")  
-wf=KAPy.getWorkflow(config)
-outFile=[list(wf['ensstats'].keys())[7]]
-inFiles=wf['ensstats'][outFile[0]]
+config=KAPy.get_config("./config/config.yaml")  
+wf=KAPy.get_workflow(config)
+output_file=[list(wf['ensstats'].keys())[7]]
+input_files=wf['ensstats'][output_file[0]]
 %matplotlib inline
 """
 
@@ -16,7 +16,7 @@ import xarray as xr
 import numpy as np
 
 
-def generateEnsstats(inFiles, percentiles, method):
+def calculate_ensemble_statistics(input_files, percentiles, method):
     # Setup the ensemble
     # Given that all input files have been regridded onto a common grid,
     # they can then be concatenated into a single object. There are
@@ -28,7 +28,7 @@ def generateEnsstats(inFiles, percentiles, method):
     # loading it into ram
     time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
     thisEns = xr.open_mfdataset(
-        inFiles,
+        input_files,
         concat_dim="realization",
         combine="nested",
         coords="all",

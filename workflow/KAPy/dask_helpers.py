@@ -13,7 +13,7 @@ import os
 # the wish list - here we take what we actually have got and use it to build a cluster
 
 
-def setupDaskCluster(threads, resources):
+def setup_dask_cluster(threads, resources):
 
     logging.getLogger("distributed").setLevel(logging.WARNING)
 

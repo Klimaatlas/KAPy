@@ -16,7 +16,7 @@ except ImportError:
     import helpers
 
 
-def getWorkflow(config):
+def get_workflow(config):
     """
     Get Workflow setup
 
@@ -808,16 +808,16 @@ if __name__ == "__main__":
     from pathlib import Path
 
     pd.set_option("display.max_colwidth", None)
-    from config import getConfig
+    from config import get_config
 
     # Setup working directory. Its not pretty, but..
     this_path = Path(__file__).resolve().parent.parent.parent
     os.chdir(this_path)
 
     # Test standard config first
-    config = getConfig("./config/config.yaml")
-    WORKFLOW = getWorkflow(config)
+    config = get_config("./config/config.yaml")
+    WORKFLOW = get_workflow(config)
 
     # Then test the testing config
-    config = getConfig("./workflow/testing/config.yaml")
-    WORKFLOW = getWorkflow(config)
+    config = get_config("./workflow/testing/config.yaml")
+    WORKFLOW = get_workflow(config)

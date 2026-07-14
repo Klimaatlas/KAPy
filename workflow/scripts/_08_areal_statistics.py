@@ -1,6 +1,6 @@
 import KAPy
 
-dfOut = KAPy.generateArealstats(
+dfOut = KAPy.generate_areal_statistics(
     inFile=snakemake.input.inputFile[0],
     tempDir=snakemake.resources.tmpdir,
     **snakemake.params,

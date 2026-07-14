@@ -4,12 +4,12 @@ import KAPy
 
 # Prevent execution during Dask worker re-import
 if "snakemake" in globals():
-    client = KAPy.setupDaskCluster(
+    client = KAPy.setup_dask_cluster(
         threads=snakemake.threads, resources=snakemake.resources
     )
 
-    da = KAPy.buildPrimVar(
-        inFiles=list(snakemake.input),
+    da = KAPy.build_primary_variable(
+        input_files=list(snakemake.input),
         cutoutArgs=snakemake.params.cutout_args,
         **snakemake.params.row_arguments,
     )

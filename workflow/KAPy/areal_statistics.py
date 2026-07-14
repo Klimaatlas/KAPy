@@ -5,7 +5,7 @@ from cdo import Cdo
 import regionmask
 
 
-def generateArealstats(inFile, tempDir, useAreaWeighting, shapefile):
+def generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile):
     """
     Generate statistics over an area by applying a polygon mask and averaging
 
@@ -182,4 +182,4 @@ if __name__ == "__main__":
     shapefile = ROOT / "docs/tutorials/Tutorial05_files/Ghana_regions.shp"
 
     # Run the function
-    dfOut = generateArealstats(inFile, tempDir, useAreaWeighting, shapefile)
+    dfOut = generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile)
