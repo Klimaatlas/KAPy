@@ -10,7 +10,7 @@ if "snakemake" in globals():
 
     da = KAPy.build_primary_variable(
         input_files=list(snakemake.input),
-        cutoutArgs=snakemake.params.cutout_args,
+        cutout_arguments=snakemake.params.cutout_args,
         **snakemake.params.row_arguments,
     )
     KAPy.write_variables(

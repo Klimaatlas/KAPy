@@ -128,7 +128,7 @@ def build_primary_variable(
     custom_script,
     custom_function,
     units,
-    cutoutArgs,
+    cutout_arguments,
     **kwargs,
 ):
     # If an import function is defined, use that. Otherwise use the default
@@ -141,19 +141,19 @@ def build_primary_variable(
             checks=checks,
         )
         # Apply cutout functionality
-        if cutoutArgs["method"] == "lonlatbox":
-            da = cutout_lonlat(da, **cutoutArgs, variable_code=variable_code)
+        if cutout_arguments["method"] == "lonlatbox":
+            da = cutout_lonlat(da, **cutout_arguments, variable_code=variable_code)
 
     else:
         # Use a custom import
         imptFn = helpers.get_external_function(custom_script, custom_function)
         da = imptFn(
-            input_files,
+            input_files=input_files,
             variable_code=variable_code,
             internal_variable_name=internal_variable_name,
             units=units,
             checks=checks,
-            cutoutArgs=cutoutArgs,
+            cutout_arguments=cutout_arguments,
         )
 
     # Unit handling -----------------------------
