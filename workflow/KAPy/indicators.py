@@ -81,13 +81,13 @@ def calculateIndicators(
     seasonsTable,
     periodsTable,
     seasons,
-    timeBinning,
+    time_binning,
     statistic,
     skipna,
-    deltaType,
+    delta_type,
     additional_arguments,
-    customScriptPath,
-    customScriptFunction,
+    custom_script,
+    custom_function,
     **kwargs,
 ):
 
@@ -163,15 +163,13 @@ def calculateIndicators(
     elif statistic == "custom":
         # Retrieve the custom function. We check that the signature of the function
         # can accept at least the variables that we want
-        stat_function = helpers.getExternalFunction(
-            customScriptPath, customScriptFunction
-        )
+        stat_function = helpers.getExternalFunction(custom_script, custom_function)
         try:
             helpers.checkSignature(stat_function, inFiles)
         except ValueError as e:
             raise ValueError(
-                f"Error in the signature of the external function '{customScriptFunction}' "
-                f"in '{customScriptPath}': {e}"
+                f"Error in the signature of the external function '{custom_function}' "
+                f"in '{custom_script}': {e}"
             ) from None
 
         # Addition args are just passed directly to the function
@@ -182,7 +180,7 @@ def calculateIndicators(
 
     # Time binning over periods
     # ----------------------------------
-    if timeBinning == "periods":
+    if time_binning == "periods":
         periodSlices = []
         for thisPeriod in periodsTable.values():
             # Slice dataset by time
@@ -241,7 +239,7 @@ def calculateIndicators(
 
     # Time binning by years
     # ----------------------------
-    elif timeBinning in ["years"]:
+    elif time_binning in ["years"]:
         # Loop over seasons
         seasonTimeseries = []
         for thisSeason in indSeasons:
@@ -286,31 +284,31 @@ def calculateIndicators(
             for x in dout.time
         ]
     else:
-        raise ValueError(f"Unknown time binning method, '{timeBinning}'.")
+        raise ValueError(f"Unknown time binning method, '{time_binning}'.")
 
     # Calculation of changes
     # ------------------------
     # First we need the values for the reference period. That's easy for
     # period binning, but we need to calculate it for annual binning
-    if timeBinning == "periods":
+    if time_binning == "periods":
         # We use the first periodID as the reference here
         ref = dout.isel(periodID=0)
-    elif timeBinning in ["years"]:
+    elif time_binning in ["years"]:
         # Again use the first time period, but average
         refPeriod = list(periodsTable.values())[0]
         refDat = helpers.timeslice(dout, refPeriod["start"], refPeriod["end"])
         ref = refDat.mean(dim="time")
     else:
-        raise ValueError(f"Unknown time binning method, '{timeBinning}'.")
+        raise ValueError(f"Unknown time binning method, '{time_binning}'.")
 
     # Calculate change
-    if deltaType == "subtract":
+    if delta_type == "subtract":
         deltaOut = dout - ref
-    elif deltaType == "divide":
+    elif delta_type == "divide":
         deltaOut = dout / ref
     else:
-        raise ValueError(f"Unknown deltaType method, '{deltaType}'.")
-    deltaOut.attrs["deltaType"] = deltaType
+        raise ValueError(f"Unknown delta_type method, '{delta_type}'.")
+    deltaOut.attrs["delta_type"] = delta_type
 
     # Polish final product
     # ----------------------
@@ -322,14 +320,14 @@ def calculateIndicators(
     # both are legal at this point
     def decorate_dataset(ds):
         ds.attrs = {}
-        ds.attrs["timeBinning"] = timeBinning
+        ds.attrs["time_binning"] = time_binning
         ds.attrs["statistic"] = statistic
-        ds.attrs["deltaType"] = deltaType
+        ds.attrs["delta_type"] = delta_type
         ds.attrs["additional_arguments"] = str(additional_arguments)
-        ds.attrs["customScriptPath"] = customScriptPath
-        ds.attrs["customScriptFunction"] = customScriptFunction
+        ds.attrs["custom_script"] = custom_script
+        ds.attrs["custom_function"] = custom_function
         ds.attrs["seasonID_dict"] = json.dumps(seasonsTable)
-        if timeBinning == "periods":
+        if time_binning == "periods":
             ds.attrs["periodID_dict"] = json.dumps(periodsTable)
         return ds
 

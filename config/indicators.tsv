@@ -1,2 +1,2 @@
-id	indicator_codes	enabled	description	variables	datasets	seasons	timeBinning	statistic	skipna	deltaType	additional_arguments	customScriptPath	customScriptFunction
+id	indicator_codes	enabled	description	variables	datasets	seasons	time_binning	statistic	skipna	delta_type	additional_arguments	custom_script	custom_function
 101	101	x	Annual mean temperature	tas	all	all	periods	mean	false	subtract	{}		
