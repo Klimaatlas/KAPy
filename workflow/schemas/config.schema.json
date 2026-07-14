@@ -4,22 +4,22 @@
     "description": "Configuration schema for KAPy configuration objects. These configurations are usually stored in the `config.yaml` file.",
     "type": "object",
     "required": [
-        "configurationTables",
-        "outputGrid",
-        "arealstats",
-        "outputDir",
+        "configuration_tables",
+        "output_grid",
+        "areal_statistics",
+        "output_directory",
         "ensembles",
         "dask_resources"
     ],
     "additionalProperties": true,
     "properties": {
-        "configurationTables": {
+        "configuration_tables": {
             "description": "Paths to configuration tables. See the documentation for each table separately.",
             "required": [
                 "inputs",
-                "secondaryVars",
-                "biasAdjustment",
-                "tertiaryVars",
+                "secondary_variables",
+                "bias_adjustment",
+                "tertiary_variables",
                 "indicators",
                 "periods",
                 "seasons"
@@ -30,15 +30,15 @@
                     "description": "Path to input configuration table, relative to working directory. See [inputs.md](inputs.md) for more detail. Required table",
                     "type": "string"
                 },
-                "secondaryVars": {
+                "secondary_variables": {
                     "description": "Path to configuration table for secondary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '' or undefined, no secondary variables will be generated",
                     "type": ["string","null"]
                 },
-                "biasAdjustment": {
+                "bias_adjustment": {
                     "description": "Path to bias adjustment configuration table, relative to working directory. See [biasAdjustment.md](biasAdjustment.md) for more detail. Optional - if set to '' or undefined, no bias adjustment will be performed",
                     "type": ["string","null"]
                 },
-                "tertiaryVars": {
+                "tertiary_variables": {
                     "description": "Path to configuration table for tertiary variables, relative to working directory. See [derivedVars.md](derivedVars.md) for more details. Optional - if set to '' or undefined, no tertiary variables will be generated",
                     "type": ["string","null"]
                 },
@@ -56,19 +56,19 @@
                 }
             }
         },
-        "outputDir": {
+        "output_directory": {
             "description": "Path for writing output files",
             "type": "string"
         },
-        "arealstats": {
+        "areal_statistics": {
             "required": [
-                "useAreaWeighting",
+                "use_area_weighting",
                 "shapefile"
             ],
             "additionalProperties": false,
             "type": "object",
             "properties": {
-                "useAreaWeighting": {
+                "use_area_weighting": {
                     "description": "Use area-weighting when calculating averages over a polygon or area. Nearly all climate data is presented on grids where the area of the pixels is not constant, but changes in space - for example, on a regular lat-lon grid, the pixels get smaller towards the poles. When this option is configured, the CDO `gridarea` operator is used to calculate the area of each cell, and weightings applied to the calculation of area statistics accordingly. Requires that CDO can calculate the cell area - otherwise, it is recommended to disable this option manually.",
                     "type": "boolean"
                 },
@@ -176,15 +176,15 @@
                 }
             }
         },
-        "outputGrid": {
+        "output_grid": {
             "description": "Defines the common output grid onto which KAPy interpolates all indicators before calculating ensemble statistics. Can be disabled by setting `templateType` to `none`.",
             "type": "object",
             "required": [
-                "templateType"
+                "template_type"
             ],
             "additionalProperties": false,
             "properties": {
-                "templateType": {
+                "template_type": {
                     "type": "string",
                     "description":  "Type of template to use to specify the output grid. Selecting `none` will disable regridding. Selecting `file` will use an existing NetCDF file as the template. `cdo` uses a CDO grid descriptor file as the template.",
                     "enum": [
@@ -193,7 +193,7 @@
                         "file"
                     ]
                 },
-                "gridName": {
+                "grid_name": {
                     "type": "string",
                     "description": "String giving the name of the grid to be used in regridding filenames."
                 },
@@ -219,7 +219,7 @@
                 {
                     "if": {
                         "properties": {
-                            "templateType": {
+                            "template_type": {
                                 "const": "none"
                             }
                         }
@@ -227,7 +227,7 @@
                     "then": {},
                     "else": {
                         "required": [
-                            "gridName",
+                            "grid_name",
                             "method",
                             "path"
                         ]

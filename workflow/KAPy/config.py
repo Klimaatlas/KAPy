@@ -72,21 +72,21 @@ def validateConfig(config):
             "schema": "seasons",
             "optional": False,
         },
-        "secondaryVars": {
+        "secondary_variables": {
             "listCols": ["datasets", "inputVars", "outputVars"],
             "boolCols": ["passXarrays"],
             "dictCols": ["additionalArgs"],
             "schema": "derivedVars",
             "optional": True,
         },
-        "biasAdjustment": {
+        "bias_adjustment": {
             "listCols": [],
             "boolCols": [],
             "dictCols": ["additionalArgs"],
             "schema": "biasAdjustment",
             "optional": True,
         },
-        "tertiaryVars": {
+        "tertiary_variables": {
             "listCols": ["datasets", "inputVars", "outputVars"],
             "boolCols": ["passXarrays"],
             "dictCols": ["additionalArgs"],
@@ -113,7 +113,7 @@ def validateConfig(config):
         if thisTblKey == "dask_resources":
             thisCfgFile = config[thisTblKey]
         else:
-            thisCfgFile = config["configurationTables"][thisTblKey]
+            thisCfgFile = config["configuration_tables"][thisTblKey]
 
         if ((thisCfgFile == "") | (thisCfgFile is None)) & theseVals["optional"]:
             continue  # Not using this option
@@ -242,8 +242,8 @@ def validateConfig(config):
             )
 
     # Check if the configuration file is valid
-    if config["arealstats"]["shapefile"] is not None:
-        if not os.path.exists(config["arealstats"]["shapefile"]):
+    if config["areal_statistics"]["shapefile"] is not None:
+        if not os.path.exists(config["areal_statistics"]["shapefile"]):
             raise FileNotFoundError(
                 f"Cannot find shapefile declared in config/arealstats/shapefile: '{config['arealstats']['shapefile']}'."
             )

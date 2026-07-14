@@ -13,20 +13,20 @@
 # For a more complete configuration, taking advantage of all features, see the configuration
 # in ./workflow/testing
 
-outputDir: "outputs"
-configurationTables:
+output_directory: "outputs"
+configuration_tables:
     periods:  'config/periods.tsv'
     seasons: 'config/seasons.tsv'
     inputs:  'config/inputs.tsv'
     indicators: 'config/indicators.tsv'
-    secondaryVars: ''   
-    biasAdjustment: '' 
-    tertiaryVars: ''  
+    secondary_variables: ''   
+    bias_adjustment: '' 
+    tertiary_variables: ''  
 
 
 # Configuration options------------------------------------
-arealstats:
-    useAreaWeighting: False
+areal_statistics:
+    use_area_weighting: False
     shapefile: # leave empty for "none" 
 cutouts:
     method: 'lonlatbox'  #'none'
@@ -37,9 +37,9 @@ cutouts:
 ensembles:
     percentiles: [0,50,100]  #Use full data range due to small ensemble size.
     method: "linear"
-outputGrid:
-    templateType: 'cdo'
-    gridName: 'Ghana025'
+output_grid:
+    template_type: 'cdo'
+    grid_name: 'Ghana025'
     method: 'bilinear'
     path: 'config/griddes.txt'
 

@@ -23,7 +23,7 @@ def getWorkflow(config):
     Generates a description of the workflow dependencies of this configuration
     """
     # Extract paths
-    OUTPUT_PATHS = helpers.get_OUTPUT_PATHS(config["outputDir"])
+    OUTPUT_PATHS = helpers.get_OUTPUT_PATHS(config["output_directory"])
 
     # Primary Variables ---------------------------------------------------------------
     # PVs are the raw inputs. These need to be read into a single-file format based on
@@ -112,7 +112,7 @@ def getWorkflow(config):
                     f[int(thisInp["experimentField"]) - 1] for f in inpTbl["split"]
                 ]
             else:
-                inpTbl["exptID"] = "noexp"
+                inpTbl["exptID"] = "no-experiment"
             # Set ensid
             if (thisInp["ensidFields"] != "") and (thisInp["fieldSeparator"] != ""):
                 inpTbl["split"] = inpTbl["inFname"].str.split(thisInp["fieldSeparator"])
@@ -293,8 +293,8 @@ def getWorkflow(config):
 
     # Iterate over secondary variables if they are request
     svDict = {}
-    if "secondaryVars" in config:
-        for thisKey, thisSV in config["secondaryVars"].items():
+    if "secondary_variables" in config:
+        for thisKey, thisSV in config["secondary_variables"].items():
             # Find the right files to consider first
             correct_variable = varPal["var"].isin(thisSV["inputVars"])
             correct_dataset = varPal["dataset"].isin(thisSV["datasets"])
@@ -384,8 +384,8 @@ def getWorkflow(config):
     # the transformation is a 1(+1):1, i.e. histsim (+ref) : output, so that makes it well suited
     # to use a dictionary lookup. Don't ask me what we do when we get to multi-dimension bias-correction
     BADict = {}
-    if "biasAdjustment" in config:
-        for thisKey, thisBA in config["biasAdjustment"].items():
+    if "bias_adjustment" in config:
+        for thisKey, thisBA in config["bias_adjustment"].items():
             # Firstly, identify the reference dataset. Note that there should only be one reference
             # file for each case
             selThese = (varPal["var"] == thisBA["baVariable"]) & (
@@ -394,7 +394,7 @@ def getWorkflow(config):
             if sum(selThese) != 1:
                 raise ValueError(
                     "Cannot find a unique data variable to use as the reference "
-                    + f'for bias adjustment. See {config["configurationTables"]["biasAdjustment"]}, row: "{thisBA["id"]}" '
+                    + f'for bias adjustment. See {config["configuration_tables"]["bias_adjustment"]}, row: "{thisBA["id"]}" '
                 )
             refDict = varPal[selThese].to_dict(orient="records")[0]
 
@@ -482,9 +482,9 @@ def getWorkflow(config):
     # Note that tertiary variables can only be created if there are bias adjusted variables
     # created first
     tvDict = {}
-    if ("tertiaryVars" in config) and ("biasAdjustment" in config):
+    if ("tertiary_variables" in config) and ("bias_adjustment" in config):
         postBAPal = parseFilelist(BA_outputs, "biasAdjustment")
-        for thisKey, thisTV in config["tertiaryVars"].items():
+        for thisKey, thisTV in config["tertiary_variables"].items():
             # Filter by the input variables needed for this derived variable
             correct_variable = postBAPal["var"].isin(thisTV["inputVars"])
             correct_dataset = postBAPal["dataset"].isin(thisTV["datasets"])
@@ -647,7 +647,7 @@ def getWorkflow(config):
 
     # Regridding-----------------------------------------------------------------------
     # We only regrid if it is requested in the configuration
-    doRegridding = config["outputGrid"]["templateType"] != "none"
+    doRegridding = config["output_grid"]["template_type"] != "none"
     if doRegridding:
         # Remap directory
         rgTbl = pd.DataFrame(
@@ -662,7 +662,7 @@ def getWorkflow(config):
         )
         rgTbl["output_fname"] = rgTbl["input_fname"].str.replace(
             r"^([^_]+_[^_]+_)[^_]+(_.*$)",
-            r"\1" + config["outputGrid"]["gridName"] + r"\2",
+            r"\1" + config["output_grid"]["grid_name"] + r"\2",
             regex=True,
         )
         # Build the rest of the paths

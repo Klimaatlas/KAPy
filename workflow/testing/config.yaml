@@ -9,19 +9,19 @@
 # snakemake --configfile workflow/testing/config.yaml ... 
 
 
-configurationTables:
+configuration_tables:
     inputs:  'workflow/testing/inputs.tsv'
     indicators: 'workflow/testing/indicators.tsv'
-    secondaryVars: 'workflow/testing/secondaryVars.tsv'
-    biasAdjustment: 'workflow/testing/biasAdjustment.tsv'
-    tertiaryVars: 'workflow/testing/tertiaryVars.tsv'
+    secondary_variables: 'workflow/testing/secondaryVars.tsv'
+    bias_adjustment: 'workflow/testing/biasAdjustment.tsv'
+    tertiary_variables: 'workflow/testing/tertiaryVars.tsv'
     periods:  'workflow/testing/periods.tsv'
     seasons: 'workflow/testing/seasons.tsv'
-outputDir: "testing"
+output_directory: "testing"
 
 # Configuration options------------------------------------
-arealstats:
-    useAreaWeighting: True
+areal_statistics:
+    use_area_weighting: True
     shapefile: 'docs/tutorials/Tutorial05_files/Ghana_regions.shp'
 cutouts:
     method: 'lonlatbox'  #'none'
@@ -32,9 +32,9 @@ cutouts:
 ensembles:
     percentiles: [0,50,100]  #Use full data range due to small ensemble size.
     method: "linear"
-outputGrid:
-    templateType: 'cdo'
-    gridName: 'Ghana025'
+output_grid:
+    template_type: 'cdo'
+    grid_name: 'Ghana025'
     method: 'bilinear'
     path: 'workflow/testing/griddes.txt'
 

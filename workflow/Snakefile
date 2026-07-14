@@ -35,7 +35,7 @@ WORKFLOW=KAPy.getWorkflow(config)
 
 #Setup helpers
 from pathlib import Path
-OUTPUT_PATHS=KAPy.get_OUTPUT_PATHS(config["outputDir"]) 
+OUTPUT_PATHS=KAPy.get_OUTPUT_PATHS(config["output_directory"]) 
 
 # Wildcard rules -------------------------------------------
 # Wildcard rules are generic rules in Snakemake that deal with many files at a time -
@@ -74,7 +74,7 @@ for thisID, thisRow in WORKFLOW['secondary_variables'].items():
         name: f"._rule_02_secondary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
-        params: **config['secondaryVars'][thisID]
+        params: **config['secondary_variables'][thisID]
         threads:
             KAPy.get_dask_threads(config['dask_resources'],"SECONDARY_VARIABLES",thisID)
         resources:
@@ -89,7 +89,7 @@ for thisID, thisRow in WORKFLOW['bias_adjustment'].items():
         input: unpack(lambda wc, rw=thisRow: rw['input_dict'][wc.leaf])
         output: **thisRow['output_rule']
         params: 
-            **config['biasAdjustment'][thisID]
+            **config['bias_adjustment'][thisID]
         threads:
             KAPy.get_dask_threads(config['dask_resources'],"BIAS_ADJUSTMENT",thisID)
         resources:
@@ -106,7 +106,7 @@ for thisID, thisRow in WORKFLOW['tertiary_variables'].items():
         name: f"._rule_04_tertiary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
-        params: **config['tertiaryVars'][thisID]
+        params: **config['tertiary_variables'][thisID]
         threads:
             KAPy.get_dask_threads(config['dask_resources'],"TERTIARY_VARIABLES",thisID)
         resources:
@@ -144,9 +144,9 @@ rule:
     output:
         output=OUTPUT_PATHS['regrid'] /"{outfile}"
     params:
-        templateType=config["outputGrid"]["templateType"],
-        path=config["outputGrid"].get("path",""),
-        method=config['outputGrid'].get('method',"")
+        templateType=config["output_grid"]["template_type"],
+        path=config["output_grid"].get("path",""),
+        method=config['output_grid'].get('method',"")
     threads:
         KAPy.get_dask_threads(config['dask_resources'],"REGRIDDING",thisID)
     resources:
@@ -176,12 +176,12 @@ rule:
     input:
         inputFile=lambda wildcards: WORKFLOW['areal_statistics']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] /
                                                                                     wildcards.fname)],
-        shapefile=lambda wildcards: config['arealstats']['shapefile'] if config['arealstats']['shapefile'] is not None else []
+        shapefile=lambda wildcards: config['areal_statistics']['shapefile'] if config['areal_statistics']['shapefile'] is not None else []
     output:
         OUTPUT_PATHS['areal_statistics'] /'{fname}'
     params:
-        shapefile=config['arealstats']['shapefile'],
-        useAreaWeighting=config['arealstats']['useAreaWeighting']
+        shapefile=config['areal_statistics']['shapefile'],
+        useAreaWeighting=config['areal_statistics']['use_area_weighting']
     script:
         "scripts/_08_arealstats.py"
  
@@ -220,9 +220,9 @@ rule:
     input:
         ensemble_stats=OUTPUT_PATHS["ensemble_statistics_csv"],
         ensemble_members=OUTPUT_PATHS["ensemble_members_csv"],
-        indicators=config['configurationTables']['indicators'],
-        periods=config['configurationTables']['periods'],
-        seasons=config['configurationTables']['seasons'],
+        indicators=config['configuration_tables']['indicators'],
+        periods=config['configuration_tables']['periods'],
+        seasons=config['configuration_tables']['seasons'],
         config_file=configfile_path
     output:
         database=OUTPUT_PATHS["database"]
@@ -272,7 +272,7 @@ rule:
         [k for thisInd in WORKFLOW['indicators'].values() for k in thisInd["outputs"]]
 
 #Regridding
-if config['outputGrid']['templateType']!='none':
+if config['output_grid']['template_type']!='none':
     rule:
         name: ".REGRID"
         input:

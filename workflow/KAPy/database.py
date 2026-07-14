@@ -80,15 +80,15 @@ class database:
         ).name
         print("TEMPORARY PATH: ", self.db_path)
 
-        OUTPUT_PATHS = helpers.get_OUTPUT_PATHS(self.config["outputDir"])
+        OUTPUT_PATHS = helpers.get_OUTPUT_PATHS(self.config["output_directory"])
 
         self.db_output_path = OUTPUT_PATHS["database"]
 
         # Populate rest of object
         self.stats_csv = OUTPUT_PATHS["ensemble_statistics_csv"]
         self.members_csv = OUTPUT_PATHS["ensemble_members_csv"]
-        self.geometry = self.config["arealstats"]["shapefile"]
-        self.include_geometry = self.config["arealstats"]["shapefile"] is not None
+        self.geometry = self.config["areal_statistics"]["shapefile"]
+        self.include_geometry = self.config["areal_statistics"]["shapefile"] is not None
 
         self.conn = None
         self._stats_df = None
@@ -274,7 +274,7 @@ class database:
             tbl = self.LOOKUP_TABLES[key]
             desc_tbl = self.TABLES_WITH_DESCRIPTIONS[key]
             cfg = pd.read_csv(
-                self.config["configurationTables"][desc_tbl["configuration_table"]],
+                self.config["configuration_tables"][desc_tbl["configuration_table"]],
                 sep="\t",
                 encoding="windows-1252",
                 dtype=str,
@@ -531,7 +531,7 @@ class database:
         )
 
         # Loop over configuration tables
-        for key, path in self.config["configurationTables"].items():
+        for key, path in self.config["configuration_tables"].items():
             if (path is None) or (path == ""):
                 continue
             # Load configuration table
@@ -548,7 +548,7 @@ class database:
             INSERT INTO Configuration 
             VALUES (NULL, ?, ?,?)
             """,
-                (key, self.config["configurationTables"][key], tbl.to_json()),
+                (key, self.config["configuration_tables"][key], tbl.to_json()),
             )
 
         conn.commit()
