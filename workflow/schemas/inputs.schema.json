@@ -6,7 +6,7 @@
   "required": [
     "id",
     "enabled",
-    "datasetCode", 
+    "dataset_code", 
     "varCode", 
     "units",
     "gridCode",
@@ -34,7 +34,7 @@
       "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
       "type": ["string","null"]
     },
-    "datasetCode": {
+    "dataset_code": {
       "type": "string",
       "pattern": "^[^ ]+$",
       "description": "A code for the dataset e.g CORDEX, ERA5. Need not be unique. Is used to group related variables from the same data source together further in the analysis (e.g. tas and pr from ERA5). Must not contain a space."

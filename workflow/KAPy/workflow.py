@@ -98,7 +98,7 @@ def getWorkflow(config):
             # Set output filename, setting the file extension manually.
             pvTbl = inpTbl
             pvTbl["pvFname"] = (
-                f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
+                f"{thisInp['dataset_code']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
             )
 
         # So we have multiple files. In cases where we don't want to merge them into combined files, the
@@ -126,7 +126,7 @@ def getWorkflow(config):
 
             pvTbl = inpTbl
             pvTbl["pvFname"] = (
-                f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_"
+                f"{thisInp['dataset_code']}_{thisInp['varCode']}_{thisInp['gridCode']}_"
                 + inpTbl["exptID"]
                 + "_"
                 + inpTbl["ensMemberID"]
@@ -142,7 +142,7 @@ def getWorkflow(config):
         ):
             pvTbl = inpTbl
             pvTbl["pvFname"] = (
-                f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
+                f"{thisInp['dataset_code']}_{thisInp['varCode']}_{thisInp['gridCode']}_noexp_noensid.{fileExtn}"
             )
 
         # Else need to process multiple files.
@@ -171,7 +171,7 @@ def getWorkflow(config):
                 # experiment individually
                 # Form the corresponding filename. Don't forget to add the .nc
                 inpTbl["pvFname"] = (
-                    f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}_"
+                    f"{thisInp['dataset_code']}_{thisInp['varCode']}_{thisInp['gridCode']}_"
                     + inpTbl["experiment"]
                     + "_"
                     + inpTbl["ensMemberID"]
@@ -206,14 +206,14 @@ def getWorkflow(config):
                     # Forming the corresponding filenames. Don't forget to add the .nc
                     # Experiment naming is the sum of the commonExpt and thisExpt
                     theseExptFiles["pvFname"] = (
-                        f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}"
+                        f"{thisInp['dataset_code']}_{thisInp['varCode']}_{thisInp['gridCode']}"
                         + f"_{thisInp['commonExperiment']}+{thisExpt}_"
                         + theseExptFiles["ensMemberID"]
                         + "."
                         + fileExtn
                     )
                     commonExptTable["pvFname"] = (
-                        f"{thisInp['datasetCode']}_{thisInp['varCode']}_{thisInp['gridCode']}"
+                        f"{thisInp['dataset_code']}_{thisInp['varCode']}_{thisInp['gridCode']}"
                         + f"_{thisInp['commonExperiment']}+{thisExpt}_"
                         + commonExptTable["ensMemberID"]
                         + "."
