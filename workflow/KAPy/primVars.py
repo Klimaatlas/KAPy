@@ -14,7 +14,7 @@ from .constants import CHUNKING_TIME
 
 # -----------------------------------------------------------------
 def defaultImport(
-    inFiles, varCode, internalVarName, checks, chunks={"time": CHUNKING_TIME}
+    inFiles, variable_code, internalVarName, checks, chunks={"time": CHUNKING_TIME}
 ):
     # Make dataset object using xarray lazy load approach.
     #
@@ -41,7 +41,7 @@ def defaultImport(
 
     # Select the desired variable to give a and rename to the variable code
     da = dsIn[internalVarName]
-    da.name = varCode
+    da.name = variable_code
 
     # Drop degenerate dimensions. If any remain, throw an error
     da = da.squeeze(drop=True)
@@ -66,7 +66,7 @@ def defaultImport(
 
 
 # -----------------------------------------------------------------
-def cutout_lonlat(thisDat, xmin, xmax, ymin, ymax, varCode, **kwargs):
+def cutout_lonlat(thisDat, xmin, xmax, ymin, ymax, variable_code, **kwargs):
     """
     Apply cutout based on lonlat
 
@@ -86,7 +86,7 @@ def cutout_lonlat(thisDat, xmin, xmax, ymin, ymax, varCode, **kwargs):
             Minimum coordinate in the y direction
     ymax : _type_
             Maximum coordinate in the y direction
-    varCode : _type_
+    variable_code : _type_
             Name of the variable ID contained in the dataset
     kwargs:
             Absorb any extra arguments
@@ -100,10 +100,10 @@ def cutout_lonlat(thisDat, xmin, xmax, ymin, ymax, varCode, **kwargs):
 
     # Create a mask as the basis for the cutouts using cdo masklonlatbox.
     # Make sure that we return a dataarray and not a dataset by specifying the
-    # varCode
+    # variable_code
     cdo = Cdo()
     mask = cdo.masklonlatbox(
-        xmin, xmax, ymin, ymax, input=firstTS, returnXArray=varCode
+        xmin, xmax, ymin, ymax, input=firstTS, returnXArray=variable_code
     )
 
     # Find the intersection of the two
@@ -116,7 +116,7 @@ def cutout_lonlat(thisDat, xmin, xmax, ymin, ymax, varCode, **kwargs):
 # -----------------------------------------------------------------
 def buildPrimVar(
     inFiles,
-    varCode,
+    variable_code,
     internalVarName,
     checks,
     importScriptPath,
@@ -130,20 +130,20 @@ def buildPrimVar(
         # Use default import
         da = defaultImport(
             inFiles=inFiles,
-            varCode=varCode,
+            variable_code=variable_code,
             internalVarName=internalVarName,
             checks=checks,
         )
         # Apply cutout functionality
         if cutoutArgs["method"] == "lonlatbox":
-            da = cutout_lonlat(da, **cutoutArgs, varCode=varCode)
+            da = cutout_lonlat(da, **cutoutArgs, variable_code=variable_code)
 
     else:
         # Use a custom import
         imptFn = helpers.getExternalFunction(importScriptPath, importScriptFunction)
         da = imptFn(
             inFiles,
-            varCode=varCode,
+            variable_code=variable_code,
             internalVarName=internalVarName,
             units=units,
             checks=checks,

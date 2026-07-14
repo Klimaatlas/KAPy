@@ -14,5 +14,5 @@ if "snakemake" in globals():
         **snakemake.params.row_arguments,
     )
     KAPy.write_variables(
-        da, {snakemake.params.row_arguments["varCode"]: snakemake.output[0]}
+        da, {snakemake.params.row_arguments["variable_code"]: snakemake.output[0]}
     )

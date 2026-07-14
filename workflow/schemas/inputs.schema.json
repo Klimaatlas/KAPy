@@ -7,7 +7,7 @@
     "id",
     "enabled",
     "dataset_code", 
-    "varCode", 
+    "variable_code", 
     "units",
     "gridCode",
     "path", 
@@ -39,10 +39,10 @@
       "pattern": "^[^ ]+$",
       "description": "A code for the dataset e.g CORDEX, ERA5. Need not be unique. Is used to group related variables from the same data source together further in the analysis (e.g. tas and pr from ERA5). Must not contain a space."
     },
-    "varCode": {
+    "variable_code": {
       "type": "string",
       "pattern": "^[^ ]+$",
-      "description": "A code of the variable contained in this dataset. While there is no enforcement of naming conventions in KAPy, the variable names should anyway be standardised across the entire configuration and across input datasets. For example, both ERA5 and CORDEX provide surface temperature, but with different internal variable names in the input files - to ensure that they can be matched together, they should both be assigned the varCode `tas`. Must not contain a space."
+      "description": "A code of the variable contained in this dataset. While there is no enforcement of naming conventions in KAPy, the variable names should anyway be standardised across the entire configuration and across input datasets. For example, both ERA5 and CORDEX provide surface temperature, but with different internal variable names in the input files - to ensure that they can be matched together, they should both be assigned the variable_code `tas`. Must not contain a space."
     },
     "units": {
       "type": ["string","null"],
