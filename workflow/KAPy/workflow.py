@@ -307,7 +307,7 @@ def getWorkflow(config):
     if "secondary_variables" in config:
         for thisKey, thisSV in config["secondary_variables"].items():
             # Find the right files to consider first
-            correct_variable = varPal["var"].isin(thisSV["inputVars"])
+            correct_variable = varPal["var"].isin(thisSV["input_variables"])
             correct_dataset = varPal["dataset"].isin(thisSV["datasets"])
 
             if "all" in thisSV["datasets"]:
@@ -316,7 +316,7 @@ def getWorkflow(config):
                 selThese = correct_variable & correct_dataset
             if not any(selThese):
                 raise ValueError(
-                    f"Cannot find variable(s) '{thisSV['inputVars']}' for datasets '{thisSV['datasets']}' in secondary variable row {thisSV['id']}."
+                    f"Cannot find variable(s) '{thisSV['input_variables']}' for datasets '{thisSV['datasets']}' in secondary variable row {thisSV['id']}."
                 )
             longSVTbl = varPal[selThese]
 
@@ -344,7 +344,7 @@ def getWorkflow(config):
             )
 
             # Setup dict
-            inp_dict = svTbl.set_index("id")[thisSV["inputVars"]].to_dict(
+            inp_dict = svTbl.set_index("id")[thisSV["input_variables"]].to_dict(
                 orient="index"
             )
             out_rule = {
@@ -353,7 +353,7 @@ def getWorkflow(config):
                     thisKey,
                     f"{{dataset}}_{v}_{{leaf}}.nc",
                 )
-                for v in thisSV["outputVars"]
+                for v in thisSV["output_variables"]
             }
             this_SV_dict = {
                 "input_dict": inp_dict,
@@ -361,7 +361,7 @@ def getWorkflow(config):
                 "outputs": [],
             }
             for idx, rw in svTbl.iterrows():
-                for this_var in thisSV["outputVars"]:
+                for this_var in thisSV["output_variables"]:
                     output_file = (
                         rw["dataset"]
                         + f"_{this_var}_"
@@ -497,7 +497,7 @@ def getWorkflow(config):
         postBAPal = parseFilelist(BA_outputs, "biasAdjustment")
         for thisKey, thisTV in config["tertiary_variables"].items():
             # Filter by the input variables needed for this derived variable
-            correct_variable = postBAPal["var"].isin(thisTV["inputVars"])
+            correct_variable = postBAPal["var"].isin(thisTV["input_variables"])
             correct_dataset = postBAPal["dataset"].isin(thisTV["datasets"])
 
             if "all" in thisTV["datasets"]:
@@ -506,7 +506,7 @@ def getWorkflow(config):
                 selThese = correct_variable & correct_dataset
             if not any(selThese):
                 raise ValueError(
-                    f"Cannot find variable(s) '{thisTV['inputVars']}' for datasets '{thisTV['datasets']}' in secondary variable row {thisTV['id']}."
+                    f"Cannot find variable(s) '{thisTV['input_variables']}' for datasets '{thisTV['datasets']}' in secondary variable row {thisTV['id']}."
                 )
             longTVTbl = postBAPal[selThese]
             if longTVTbl.size == 0:
@@ -538,7 +538,7 @@ def getWorkflow(config):
             )
 
             # Setup dict
-            inp_dict = tvTbl.set_index("id")[thisTV["inputVars"]].to_dict(
+            inp_dict = tvTbl.set_index("id")[thisTV["input_variables"]].to_dict(
                 orient="index"
             )
             out_rule = {
@@ -547,7 +547,7 @@ def getWorkflow(config):
                     thisKey,
                     f"{{dataset}}_{v}_{{leaf}}.nc",
                 )
-                for v in thisTV["outputVars"]
+                for v in thisTV["output_variables"]
             }
             this_TV_dict = {
                 "input_dict": inp_dict,
@@ -555,7 +555,7 @@ def getWorkflow(config):
                 "outputs": [],
             }
             for idx, rw in tvTbl.iterrows():
-                for output_var in thisTV["outputVars"]:
+                for output_var in thisTV["output_variables"]:
                     output_file = (
                         rw["dataset"]
                         + f"_{output_var}_"

@@ -1,2 +1,2 @@
-id	enabled	datasets	inputVars	outputVars	passXarrays	scriptPath	scriptFunction	additionalArgs
+id	enabled	datasets	input_variables	output_variables	pass_xarrays	custom_script	custom_function	additionalArgs
 tas-ba_C2K	x	all	tas	tasK	true	workflow/testing/temperature_conversions.py	C2K	{}

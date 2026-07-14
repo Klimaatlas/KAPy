@@ -73,8 +73,8 @@ def validateConfig(config):
             "optional": False,
         },
         "secondary_variables": {
-            "listCols": ["datasets", "inputVars", "outputVars"],
-            "boolCols": ["passXarrays"],
+            "listCols": ["datasets", "input_variables", "output_variables"],
+            "boolCols": ["pass_xarrays"],
             "dictCols": ["additionalArgs"],
             "schema": "derivedVars",
             "optional": True,
@@ -87,8 +87,8 @@ def validateConfig(config):
             "optional": True,
         },
         "tertiary_variables": {
-            "listCols": ["datasets", "inputVars", "outputVars"],
-            "boolCols": ["passXarrays"],
+            "listCols": ["datasets", "input_variables", "output_variables"],
+            "boolCols": ["pass_xarrays"],
             "dictCols": ["additionalArgs"],
             "schema": "derivedVars",
             "optional": True,
