@@ -14,7 +14,7 @@
     "trainPeriodStart",
     "trainPeriodEnd",
     "method",
-    "additionalArgs"
+    "additional_arguments"
   ],
   "properties": {
     "id": {
@@ -79,7 +79,7 @@
         "month",
         "season"]
     },
-    "additionalArgs": {
+    "additional_arguments": {
       "type": "string",
       "nullable": true,
       "description": "Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'kind'='+', group='time.month'}`. Can be an empty dict or empty string if no there are no additional parameters. e.g. `{}` "

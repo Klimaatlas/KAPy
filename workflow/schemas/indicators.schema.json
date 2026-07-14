@@ -14,7 +14,7 @@
     "deltaType",
     "statistic",
     "skipna",
-    "additionalArgs",
+    "additional_arguments",
     "customScriptPath",
     "customScriptFunction"
   ],
@@ -66,7 +66,7 @@
         "divide"]
     },
     "statistic": {
-      "description": "Statistic to be used to calculate the indicator. KAPy has eight basic types of indicators built in. 1) `mean` calculates an average across the period. 2)`count` calculates the average number of days per year in the period above or below a threshold. Additional parameters must be supplied via the `additionalArgs` field: `threshold` is the threshold value, and `op` is the comparison operator - one of `>`,`gt`,`<`,`lt`,  `>=`, `ge`, `<=` or `le`.  3) `meanmax` calculates the maximum value of the variable over the season or year - in cases where there is period binning enabled, the average annual maximum is calculated. 4) `meanmin` calculates the average minimum in the same manner as `meanmax` 5) ´max' calculates the maximum value of the indicator across the entire binning period 6) `min` calculates the minimum value across the binning period 7) `quantile` calculates the value of a given quantile. An additional parameter `q` must be suppliedin the `additionalArgs` field. 8) `custom` calls the function defined in `customScriptPath` and `customScriptFunction` and utilised arguments supplied as a dictionary in `additionalArgs`.",
+      "description": "Statistic to be used to calculate the indicator. KAPy has eight basic types of indicators built in. 1) `mean` calculates an average across the period. 2)`count` calculates the average number of days per year in the period above or below a threshold. Additional parameters must be supplied via the `additional_arguments` field: `threshold` is the threshold value, and `op` is the comparison operator - one of `>`,`gt`,`<`,`lt`,  `>=`, `ge`, `<=` or `le`.  3) `meanmax` calculates the maximum value of the variable over the season or year - in cases where there is period binning enabled, the average annual maximum is calculated. 4) `meanmin` calculates the average minimum in the same manner as `meanmax` 5) ´max' calculates the maximum value of the indicator across the entire binning period 6) `min` calculates the minimum value across the binning period 7) `quantile` calculates the value of a given quantile. An additional parameter `q` must be suppliedin the `additional_arguments` field. 8) `custom` calls the function defined in `customScriptPath` and `customScriptFunction` and utilised arguments supplied as a dictionary in `additional_arguments`.",
       "type": "string",
       "enum": [
         "custom",
@@ -88,7 +88,7 @@
       ]
   },
 
-    "additionalArgs": {
+    "additional_arguments": {
       "type": "string",
       "nullable": true,
       "description": "Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'threshold':'25','op':'gt'}`. If no there are no additional parameters. an empty dict should be supplied i.e. `{}`"

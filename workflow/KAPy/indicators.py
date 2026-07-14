@@ -85,7 +85,7 @@ def calculateIndicators(
     statistic,
     skipna,
     deltaType,
-    additionalArgs,
+    additional_arguments,
     customScriptPath,
     customScriptFunction,
     **kwargs,
@@ -131,33 +131,33 @@ def calculateIndicators(
     elif statistic == "count":
         stat_function = _stat_count
         # Check input arguments
-        if not (("op" in additionalArgs) & ("threshold" in additionalArgs)):
+        if not (("op" in additional_arguments) & ("threshold" in additional_arguments)):
             raise ValueError(
-                "The 'additionalArgs' field must contain both 'op' and 'threshold' when using the 'count' statistic. "
+                "The 'additional_arguments' field must contain both 'op' and 'threshold' when using the 'count' statistic. "
             )
         try:
-            threshold = float(additionalArgs["threshold"])
+            threshold = float(additional_arguments["threshold"])
         except ValueError:
             raise ValueError(
-                f"Cannot convert 'threshold' value in 'additionalArgs' to a float. 'Threshold' string value: {additionalArgs['threshold']}"
+                f"Cannot convert 'threshold' value in 'additional_arguments' to a float. 'Threshold' string value: {additional_arguments['threshold']}"
             )
         stat_args = {
-            "op": additionalArgs["op"],
+            "op": additional_arguments["op"],
             "threshold": threshold,
             "skipna": skipna,
         }
     elif statistic == "quantile":
         stat_function = _stat_quantile
         # Check input arguments
-        if "q" not in additionalArgs:
+        if "q" not in additional_arguments:
             raise ValueError(
-                "The 'additionalArgs' field must define the quantile via the 'q' argument e.g q:0.5 "
+                "The 'additional_arguments' field must define the quantile via the 'q' argument e.g q:0.5 "
             )
         try:
-            qtile = float(additionalArgs["q"])
+            qtile = float(additional_arguments["q"])
         except ValueError:
             raise ValueError(
-                f"Cannot convert 'q' value in 'additionalArgs' to a float. 'q' string value: {additionalArgs['q']}"
+                f"Cannot convert 'q' value in 'additional_arguments' to a float. 'q' string value: {additional_arguments['q']}"
             )
         stat_args = {"qtile": qtile, "skipna": skipna}
     elif statistic == "custom":
@@ -175,7 +175,7 @@ def calculateIndicators(
             ) from None
 
         # Addition args are just passed directly to the function
-        stat_args = additionalArgs
+        stat_args = additional_arguments
         stat_args["skipna"] = skipna
     else:
         raise ValueError(f"Unknown indicator statistic, '{statistic}'")
@@ -325,7 +325,7 @@ def calculateIndicators(
         ds.attrs["timeBinning"] = timeBinning
         ds.attrs["statistic"] = statistic
         ds.attrs["deltaType"] = deltaType
-        ds.attrs["additionalArgs"] = str(additionalArgs)
+        ds.attrs["additional_arguments"] = str(additional_arguments)
         ds.attrs["customScriptPath"] = customScriptPath
         ds.attrs["customScriptFunction"] = customScriptFunction
         ds.attrs["seasonID_dict"] = json.dumps(seasonsTable)

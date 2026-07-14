@@ -26,7 +26,7 @@ trainPeriodEnd=config['biasAdjustment'][thisCal]['trainPeriodEnd']
 baVariable=config['biasAdjustment'][thisCal]['baVariable']
 method=config['biasAdjustment'][thisCal]['method']
 grouping=config['biasAdjustment'][thisCal]['grouping']
-additionalArgs=config['biasAdjustment'][thisCal]['additionalArgs']
+additional_arguments=config['biasAdjustment'][thisCal]['additional_arguments']
 import matplotlib.pyplot as plt
 %matplotlib inline
 """
@@ -42,7 +42,7 @@ def biasAdjust(
     baVariable,
     method,
     grouping,
-    additionalArgs,
+    additional_arguments,
     customScriptPath,
     customScriptFunction,
     **kwargs,
@@ -138,7 +138,7 @@ def biasAdjust(
 
     # Parallelised bias adjustment functions ------------------------------
     def biasAdjustThisChunk(
-        chnk, trainPeriodStart, trainPeriodEnd, method, additionalArgs, grouping
+        chnk, trainPeriodStart, trainPeriodEnd, method, additional_arguments, grouping
     ):
         # Debug
         # tg=combDS.target.data.blocks[0,0,0]
@@ -177,7 +177,7 @@ def biasAdjust(
             from xsdba.adjustment import EmpiricalQuantileMapping
 
             EQM = EmpiricalQuantileMapping.train(
-                rfTP, tgTP, group=groupThisWay, **additionalArgs
+                rfTP, tgTP, group=groupThisWay, **additional_arguments
             )
             res = EQM.adjust(tg, extrapolation="constant", interp="nearest")
 
@@ -186,7 +186,7 @@ def biasAdjust(
             from xsdba.adjustment import DetrendedQuantileMapping
 
             DQM = DetrendedQuantileMapping.train(
-                rfTP, tgTP, group=groupThisWay, **additionalArgs
+                rfTP, tgTP, group=groupThisWay, **additional_arguments
             )
             res = DQM.adjust(tg, extrapolation="constant", interp="nearest")
 
@@ -194,7 +194,7 @@ def biasAdjust(
             # Xclim - Scaling--------------------------------
             from xsdba.adjustment import Scaling
 
-            this = Scaling.train(rfTP, tgTP, group=groupThisWay, **additionalArgs)
+            this = Scaling.train(rfTP, tgTP, group=groupThisWay, **additional_arguments)
             res = this.adjust(tg, interp="nearest")
 
         elif method == "custom":
@@ -217,7 +217,7 @@ def biasAdjust(
         "trainPeriodEnd": trainPeriodEnd,
         "grouping": grouping,
         "method": method,
-        "additionalArgs": additionalArgs,
+        "additional_arguments": additional_arguments,
     }
     out = xr.map_blocks(
         func=biasAdjustThisChunk, obj=combDS, kwargs=calCfg, template=target

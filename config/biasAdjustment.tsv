@@ -1,2 +1,2 @@
-id	outDatasetCode	baVariable	targetDataset	refDataset	outputGrid	trainPeriodStart	trainPeriodEnd	method	grouping	additionalArgs	customScriptPath	customScriptFunction
+id	outDatasetCode	baVariable	targetDataset	refDataset	outputGrid	trainPeriodStart	trainPeriodEnd	method	grouping	additional_arguments	customScriptPath	customScriptFunction
 tas-cal	CORDEX-Cal	tas	CORDEX	ERA5	reference	1981	2010	xclim-scaling	month	{'kind':'+'}		

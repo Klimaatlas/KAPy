@@ -13,7 +13,7 @@ processorType=config['secondaryVars'][varID]['processorType']
 processorPath=config['secondaryVars'][varID]['processorPath']
 processorFunction=config['secondaryVars'][varID]['processorFunction']
 pass_xarrays=config['secondaryVars'][varID]['pass_xarrays']
-additionalArgs=config['secondaryVars'][varID]['additionalArgs']
+additional_arguments=config['secondaryVars'][varID]['additional_arguments']
 outFile=list(wf['secondaryVars'][thisID])[0]
 inFiles=wf['secondaryVars'][thisID][outFile]
 from KAPy import helpers 
@@ -24,7 +24,12 @@ from . import helpers
 
 
 def buildDerivedVar(
-    inFiles, pass_xarrays, custom_script, custom_function, additionalArgs, **kwargs
+    inFiles,
+    pass_xarrays,
+    custom_script,
+    custom_function,
+    additional_arguments,
+    **kwargs,
 ):
 
     # Load input files
@@ -45,7 +50,7 @@ def buildDerivedVar(
         ) from None
 
     # Call function
-    theseArgs = {**inFiles, **additionalArgs}
+    theseArgs = {**inFiles, **additional_arguments}
     out = thisFn(**theseArgs)
 
     # Check output

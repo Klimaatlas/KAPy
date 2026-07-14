@@ -12,7 +12,7 @@
         "pass_xarrays",
         "custom_script",
         "custom_function",
-        "additionalArgs"
+        "additional_arguments"
     ],
     "additionalProperties": false,
     "properties": {
@@ -55,7 +55,7 @@
             "description": "The name of the functionm contained in `custom_script` to be used to calculate the new variable",
             "type": "string"
         },
-        "additionalArgs": {
+        "additional_arguments": {
             "description": "Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'param1':10,'doSim':true,'name':'myname'}`. Can be an empty dict if no there are no additional parameters. e.g. `{}` `",
             "type": "string"
         }
