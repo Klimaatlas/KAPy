@@ -10,3 +10,5 @@ testing/*
 outputs/*
 .vscode/launch.json
 .Rhistory
+*.egg-info
+build/*
