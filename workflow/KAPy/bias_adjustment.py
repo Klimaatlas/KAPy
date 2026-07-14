@@ -2,7 +2,9 @@ import xarray as xr
 import tempfile
 import xesmf as xe
 import json
-from . import helpers
+
+# Use absolute imports assuming KAPy is installed
+from KAPy import helpers
 
 """
 #Setup for debugging 

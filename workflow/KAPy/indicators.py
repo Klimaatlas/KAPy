@@ -11,10 +11,8 @@ import numpy as np
 import cftime
 import json
 
-try:  # Differentiate between importing when in a module and running the script locally
-    from . import helpers
-except ImportError:
-    import helpers
+# Use absolute imports assuming KAPy is installed
+from KAPy import helpers
 
 # Private functions-------------------------
 

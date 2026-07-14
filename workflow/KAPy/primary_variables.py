@@ -7,9 +7,11 @@ import xclim
 import pandas as pd
 import glob
 import os
-from . import helpers
-from . import workflow
-from .constants import CHUNKING_TIME
+
+# Use absolute imports assuming KAPy is installed
+from KAPy import helpers
+from KAPy import workflow
+from KAPy.constants import CHUNKING_TIME
 
 
 # -----------------------------------------------------------------

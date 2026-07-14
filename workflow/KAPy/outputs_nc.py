@@ -3,7 +3,9 @@ import xarray as xr
 import pickle
 from pathlib import Path
 import shutil
-from . import helpers
+
+# Use absolute imports assuming KAPy is installed
+from KAPy import helpers
 
 
 def write_variables(

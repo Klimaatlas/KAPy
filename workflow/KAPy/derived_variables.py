@@ -20,7 +20,9 @@ from KAPy import helpers
 """
 
 import xarray as xr
-from . import helpers
+
+# Use absolute imports assuming KAPy is installed
+from KAPy import helpers
 
 
 def build_derived_variables(

@@ -10,10 +10,8 @@ import pandas as pd
 import glob
 from pathlib import Path
 
-try:  # Differentiate between importing when in a module and running the script locally
-    from . import helpers
-except ImportError:
-    import helpers
+# Use absolute imports assuming KAPy is installed
+from KAPy import helpers
 
 
 def get_workflow(config):
@@ -808,7 +806,7 @@ if __name__ == "__main__":
     from pathlib import Path
 
     pd.set_option("display.max_colwidth", None)
-    from config import get_config
+    from KAPy.config import get_config
 
     # Setup working directory. Its not pretty, but..
     this_path = Path(__file__).resolve().parent.parent.parent
