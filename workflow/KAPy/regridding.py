@@ -17,9 +17,9 @@ config=KAPy.getConfig("./config/config.yaml")
 wf=KAPy.getWorkflow(config)
 outFile=[list(wf['regrid']['input_dict'].keys())[0]]
 input_path=[wf['regrid']['input_dict'][outFile[0]]['input_path']]
-templateType=config['outputGrid']['templateType']
-path=config['outputGrid']['path']
-method=config['outputGrid']['method']
+templateType=config['output_grid']['templateType']
+path=config['output_grid']['path']
+method=config['output_grid']['method']
 tempDir=config['dirs']['tempDir']
 %matplotlib inline
 """

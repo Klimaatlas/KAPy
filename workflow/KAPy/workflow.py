@@ -399,8 +399,8 @@ def getWorkflow(config):
         for thisKey, thisBA in config["bias_adjustment"].items():
             # Firstly, identify the reference dataset. Note that there should only be one reference
             # file for each case
-            selThese = (varPal["var"] == thisBA["baVariable"]) & (
-                varPal["dataset"] == thisBA["refDataset"]
+            selThese = (varPal["var"] == thisBA["variable_to_adjust"]) & (
+                varPal["dataset"] == thisBA["reference_dataset"]
             )
             if sum(selThese) != 1:
                 raise ValueError(
@@ -410,8 +410,8 @@ def getWorkflow(config):
             refDict = varPal[selThese].to_dict(orient="records")[0]
 
             # Now identify the input files needed for this bias adjustment
-            selThese = (varPal["var"] == thisBA["baVariable"]) & (
-                varPal["dataset"] == thisBA["targetDataset"]
+            selThese = (varPal["var"] == thisBA["variable_to_adjust"]) & (
+                varPal["dataset"] == thisBA["dataset_to_adjust"]
             )
             BAtbl = varPal[selThese].copy()
             try:
@@ -424,17 +424,17 @@ def getWorkflow(config):
                 print("Error:", e)
 
             # The output grid is configurable and plays into the file name
-            if thisBA["outputGrid"] == "reference":
+            if thisBA["output_grid"] == "reference":
                 BAtbl["outfile"] = (
-                    f'{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_{refDict["grid"]}_'
+                    f'{thisBA["output_dataset_code"]}_{thisBA["variable_to_adjust"]}_{refDict["grid"]}_'
                     + BAtbl["expt"]
                     + "_"
                     + BAtbl["stem"]
                     + ".nc"
                 )
-            elif thisBA["outputGrid"] == "target":
+            elif thisBA["output_grid"] == "target":
                 BAtbl["outfile"] = (
-                    f'{thisBA["outDatasetCode"]}_{thisBA["baVariable"]}_'
+                    f'{thisBA["output_dataset_code"]}_{thisBA["variable_to_adjust"]}_'
                     + BAtbl["grid"]
                     + "_"
                     + BAtbl["expt"]
@@ -444,7 +444,7 @@ def getWorkflow(config):
                 )
             else:
                 raise ValueError(
-                    f"Unknown output grid option, '{thisBA['outputGrid']}' supplied in bias adjustment row: '{thisKey}' "
+                    f"Unknown output grid option, '{thisBA['output_grid']}' supplied in bias adjustment row: '{thisKey}' "
                 )
 
             # We've therefore identified what needs to be done. Here we follow the approach
@@ -462,10 +462,10 @@ def getWorkflow(config):
             for idx, rw in BAtbl.iterrows():
                 inp_dict[rw["id"]] = {"target": rw["path"], "ref": refDict["path"]}
             out_rule = {
-                thisBA["baVariable"]: os.path.join(
+                thisBA["variable_to_adjust"]: os.path.join(
                     OUTPUT_PATHS["bias_adjustment"], thisKey, "{leaf}"
                 )
-                # f"{thisBA["outDatasetCode"]}_{thisBA['baVariable']}_{{leaf}}.nc")
+                # f"{thisBA["output_dataset_code"]}_{thisBA['variable_to_adjust']}_{{leaf}}.nc")
             }
             this_BA_dict = {
                 "input_dict": inp_dict,

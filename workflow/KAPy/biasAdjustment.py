@@ -20,10 +20,10 @@ outFile=list(wf['bias_adj'][thisCal]['input_dict'].keys())[0]
 target_file=   wf['bias_adj'][thisCal]['input_dict'][outFile]['target']
 reference_file=wf['bias_adj'][thisCal]['input_dict'][outFile]['ref']
 tempDir=config['dirs']['tempDir']
-outputGrid=config['biasAdjustment'][thisCal]['outputGrid']
-trainPeriodStart=config['biasAdjustment'][thisCal]['trainPeriodStart']
-trainPeriodEnd=config['biasAdjustment'][thisCal]['trainPeriodEnd']
-baVariable=config['biasAdjustment'][thisCal]['baVariable']
+output_grid=config['biasAdjustment'][thisCal]['output_grid']
+training_period_start=config['biasAdjustment'][thisCal]['training_period_start']
+training_period_end=config['biasAdjustment'][thisCal]['training_period_end']
+variable_to_adjust=config['biasAdjustment'][thisCal]['variable_to_adjust']
 method=config['biasAdjustment'][thisCal]['method']
 grouping=config['biasAdjustment'][thisCal]['grouping']
 additional_arguments=config['biasAdjustment'][thisCal]['additional_arguments']
@@ -36,15 +36,13 @@ def biasAdjust(
     target_file,
     reference_file,
     tempDir,
-    outputGrid,
-    trainPeriodStart,
-    trainPeriodEnd,
-    baVariable,
+    output_grid,
+    training_period_start,
+    training_period_end,
+    variable_to_adjust,
     method,
     grouping,
     additional_arguments,
-    customScriptPath,
-    customScriptFunction,
     **kwargs,
 ):
     # We choose to use a simplified typology here, where we have a target dataset that needs to be
@@ -68,15 +66,15 @@ def biasAdjust(
     # respect the chunking of the target file. xESMF is currently our tool of choice
     # due to its ability to work ok with dask.
     # The output grid is configurable set choices accordingly
-    if outputGrid == "reference":
+    if output_grid == "reference":
         from_this_grid = target
         to_this_grid = reference
-    elif outputGrid == "target":
+    elif output_grid == "target":
         from_this_grid = reference
         to_this_grid = target
     else:
         raise ValueError(
-            f"Unknown output grid option, '{outputGrid}' supplied to  biasAdjust function."
+            f"Unknown output grid option, '{output_grid}' supplied to  biasAdjust function."
         )
     # Start by getting the regridding weights
     regrdWtsFname = tempfile.NamedTemporaryFile(
@@ -108,12 +106,12 @@ def biasAdjust(
 
     # Now reopen with a time-oriented chunking - one file will be the source
     # file, the other will be the regridded file.
-    if outputGrid == "reference":
+    if output_grid == "reference":
         target = helpers.readFile(
             regridded_filename, chunks={"time": -1}
         ).unify_chunks()
         reference = helpers.readFile(reference_file, chunks={"time": -1}).unify_chunks()
-    elif outputGrid == "target":
+    elif output_grid == "target":
         target = helpers.readFile(target_file, chunks={"time": -1}).unify_chunks()
         reference = helpers.readFile(
             regridded_filename, chunks={"time": -1}
@@ -123,10 +121,12 @@ def biasAdjust(
     # From a bias-adjustment perspective, the only part of the reference dataset that
     # is interesting is the common period data - there could be a whole lot more
     # that we otherwise don't use. We therefore drop the uninteresting parts
-    reference_common = helpers.timeslice(reference, trainPeriodStart, trainPeriodEnd)
+    reference_common = helpers.timeslice(
+        reference, training_period_start, training_period_end
+    )
     if reference_common.time.size == 0:
         raise ValueError(
-            f'The selected training period from {trainPeriodStart} to {trainPeriodEnd} does not overlap with the reference dataset, which runs from {reference.time.to_index()[0].strftime("%Y-%m-%d")} to {reference.time.to_index()[-1].strftime("%Y-%m-%d")}'
+            f'The selected training period from {training_period_start} to {training_period_end} does not overlap with the reference dataset, which runs from {reference.time.to_index()[0].strftime("%Y-%m-%d")} to {reference.time.to_index()[-1].strftime("%Y-%m-%d")}'
         )
     # Merge into one dataset object, with common spatial dimensions but
     # differentiated time dimensions. Note the need to unify the chunking
@@ -138,7 +138,12 @@ def biasAdjust(
 
     # Parallelised bias adjustment functions ------------------------------
     def biasAdjustThisChunk(
-        chnk, trainPeriodStart, trainPeriodEnd, method, additional_arguments, grouping
+        chnk,
+        training_period_start,
+        training_period_end,
+        method,
+        additional_arguments,
+        grouping,
     ):
         # Debug
         # tg=combDS.target.data.blocks[0,0,0]
@@ -149,7 +154,7 @@ def biasAdjust(
 
         # Truncate time slice to the common training period (TP).
         # Adjust the naming of the reference time
-        tgTP = helpers.timeslice(tg, trainPeriodStart, trainPeriodEnd)
+        tgTP = helpers.timeslice(tg, training_period_start, training_period_end)
         rfTP = rfTP.rename({"reftime": "time"})
 
         # Match calendars between reference data and simulations
@@ -213,8 +218,8 @@ def biasAdjust(
     # Do bias adjustment----------------------
     # Apply function in a parallelised manner.
     calCfg = {
-        "trainPeriodStart": trainPeriodStart,
-        "trainPeriodEnd": trainPeriodEnd,
+        "training_period_start": training_period_start,
+        "training_period_end": training_period_end,
         "grouping": grouping,
         "method": method,
         "additional_arguments": additional_arguments,

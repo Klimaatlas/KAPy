@@ -6,13 +6,13 @@
   "required": [
     "id",
     "enabled",
-    "outDatasetCode",
-    "baVariable",
-    "targetDataset",
-    "refDataset",
-    "outputGrid",
-    "trainPeriodStart",
-    "trainPeriodEnd",
+    "output_dataset_code",
+    "variable_to_adjust",
+    "dataset_to_adjust",
+    "reference_dataset",
+    "output_grid",
+    "training_period_start",
+    "training_period_end",
     "method",
     "additional_arguments"
   ],
@@ -27,23 +27,23 @@
       "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
       "type": ["string","null"]
     },
-    "outDatasetCode": {
+    "output_dataset_code": {
       "type": "string",
       "description": "DatasetCode that will be associated with bias-adjusted output. Note that the cominbation of variable name and DatasetCode must not be a duplicate of other combinations names found in the configuration of KAPy. This variable primarily serves to distinguish between raw and bias-adjusted variables e.g. `CORDEX` and `CORDEX-cal` The exact choice is not important, but it is recommended to adopt a consistent approach throughout the project."
     },
-    "baVariable": {
+    "variable_to_adjust": {
       "type": "string",
       "description": "The name of the variable to bias adjust, drawn from the list of primary and secondary variables. If the variable cannot be found, an error will be raised. KAPy assumes that the same variable name is used for both the model and observational data sources."
     },
-    "targetDataset": {
+    "dataset_to_adjust": {
       "type": "string",
       "description": "The dataset that will be bias adjusted e.g.  'CORDEX'. This is most commonly the output of a climate model, but need not be."
     },
-    "refDataset": {
+    "reference_dataset": {
       "type": "string",
       "description": "The dataset that will be used as the reference  data source to bias-adjust against, such as `ERA5`. Most commonly this will be an observational data set, a reanalysis or similar but it need not be. However, the combination of climate variable and dataset code should uniquely identify a single file within the variable palette of KAPy - if not, an error will be raised."
     },
-    "outputGrid": {
+    "output_grid": {
       "type": "string",
       "description": "Chooses the grid that the output of bias adjustment procedure ends on. Arguments can be made that the target dataset should be adjusted to the grid of the reference data (`reference`), or conversely, that the reference dataset should be adjusted onto the grid of the target dataset (`target`). In cases where there is a substantial difference in resolutions between the grids, this decision can potentially lead to the loss by omitting points from the higher resolution grid: however, this may also be desirable in some cases. Given that the appropriate choice will depend on the specifics of the system, this choice is therefore left to the user, as configured by this option. ",
       "enum": [
@@ -51,12 +51,12 @@
         "target"
     ]
     },
-    "trainPeriodStart": {
+    "training_period_start": {
       "type": "string",
       "pattern": "^\\d{4}$",
       "description": "Start year of the training period. Data after and including 1 Jan of this year will be used for training the bias adjustment procedure."
     },
-    "trainPeriodEnd": {
+    "training_period_end": {
       "type": "string",
       "pattern": "^\\d{4}$",
       "description": "End year of the training period. Data before and including 31 Dec of this year will be used for training the bias adjustment procedure."
