@@ -103,7 +103,7 @@
     "experimentField": {
       "type": "string",
       "pattern": "^\\d*$",
-      "description": "Number of the field in the filename to be used for merging files based on scenarios e.g. for the file `tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_day_20360101-20401231.nc`, the fourth field (`rcp85`) contains the emissions scenario code, and this parameter would then be set to 4. If omitted, the experiment code is set to `noexp`. 1-based indexing is assumed.",
+      "description": "Number of the field in the filename to be used for merging files based on scenarios e.g. for the file `tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_day_20360101-20401231.nc`, the fourth field (`rcp85`) contains the emissions scenario code, and this parameter would then be set to 4. If omitted, the experiment code is set to `no-experiment`. 1-based indexing is assumed.",
       "default": null
     },
     "commonExperiment": {
@@ -113,7 +113,7 @@
     },
     "ensidFields": {
       "type": ["string","null"],
-      "description": "Comma-separated list of integers representing the fields to join together to make the *ensemble member identifier*, for use when merging files. Including the grid descriptor in this configuration is often a good idea, when the same model can be run on two different grids. If not specified, the ensemble member identifier will be set to `noensid`. 1-based indexing is assumed.",
+      "description": "Comma-separated list of integers representing the fields to join together to make the *ensemble member identifier*, for use when merging files. Including the grid descriptor in this configuration is often a good idea, when the same model can be run on two different grids. If not specified, the ensemble member identifier will be set to `no-ensemble`. 1-based indexing is assumed.",
       "default": null
     }
   }

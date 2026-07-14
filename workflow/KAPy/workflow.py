@@ -98,7 +98,7 @@ def getWorkflow(config):
             # Set output filename, setting the file extension manually.
             pvTbl = inpTbl
             pvTbl["pvFname"] = (
-                f"{thisInp['dataset_code']}_{thisInp['variable_code']}_{thisInp['grid_code']}_noexp_noensid.{fileExtn}"
+                f"{thisInp['dataset_code']}_{thisInp['variable_code']}_{thisInp['grid_code']}_no-experiment_no-ensemble.{fileExtn}"
             )
 
         # So we have multiple files. In cases where we don't want to merge them into combined files, the
@@ -142,7 +142,7 @@ def getWorkflow(config):
         ):
             pvTbl = inpTbl
             pvTbl["pvFname"] = (
-                f"{thisInp['dataset_code']}_{thisInp['variable_code']}_{thisInp['grid_code']}_noexp_noensid.{fileExtn}"
+                f"{thisInp['dataset_code']}_{thisInp['variable_code']}_{thisInp['grid_code']}_no-experiment_no-ensemble.{fileExtn}"
             )
 
         # Else need to process multiple files.
