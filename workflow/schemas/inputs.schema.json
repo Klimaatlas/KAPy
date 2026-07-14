@@ -9,7 +9,7 @@
     "dataset_code", 
     "variable_code", 
     "units",
-    "gridCode",
+    "grid_code",
     "path", 
     "internalVarName", 
     "importScriptPath",
@@ -48,7 +48,7 @@
       "type": ["string","null"],
       "description": "The units that the input variable is to be converted to for further processing. KAPy takes an active approach to units, requiring them to be declared and consistent throughout the configuration process. Three scenarios are possible 1. If the input dataset does not have units defined, a units attribute will be created and set to this value - in this case, this argument must be defined and will throw an error if undefined.  2. If the input dataset has units, but this argument is empty, the units will be unchanged. 3. If the input dataset has units that are not the same as the specified argument, the input dataset will be converted to the new units using `xclim.core.units.convert_units_to()` - if this function fails, KAPy will also fail. Checks are also applied to ensure that the units are consistent across variables e.g. that all `tasmax` variables have the same units. For more information, see the xclim documentation regarding unit handling https://xclim.readthedocs.io/en/stable/notebooks/units.html."
     },
-    "gridCode": {
+    "grid_code": {
       "type": "string",
       "pattern": "^[^ ]+$",
       "description": "Identifier for the grid that the data set is on. The identifier need not be unique, and most commonly will be duplicated across multiple input sources. Must not contain a space."
