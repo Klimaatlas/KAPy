@@ -34,7 +34,7 @@ def getWorkflow(config):
     for thisKey, thisInp in config["inputs"].items():
         # Get file extension corresponding to rechunk strategy
         fileExtnDict = {"none": "pkl", "nc": "nc"}
-        fileExtn = fileExtnDict[thisInp["rechunkingStrategy"]]
+        fileExtn = fileExtnDict[thisInp["rechunking_strategy"]]
 
         # Input files can be specified in four different ways
         # We handle all of these cases to extract a list of files that we want.
@@ -104,21 +104,32 @@ def getWorkflow(config):
         # So we have multiple files. In cases where we don't want to merge them into combined files, the
         # input file is just mapped onto an output file (albeit it with the standard filenaming structure). Note
         # however, that in some cases we may want to use the ensemble ID definitions anyway
-        elif not thisInp["mergeFiles"]:
+        elif not thisInp["merge_files"]:
             # Set exp
-            if (thisInp["experimentField"] != "") and (thisInp["fieldSeparator"] != ""):
-                inpTbl["split"] = inpTbl["inFname"].str.split(thisInp["fieldSeparator"])
+            if (thisInp["experiment_field"] != "") and (
+                thisInp["field_separator"] != ""
+            ):
+                inpTbl["split"] = inpTbl["inFname"].str.split(
+                    thisInp["field_separator"]
+                )
                 inpTbl["exptID"] = [
-                    f[int(thisInp["experimentField"]) - 1] for f in inpTbl["split"]
+                    f[int(thisInp["experiment_field"]) - 1] for f in inpTbl["split"]
                 ]
             else:
                 inpTbl["exptID"] = "no-experiment"
             # Set ensid
-            if (thisInp["ensidFields"] != "") and (thisInp["fieldSeparator"] != ""):
-                inpTbl["split"] = inpTbl["inFname"].str.split(thisInp["fieldSeparator"])
-                ensidFieldsIdxs = [int(i) - 1 for i in thisInp["ensidFields"]]
+            if (thisInp["member_id_fields"] != "") and (
+                thisInp["field_separator"] != ""
+            ):
+                inpTbl["split"] = inpTbl["inFname"].str.split(
+                    thisInp["field_separator"]
+                )
+                member_id_fields_idxs = [
+                    int(i) - 1 for i in thisInp["member_id_fields"]
+                ]
                 inpTbl["ensMemberID"] = [
-                    "_".join([f[i] for i in ensidFieldsIdxs]) for f in inpTbl["split"]
+                    "_".join([f[i] for i in member_id_fields_idxs])
+                    for f in inpTbl["split"]
                 ]
             else:
                 # Set ensid to file stem
@@ -134,10 +145,10 @@ def getWorkflow(config):
             )
 
         # A similar case also exists where a single ensemble member is spread across multiple files. This is
-        # indicated when the ensidFields and experimentField is empty.
+        # indicated when the member_id_fields and experiment_field is empty.
         elif (
-            thisInp["ensidFields"] == [""]
-            and thisInp["experimentField"] == ""
+            thisInp["member_id_fields"] == [""]
+            and thisInp["experiment_field"] == ""
             and len(inpTbl) > 1
         ):
             pvTbl = inpTbl
@@ -148,26 +159,26 @@ def getWorkflow(config):
         # Else need to process multiple files.
         else:
             # Handling multiple files requires some information from the filenames,
-            # and therefore the fieldSeparator needs to be defined. If not, throw an error
-            if thisInp["fieldSeparator"] == "":
+            # and therefore the field_separator needs to be defined. If not, throw an error
+            if thisInp["field_separator"] == "":
                 raise ValueError(
-                    f'fieldSeparator is not defined for input ID "{thisInp["id"]}" '
+                    f'field_separator is not defined for input ID "{thisInp["id"]}" '
                     + f"but {len(inpTbl)} files were detected."
                 )
 
             # Split filenames into columns and extract predefined elements
-            inpTbl["split"] = inpTbl["inFname"].str.split(thisInp["fieldSeparator"])
+            inpTbl["split"] = inpTbl["inFname"].str.split(thisInp["field_separator"])
             inpTbl["experiment"] = [
-                f[int(thisInp["experimentField"]) - 1] for f in inpTbl["split"]
+                f[int(thisInp["experiment_field"]) - 1] for f in inpTbl["split"]
             ]
-            ensidFieldsIdxs = [int(i) - 1 for i in thisInp["ensidFields"]]
+            member_id_fields_idxs = [int(i) - 1 for i in thisInp["member_id_fields"]]
             inpTbl["ensMemberID"] = [
-                "_".join([f[i] for i in ensidFieldsIdxs]) for f in inpTbl["split"]
+                "_".join([f[i] for i in member_id_fields_idxs]) for f in inpTbl["split"]
             ]
 
             # Deal with the issue around the definition of a common experiment
-            if thisInp["commonExperiment"] == "":
-                # If a commonExperiment is not defined, then we just handle each
+            if thisInp["common_experiment"] == "":
+                # If a common_experiment is not defined, then we just handle each
                 # experiment individually
                 # Form the corresponding filename. Don't forget to add the .nc
                 inpTbl["pvFname"] = (
@@ -184,12 +195,12 @@ def getWorkflow(config):
 
             # Else, handle the more complex case where we have defined a common experiment
             else:
-                # Split table into commonExperiment and other Experiments
+                # Split table into common_experiment and other Experiments
                 commonExptTable = inpTbl[
-                    inpTbl["experiment"].isin([thisInp["commonExperiment"]])
+                    inpTbl["experiment"].isin([thisInp["common_experiment"]])
                 ].copy()
                 otherExptTable = inpTbl[
-                    ~inpTbl["experiment"].isin([thisInp["commonExperiment"]])
+                    ~inpTbl["experiment"].isin([thisInp["common_experiment"]])
                 ]
 
                 # Get list of other experiments
@@ -207,14 +218,14 @@ def getWorkflow(config):
                     # Experiment naming is the sum of the commonExpt and thisExpt
                     theseExptFiles["pvFname"] = (
                         f"{thisInp['dataset_code']}_{thisInp['variable_code']}_{thisInp['grid_code']}"
-                        + f"_{thisInp['commonExperiment']}+{thisExpt}_"
+                        + f"_{thisInp['common_experiment']}+{thisExpt}_"
                         + theseExptFiles["ensMemberID"]
                         + "."
                         + fileExtn
                     )
                     commonExptTable["pvFname"] = (
                         f"{thisInp['dataset_code']}_{thisInp['variable_code']}_{thisInp['grid_code']}"
-                        + f"_{thisInp['commonExperiment']}+{thisExpt}_"
+                        + f"_{thisInp['common_experiment']}+{thisExpt}_"
                         + commonExptTable["ensMemberID"]
                         + "."
                         + fileExtn
@@ -230,7 +241,7 @@ def getWorkflow(config):
                     ]
                     if theseCommonExptFiles.shape[0] == 0:
                         raise ValueError(
-                            f"Cannot find commonExperiment files to match '{theseExptFiles['inPath'].iloc[0]}'."
+                            f"Cannot find common_experiment files to match '{theseExptFiles['inPath'].iloc[0]}'."
                         )
 
                     combinedFileTbl = pd.concat(

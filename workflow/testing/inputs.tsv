@@ -1,3 +1,3 @@
-id	enabled	dataset_code	variable_code	units	grid_code	path	internalVarName	importScriptPath	importScriptFunction	checks	rechunkingStrategy	mergeFiles	fieldSeparator	experimentField	commonExperiment	ensidFields
+id	enabled	dataset_code	variable_code	units	grid_code	path	internal_variable_name	custom_script	custom_function	checks	rechunking_strategy	merge_files	field_separator	experiment_field	common_experiment	member_id_fields
 CORDEX-tas-44	x	CORDEX	tas	degC	AFR-44	inputs/CORDEX/tas_Ghana-44_*	tas			all	nc	true	_	4	historical	3,5,6,7,8,2
 ERA5-tas	x	ERA5	tas	degC	ERA5-grid	inputs/ERA5_monthly/t2m_ERA5_monthly.nc	t2m			all	nc	false				

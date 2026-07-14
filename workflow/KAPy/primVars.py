@@ -14,7 +14,11 @@ from .constants import CHUNKING_TIME
 
 # -----------------------------------------------------------------
 def defaultImport(
-    inFiles, variable_code, internalVarName, checks, chunks={"time": CHUNKING_TIME}
+    inFiles,
+    variable_code,
+    internal_variable_name,
+    checks,
+    chunks={"time": CHUNKING_TIME},
 ):
     # Make dataset object using xarray lazy load approach.
     #
@@ -31,7 +35,7 @@ def defaultImport(
             coords="minimal",
             data_vars="minimal",
             chunks=chunks,
-            preprocess=lambda ds: ds[[internalVarName]],
+            preprocess=lambda ds: ds[[internal_variable_name]],
         )
 
     except Exception as e:
@@ -40,7 +44,7 @@ def defaultImport(
         )
 
     # Select the desired variable to give a and rename to the variable code
-    da = dsIn[internalVarName]
+    da = dsIn[internal_variable_name]
     da.name = variable_code
 
     # Drop degenerate dimensions. If any remain, throw an error
@@ -117,21 +121,21 @@ def cutout_lonlat(thisDat, xmin, xmax, ymin, ymax, variable_code, **kwargs):
 def buildPrimVar(
     inFiles,
     variable_code,
-    internalVarName,
+    internal_variable_name,
     checks,
-    importScriptPath,
-    importScriptFunction,
+    custom_script,
+    custom_function,
     units,
     cutoutArgs,
     **kwargs,
 ):
     # If an import function is defined, use that. Otherwise use the default
-    if importScriptPath == "":
+    if custom_script == "":
         # Use default import
         da = defaultImport(
             inFiles=inFiles,
             variable_code=variable_code,
-            internalVarName=internalVarName,
+            internal_variable_name=internal_variable_name,
             checks=checks,
         )
         # Apply cutout functionality
@@ -140,11 +144,11 @@ def buildPrimVar(
 
     else:
         # Use a custom import
-        imptFn = helpers.getExternalFunction(importScriptPath, importScriptFunction)
+        imptFn = helpers.getExternalFunction(custom_script, custom_function)
         da = imptFn(
             inFiles,
             variable_code=variable_code,
-            internalVarName=internalVarName,
+            internal_variable_name=internal_variable_name,
             units=units,
             checks=checks,
             cutoutArgs=cutoutArgs,

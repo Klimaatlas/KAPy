@@ -1,4 +1,4 @@
-id	varID	srcID	gridID	path	internalVarName	fieldSeparator	experimentField	commonExperimentID	ensidFields	importScriptPath	importScriptFunction
+id	varID	srcID	gridID	path	internal_variable_name	field_separator	experiment_field	common_experimentID	member_id_fields	custom_script	custom_function
 CORDEX-tas-44	tas	CORDEX	Ghana-44	inputs/tas_Ghana-44_*	tas	_	4	historical	3,5,6,7,8,2		
 ERA5-tas	tas	ERA5	ERA5-grid	inputs/t2m_ERA5_monthly.nc	t2m						
 CORDEX-pr-44	pr	CORDEX	Ghana-44	inputs/pr_Ghana-44_*	pr	_	4	historical	3,5,6,7,8,2		

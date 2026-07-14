@@ -52,8 +52,8 @@ def validateConfig(config):
     # is defined in the following table
     tabularCfg = {
         "inputs": {
-            "listCols": ["ensidFields"],
-            "boolCols": ["mergeFiles"],
+            "listCols": ["member_id_fields"],
+            "boolCols": ["merge_files"],
             "dictCols": [],
             "schema": "inputs",
             "optional": False,

@@ -11,16 +11,16 @@
     "units",
     "grid_code",
     "path", 
-    "internalVarName", 
-    "importScriptPath",
-    "importScriptFunction",
+    "internal_variable_name", 
+    "custom_script",
+    "custom_function",
     "checks", 
-    "rechunkingStrategy",
-    "mergeFiles",
-    "fieldSeparator",
-    "experimentField", 
-    "commonExperiment",
-    "ensidFields"
+    "rechunking_strategy",
+    "merge_files",
+    "field_separator",
+    "experiment_field", 
+    "common_experiment",
+    "member_id_fields"
   ],
   "additionalProperties": false,
   "properties": {
@@ -31,7 +31,7 @@
       "uniqueItems": true
     },
     "enabled": {
-      "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
+      "description": "Determines whether the row be used in the workflow.  A non-empty value indicates not to use that row.",
       "type": ["string","null"]
     },
     "dataset_code": {
@@ -57,21 +57,21 @@
       "type": "string",
       "description": "Specification of the input files. Four cases are considered. 1. A string describing  a path using glob-matching (e.g. `./resources/CORDEX/tas_*`) can be used to specify multiples files. 2. A path to a single netcdf file. 3. A path to a text file containing a list of input files, one file per line. 4. A path to a text file containing outputs from the md5sum command in unix, consisting of an md5 checksum followed by the file path, one file per line. Note that all paths need to be specified either relative to the working directory, or as absolute paths in the filesystem. See also the tutorials for more information and examples on how this can work, and a discussion of the merits of each approach."
     },
-    "internalVarName": {
+    "internal_variable_name": {
       "type": "string",
       "description": "The internal variable name used within the input file for the variable of interest. For example, in ERA5 files the internal variable name for surface temperature is `t2m` whereas in CORDEX is is `tas`."
     },
-    "importScriptPath": {
+    "custom_script": {
       "type": ["string", "null"],
       "description": "Path to the custom import script. Use this option to enable useage of a custom script to import data before being written to disk as primVars. If empty, then the default import system in KAPy will be used.",
       "default": null
     },
-    "importScriptFunction": {
+    "custom_function": {
       "type": ["string", "null"],
-      "description": "Function in the custom import script to be used. Must be supplied if `importScriptPath` is present.",
+      "description": "Function in the custom import script to be used. Must be supplied if `custom_script` is present.",
       "default": null
     },
-    "rechunkingStrategy": {
+    "rechunking_strategy": {
       "type": "string",
       "description": "Determine the approach to rechunking to be employed for this input. The concept of chunking relates to the way that data is stored on disk, and is particularly relevant when dealing with multi-dimensional datasets, such as is common in working with climate data. For example, many functions, such as bias-adjustment, calculation of standardised precipitation indices and marine heatwave indicators require the processing of the full time series at a grid point at once: if the data is not stored in a way to facilitate this time-oriented reading, data processing can be prohibitively slow. In such cases, rechunking the dataset from its original structure (often in time-slices) to a time-oriented format is required. However, rechunking can also be both time- and storage-consuming and is not required in all cases. This switch can be used to control the approach to rechunking on an input-by-input basis. Two strategies are available: 1) `none`, where the imported primary variable objected is written to disk as a 'pickle', ready to be imported again by other parts of the processing chain. This option is most appropriate when dealing with large datasets that don't require rechunking: it has the disadvantage that the pickled object cannot be viewed with external tools, such as `ncview`. 2) `nc`, where the primary variable is rechunked to a NetCDF file. This option should be considered as the default and has the advantage of producing files that can be used with other tools, but can be space and time consuming.",
       "enum": [
@@ -86,7 +86,7 @@
         "all",
         "none"]
     },
-    "mergeFiles": {
+    "merge_files": {
       "type": "string",
       "description": "Should the set of input files be merged into composite files (e.g. merging years and/or experiments) (`TRUE) or should they each be handled as is (`FALSE`)? In cases where this parameter is set to `FALSE`, subsequent fields defining how merging should be structured are ignored.,",
       "enum": [
@@ -94,24 +94,24 @@
         "false"
       ]
     },
-    "fieldSeparator": {
+    "field_separator": {
       "type": "string",
       "minLength": 0,
       "maxLength": 1,
       "description": "Character separating fields in the input file names, for use in merging files. Most often an underscore character '_'. Currently limited to a single character."
     },
-    "experimentField": {
+    "experiment_field": {
       "type": "string",
       "pattern": "^\\d*$",
       "description": "Number of the field in the filename to be used for merging files based on scenarios e.g. for the file `tas_AFR-22_NCC-NorESM1-M_rcp85_r1i1p1_CLMcom-KIT-CCLM5-0-15_v1_day_20360101-20401231.nc`, the fourth field (`rcp85`) contains the emissions scenario code, and this parameter would then be set to 4. If omitted, the experiment code is set to `no-experiment`. 1-based indexing is assumed.",
       "default": null
     },
-    "commonExperiment": {
+    "common_experiment": {
       "type": ["string","null"],
-      "description": "Many climate experiments, such as CMIP, involve splitting time into separate experiments e.g. a `historical` experiment that runs to 2005 and then the `rcp26` and `rcp85` scenario experiments that start from 2006. This field provides the name for the experiment that is common to all others (in this case `historical`) All (other) values of the `experimentField` will be merged with this experiment to produce one contiguous *dataseries*. Omission of this parameter will disable this feature, and all experiments will be processed individually.",
+      "description": "Many climate experiments, such as CMIP, involve splitting time into separate experiments e.g. a `historical` experiment that runs to 2005 and then the `rcp26` and `rcp85` scenario experiments that start from 2006. This field provides the name for the experiment that is common to all others (in this case `historical`) All (other) values of the `experiment_field` will be merged with this experiment to produce one contiguous *dataseries*. Omission of this parameter will disable this feature, and all experiments will be processed individually.",
       "default": null
     },
-    "ensidFields": {
+    "member_id_fields": {
       "type": ["string","null"],
       "description": "Comma-separated list of integers representing the fields to join together to make the *ensemble member identifier*, for use when merging files. Including the grid descriptor in this configuration is often a good idea, when the same model can be run on two different grids. If not specified, the ensemble member identifier will be set to `no-ensemble`. 1-based indexing is assumed.",
       "default": null
