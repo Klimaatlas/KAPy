@@ -751,32 +751,32 @@ def getWorkflow(config):
 
     # Collate and round off----------------------------------------------
     rtn = {
-        "primary_vars": pvDict,
-        "secondary_vars": svDict,
-        "bias_adj": BADict,
-        "tertiary_vars": tvDict,
+        "primary_variables": pvDict,
+        "secondary_variables": svDict,
+        "bias_adjustment": BADict,
+        "tertiary_variables": tvDict,
         "indicators": indDict,
         "regrid": rgDict,
-        "ensstats": ensDict,
-        "arealstats": asDict,
-        "mergedCSVs": mergedCSVDict,
+        "ensemble_statistics": ensDict,
+        "areal_statistics": asDict,
+        "merged_csvs": mergedCSVDict,
     }
 
     # Create an "all" dict  containing
     # all targets in the workflow
     allList = []
     for k, v in rtn.items():
-        if k in ["primary_vars"]:  # Skip this
+        if k in ["primary_variables"]:  # Skip this
             allList += [v["outputs"] for v in pvDict.values()]
         elif k in [
-            "secondary_vars",
-            "bias_adj",
-            "tertiary_vars",
+            "secondary_variables",
+            "bias_adjustment",
+            "tertiary_variables",
             "indicators",
         ]:  # Requires special handling, as these are nested lists
             for x in v.values():
                 allList += x["outputs"]
-        elif k in ["mergedCSVs"]:  # Skip this
+        elif k in ["merged_csvs"]:  # Skip this
             continue
         elif k in ["regrid"]:  # Skip if we're not regridding
             if doRegridding:

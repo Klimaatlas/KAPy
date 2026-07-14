@@ -51,7 +51,7 @@ OUTPUT_PATHS=KAPy.get_OUTPUT_PATHS(config["outputDir"])
 #The rule is based on a dictionary mapping output files to input files, but we also 
 #need to keep track of the corresponding inpID, which contains the various configurations
 #relevant for that output file. 
-for thisID, thisRow in WORKFLOW['primary_vars'].items():
+for thisID, thisRow in WORKFLOW['primary_variables'].items():
     rule:
         name: f"._rule_01_primary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow, pvID=thisID: rw["input_dict"][os.path.join(pvID,wc.file)])
@@ -69,7 +69,7 @@ for thisID, thisRow in WORKFLOW['primary_vars'].items():
 # Secondary variables 
 # "Secondary variables" are calculated as new variables derived from primary variables.  
 # Good examples include FWI, PoteEvap and SPI. 
-for thisID, thisRow in WORKFLOW['secondary_vars'].items():
+for thisID, thisRow in WORKFLOW['secondary_variables'].items():
     rule:
         name: f"._rule_02_secondary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
@@ -83,7 +83,7 @@ for thisID, thisRow in WORKFLOW['secondary_vars'].items():
             "scripts/_02_secondaryVars.py"
 
 # Bias Adjustment 
-for thisID, thisRow in WORKFLOW['bias_adj'].items():
+for thisID, thisRow in WORKFLOW['bias_adjustment'].items():
     rule:
         name: f"._rule_03_bias_adjustment_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw['input_dict'][wc.leaf])
@@ -101,7 +101,7 @@ for thisID, thisRow in WORKFLOW['bias_adj'].items():
 # "Tertiary variables" are calculated as new variables derived from variables created
 # by bias adjustment. Good examples include FWI, PoteEvap and SPI, but based on bias-adjusted
 # variables, rather than raw input variables.
-for thisID, thisRow in WORKFLOW['tertiary_vars'].items():
+for thisID, thisRow in WORKFLOW['tertiary_variables'].items():
     rule:
         name: f"._rule_04_tertiary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
@@ -159,7 +159,7 @@ rule:
 rule:
     name: "._rule_07_ensemble_statistics"
     input:
-        unpack(lambda wc: WORKFLOW['ensstats']["input_dict"][str(OUTPUT_PATHS['ensemble_statistics'] /wc.es)])
+        unpack(lambda wc: WORKFLOW['ensemble_statistics']["input_dict"][str(OUTPUT_PATHS['ensemble_statistics'] /wc.es)])
     output:
         OUTPUT_PATHS['ensemble_statistics'] / "{es}"
     params:
@@ -174,7 +174,7 @@ rule:
 rule:
     name: "._rule_08_areal_statistics"
     input:
-        inputFile=lambda wildcards: WORKFLOW['arealstats']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] /
+        inputFile=lambda wildcards: WORKFLOW['areal_statistics']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] /
                                                                                     wildcards.fname)],
         shapefile=lambda wildcards: config['arealstats']['shapefile'] if config['arealstats']['shapefile'] is not None else []
     output:
@@ -199,7 +199,7 @@ rule:
 rule:
     name: "._rule_09a_ensemble_statistics"
     input:
-        WORKFLOW['mergedCSVs']['ensstats']
+        WORKFLOW['merged_csvs']['ensstats']
     output:
         OUTPUT_PATHS["ensemble_statistics_csv"]
     run:
@@ -208,7 +208,7 @@ rule:
 rule:
     name:  "._rule_09b_member_statistics"
     input:
-        WORKFLOW['mergedCSVs']['members']
+        WORKFLOW['merged_csvs']['members']
     output:
         OUTPUT_PATHS["ensemble_members_csv"]
     run:
@@ -242,28 +242,28 @@ rule:
 rule:
     name: ".PRIMARY_VARIABLES"
     input:
-        [t for v in WORKFLOW['primary_vars'].values() for t in v['outputs']]
+        [t for v in WORKFLOW['primary_variables'].values() for t in v['outputs']]
 
 #Secondary variables  
 if "secondaryVars" in config:
     rule:
         name: ".SECONDARY_VARIABLES"
         input:
-            [t for v in WORKFLOW['secondary_vars'].values() for t in v['outputs']]
+            [t for v in WORKFLOW['secondary_variables'].values() for t in v['outputs']]
 
 #Bias adjustment
 if "biasAdjustment" in config:
     rule:
         name: ".BIAS_ADJUSTMENT"
         input:
-            [v['outputs'] for v in WORKFLOW['bias_adj'].values() ]
+            [v['outputs'] for v in WORKFLOW['bias_adjustment'].values() ]
 
 #Tertiary variables
 if "tertiaryVars" in config:
     rule:
         name: ".TERTIARY_VARIABLES"
         input:
-            [t for v in WORKFLOW['tertiary_vars'].values() for t in v['outputs']]
+            [t for v in WORKFLOW['tertiary_variables'].values() for t in v['outputs']]
 
 #Indicator variables
 rule:
@@ -282,14 +282,14 @@ if config['outputGrid']['templateType']!='none':
 rule:
     name: ".ENSEMBLE_STATISTICS"
     input:
-        WORKFLOW['ensstats']['outputs']
+        WORKFLOW['ensemble_statistics']['outputs']
 
 
 #Ensemble statistics
 rule:
     name: ".AREAL_STATISTICS"
     input:
-        WORKFLOW['arealstats']['outputs']
+        WORKFLOW['areal_statistics']['outputs']
 
 rule:
     name: ".OUTPUTS"
@@ -307,7 +307,7 @@ rule:
 
 #And finally, one target for each configuration group.
 for wf_key in WORKFLOW.keys():
-    if wf_key in ['primary_vars','secondary_vars',"bias_adj",'tertiary_vars','indicators']:
+    if wf_key in ['primary_variables','secondary_variables',"bias_adjustment",'tertiary_variables','indicators']:
         for item_key in WORKFLOW[wf_key].keys():
             rule:
                 name: f"{item_key}"

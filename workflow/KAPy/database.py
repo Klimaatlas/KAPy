@@ -565,7 +565,7 @@ class database:
         ]
         filelists = {
             "indicators": indicator_filelist,
-            "ensstats": self.workflow["ensstats"]["outputs"],
+            "ensstats": self.workflow["ensemble_statistics"]["outputs"],
         }
         if "outputs" in self.workflow["regrid"]:
             filelists["regrid"] = self.workflow["regrid"]["outputs"]
