@@ -83,16 +83,6 @@
       "type": "string",
       "nullable": true,
       "description": "Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'kind'='+', group='time.month'}`. Can be an empty dict or empty string if no there are no additional parameters. e.g. `{}` "
-    },
-    "customScriptPath": {
-      "type": "string",
-      "nullable": true,
-      "description": "If `method` is set to `custom`, this field is used to identify the path to a custom script, if applicable."
-    },
-    "customScriptFunction": {
-      "type": "string",
-      "nullable": true,
-      "description": "Name of the function in `customScriptPath` to be used for bias correction,  if applicable."
     }
   },
   "additionalProperties": false

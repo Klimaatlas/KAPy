@@ -22,5 +22,3 @@
 - <a id="properties/method"></a>**`method`** *(string, required)*: Bias adjustment method to be used. See above for a clarification of options. Must be one of: "xsdba-scaling", "xsdba-eqm", or "xsdba-dqm".
 - <a id="properties/grouping"></a>**`grouping`** *(string)*: Apply bias-adjustment independently of each time grouping selected here. Must be one of: "none", "dayofyear", "month", or "season".
 - <a id="properties/additional_arguments"></a>**`additional_arguments`** *(string, required)*: Additional arbitrary arguments specified as a dict to be passed to the function via keyword arguments. e.g. `{'kind'='+', group='time.month'}`. Can be an empty dict or empty string if no there are no additional parameters. e.g. `{}` .
-- <a id="properties/customScriptPath"></a>**`customScriptPath`** *(string)*: If `method` is set to `custom`, this field is used to identify the path to a custom script, if applicable.
-- <a id="properties/customScriptFunction"></a>**`customScriptFunction`** *(string)*: Name of the function in `customScriptPath` to be used for bias correction,  if applicable.
