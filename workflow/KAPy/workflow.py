@@ -726,37 +726,46 @@ def get_workflow(config):
     ensDict = {"input_dict": inp_dict, "outputs": list(inp_dict.keys())}
 
     # Arealstatistics----------------------------------------------
-    # Start by building list of input files to calculate arealstatistics for
-    # Note that we split into ensemble and member statistics
-    ensemble_inputs = pd.DataFrame(ensDict["outputs"], columns=["source_path"])
-    ensemble_inputs["type"] = "ensstats"
-    member_inputs = pd.DataFrame(
-        [y for x in ensDict["input_dict"].values() for y in x], columns=["source_path"]
+    # First, do we need areal statistics at all?
+    do_areal_statistics = (
+        config["areal_statistics"]["ensemble_areal_statistics"]
+        or config["areal_statistics"]["member_areal_statistics"]
     )
-    member_inputs["type"] = "members"
-    asTbl = pd.concat([ensemble_inputs, member_inputs])
-    # Now setup output structures
-    asTbl["source_fname"] = [os.path.basename(p) for p in asTbl["source_path"]]
-    asTbl["as_fname"] = asTbl["source_fname"].str.replace("nc", "csv", regex=False)
-    asTbl["as_path"] = [
-        os.path.join(OUTPUT_PATHS["areal_statistics"], rw["type"], rw["as_fname"])
-        for idx, rw in asTbl.iterrows()
-    ]
-    # Make the dict
-    inp_dict = (
-        asTbl.groupby("as_path")
-        .apply(lambda x: list(x["source_path"]), include_groups=False)
-        .to_dict()
-    )
-    asDict = {"input_dict": inp_dict, "outputs": list(inp_dict.keys())}
 
-    # Separate the lists of area statistics into ensstats and members for use in
-    # the database output
-    mergedCSVDict = (
-        asTbl.groupby("type")
-        .apply(lambda x: list(x["as_path"]), include_groups=False)
-        .to_dict()
-    )
+    # If we do, built list of input files to calculate arealstatistics for
+    # Note that we split into ensemble and member statistics
+    if do_areal_statistics:
+        input_list = []
+        if config["areal_statistics"]["ensemble_areal_statistics"]:
+            ensemble_inputs = pd.DataFrame(ensDict["outputs"], columns=["source_path"])
+            ensemble_inputs = pd.DataFrame(ensDict["outputs"], columns=["source_path"])
+            ensemble_inputs["type"] = "ensstats"
+            input_list.append(ensemble_inputs)
+        if config["areal_statistics"]["member_areal_statistics"]:
+            member_inputs = pd.DataFrame(
+                [y for x in ensDict["input_dict"].values() for y in x],
+                columns=["source_path"],
+            )
+            member_inputs["type"] = "members"
+            input_list.append(member_inputs)
+        # Merge the two lists and setup output structures
+        asTbl = pd.concat(input_list)
+        asTbl["source_fname"] = [os.path.basename(p) for p in asTbl["source_path"]]
+        asTbl["as_fname"] = asTbl["source_fname"].str.replace("nc", "csv", regex=False)
+        asTbl["as_path"] = [
+            os.path.join(OUTPUT_PATHS["areal_statistics"], rw["type"], rw["as_fname"])
+            for idx, rw in asTbl.iterrows()
+        ]
+
+        # Make the dict for the combined areal statistics
+        inp_dict = (
+            asTbl.groupby("as_path")
+            .apply(lambda x: list(x["source_path"]), include_groups=False)
+            .to_dict()
+        )
+        asDict = {"input_dict": inp_dict, "outputs": list(inp_dict.keys())}
+    else:
+        asDict = {}
 
     # Collate and round off----------------------------------------------
     rtn = {
@@ -767,17 +776,29 @@ def get_workflow(config):
         "indicators": indDict,
         "regrid": rgDict,
         "ensemble_statistics": ensDict,
-        "areal_statistics": asDict,
-        "merged_csvs": mergedCSVDict,
     }
+
+    # Supplement with conditional outputs
+    if (
+        config["areal_statistics"]["ensemble_areal_statistics"]
+        or config["areal_statistics"]["member_areal_statistics"]
+    ):
+        rtn["areal_statistics"] = asDict
+    if config["areal_statistics"]["ensemble_areal_statistics"]:
+        rtn["merged_ensemble_areal_statistics"] = list(
+            asTbl[asTbl["type"] == "ensstats"]["as_path"]
+        )
+    if config["areal_statistics"]["member_areal_statistics"]:
+        rtn["merged_member_areal_statistics"] = list(
+            asTbl[asTbl["type"] == "members"]["as_path"]
+        )
 
     # Create an "all" dict  containing
     # all targets in the workflow
     allList = []
     for k, v in rtn.items():
-        if k in ["primary_variables"]:  # Skip this
-            allList += [v["outputs"] for v in pvDict.values()]
-        elif k in [
+        if k in [
+            "primary_variables",
             "secondary_variables",
             "bias_adjustment",
             "tertiary_variables",
@@ -785,17 +806,22 @@ def get_workflow(config):
         ]:  # Requires special handling, as these are nested lists
             for x in v.values():
                 allList += x["outputs"]
-        elif k in ["merged_csvs"]:  # Skip this
-            continue
         elif k in ["regrid"]:  # Skip if we're not regridding
             if doRegridding:
                 allList += v["outputs"]
+        elif k in [
+            "merged_ensemble_areal_statistics",
+            "merged_member_areal_statistics",
+        ]:
+            continue  # Add these later
         else:
             allList += v["outputs"]
+    if config["areal_statistics"]["ensemble_areal_statistics"]:
+        allList += [str(OUTPUT_PATHS["ensemble_statistics_csv"])]
+    if config["areal_statistics"]["member_areal_statistics"]:
+        allList += [str(OUTPUT_PATHS["ensemble_members_csv"])]
+    allList += [str(OUTPUT_PATHS["database"])]
     rtn["all"] = allList
-    rtn["all"] += [OUTPUT_PATHS["ensemble_members_csv"]]
-    rtn["all"] += [OUTPUT_PATHS["ensemble_statistics_csv"]]
-    rtn["all"] += [OUTPUT_PATHS["database"]]
 
     # Fin-----------------------------------
     return rtn

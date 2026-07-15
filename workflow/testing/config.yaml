@@ -21,6 +21,8 @@ output_directory: "testing"
 
 # Configuration options------------------------------------
 areal_statistics:
+    ensemble_areal_statistics: True
+    member_areal_statistics: False
     use_area_weighting: True
     shapefile: 'docs/tutorials/Tutorial05_files/Ghana_regions.shp'
 cutouts:

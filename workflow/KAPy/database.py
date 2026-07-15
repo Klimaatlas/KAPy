@@ -84,9 +84,17 @@ class database:
 
         self.db_output_path = OUTPUT_PATHS["database"]
 
+        # Handle situations where the areal statistics are not requested
+        if self.config["areal_statistics"]["ensemble_areal_statistics"]:
+            self.ensemble_stats_csv = OUTPUT_PATHS["ensemble_statistics_csv"]
+        else:
+            self.ensemble_stats_csv = None
+        if self.config["areal_statistics"]["member_areal_statistics"]:
+            self.member_stats_csv = OUTPUT_PATHS["ensemble_members_csv"]
+        else:
+            self.member_stats_csv = None
+
         # Populate rest of object
-        self.stats_csv = OUTPUT_PATHS["ensemble_statistics_csv"]
-        self.members_csv = OUTPUT_PATHS["ensemble_members_csv"]
         self.geometry = self.config["areal_statistics"]["shapefile"]
         self.include_geometry = self.config["areal_statistics"]["shapefile"] is not None
 
@@ -111,34 +119,6 @@ class database:
         if self.conn:
             self.conn.close()
             self.conn = None
-
-    # --------------------------------------------------
-    # CSV LOADERS
-    # --------------------------------------------------
-
-    def _load_stats(self):
-        if self._stats_df is None:
-            print("Loading stats CSV...")
-            self._stats_df = pd.read_csv(
-                self.stats_csv,
-                encoding="windows-1252",
-                keep_default_na=False,
-                dtype="str",
-            )
-        return self._stats_df
-
-    def _load_members(self):
-        if not self.members_csv:
-            return None
-        if self._members_df is None:
-            print("Loading members CSV...")
-            self._members_df = pd.read_csv(
-                self.members_csv,
-                encoding="windows-1252",
-                keep_default_na=False,
-                dtype="str",
-            )
-        return self._members_df
 
     # --------------------------------------------------
     # SCHEMA
@@ -201,43 +181,45 @@ class database:
         conn = self.connect()
         cur = conn.cursor()
 
-        cur.execute(
+        if self.ensemble_stats_csv is not None:
+            cur.execute(
+                """
+            CREATE TABLE IF NOT EXISTS ArealEnsembleStatistics (
+                id               INTEGER PRIMARY KEY,
+                DatasetKey        INTEGER  REFERENCES Datasets(DatasetKey),
+                ScenarioKey       INTEGER  REFERENCES Scenarios(ScenarioKey),
+                GridKey           INTEGER  REFERENCES Grids(GridKey),
+                IndicatorKey      INTEGER  REFERENCES Indicators(IndicatorKey),
+                AreaKey           INTEGER  REFERENCES Areas(AreaKey),
+                TimeBinKey         INTEGER  REFERENCES TimeBins(TimeBinKey),
+                SeasonKey         INTEGER  REFERENCES Seasons(SeasonKey),
+                Delta            BOOLEAN,
+                StatisticTypeKey INTEGER  REFERENCES StatisticTypes(StatisticTypeKey),
+                Percentile       REAL,
+                Value            REAL
+            );
             """
-        CREATE TABLE IF NOT EXISTS ArealEnsembleStatistics (
-            id               INTEGER PRIMARY KEY,
-            DatasetKey        INTEGER  REFERENCES Datasets(DatasetKey),
-            ScenarioKey       INTEGER  REFERENCES Scenarios(ScenarioKey),
-            GridKey           INTEGER  REFERENCES Grids(GridKey),
-            IndicatorKey      INTEGER  REFERENCES Indicators(IndicatorKey),
-            AreaKey           INTEGER  REFERENCES Areas(AreaKey),
-            TimeBinKey         INTEGER  REFERENCES TimeBins(TimeBinKey),
-            SeasonKey         INTEGER  REFERENCES Seasons(SeasonKey),
-            Delta            BOOLEAN,
-            StatisticTypeKey INTEGER  REFERENCES StatisticTypes(StatisticTypeKey),
-            Percentile       REAL,
-            Value            REAL
-        );
-        """
-        )
+            )
 
-        cur.execute(
+        if self.member_stats_csv is not None:
+            cur.execute(
+                """
+            CREATE TABLE IF NOT EXISTS ArealMemberValues(
+                id               INTEGER PRIMARY KEY,
+                DatasetKey        INTEGER  REFERENCES Datasets(DatasetKey),
+                MemberKey         INTEGER  REFERENCES Members(MemberKey),
+                ScenarioKey       INTEGER  REFERENCES Scenarios(ScenarioKey),
+                GridKey           INTEGER  REFERENCES Grids(GridKey),
+                IndicatorKey      INTEGER  REFERENCES Indicators(IndicatorKey),
+                AreaKey           INTEGER  REFERENCES Areas(AreaKey),
+                TimeBinKey         INTEGER  REFERENCES TimeBins(TimeBinKey),
+                SeasonKey         INTEGER  REFERENCES Seasons(SeasonKey),
+                Delta            BOOLEAN,
+                StatisticTypeKey INTEGER  REFERENCES StatisticTypes(StatisticTypeKey),
+                Value            REAL
+            );
             """
-        CREATE TABLE IF NOT EXISTS ArealMemberValues(
-            id               INTEGER PRIMARY KEY,
-            DatasetKey        INTEGER  REFERENCES Datasets(DatasetKey),
-            MemberKey         INTEGER  REFERENCES Members(MemberKey),
-            ScenarioKey       INTEGER  REFERENCES Scenarios(ScenarioKey),
-            GridKey           INTEGER  REFERENCES Grids(GridKey),
-            IndicatorKey      INTEGER  REFERENCES Indicators(IndicatorKey),
-            AreaKey           INTEGER  REFERENCES Areas(AreaKey),
-            TimeBinKey         INTEGER  REFERENCES TimeBins(TimeBinKey),
-            SeasonKey         INTEGER  REFERENCES Seasons(SeasonKey),
-            Delta            BOOLEAN,
-            StatisticTypeKey INTEGER  REFERENCES StatisticTypes(StatisticTypeKey),
-            Value            REAL
-        );
-        """
-        )
+            )
 
         cur.execute(
             """
@@ -320,10 +302,75 @@ class database:
         conn.commit()
 
     # --------------------------------------------------
+    # AREAS
+    # --------------------------------------------------
+
+    def import_geometries(self):
+        # Close any existing connection so we can safely overwrite the DB
+        if self.conn:
+            self.conn.close()
+            self.conn = None
+
+        gdf = gpd.read_file(self.geometry)
+        gdf = gdf.reset_index(drop=True)
+        gdf.index.name = "AreaKey"
+
+        # Convert geometry to WKT strings
+        gdf["geom_wkt"] = gdf.geometry.apply(
+            lambda geom: geom.wkt if geom is not None else None
+        )
+
+        # Store the CRS as a column; same value for all rows
+        gdf["geom_crs"] = gdf.crs.to_wkt() if gdf.crs is not None else None
+
+        # Create / connect DB
+        self.conn = sqlite3.connect(self.db_path)
+        self.conn.execute("PRAGMA foreign_keys=ON;")
+
+        # Write the entire GeoDataFrame (minus geometry) to a normal table
+        # This creates (or replaces) the Areas table with all columns from df.
+        df = gdf.drop(columns="geometry")
+        df.to_sql("Areas", self.conn, if_exists="replace", index=True)
+
+        self.conn.commit()
+
+    # --------------------------------------------------
+    # CSV LOADERS
+    # --------------------------------------------------
+
+    def _load_stats(self):
+        if self.ensemble_stats_csv is None:
+            return None
+        if self._stats_df is None:
+            print("Loading stats CSV...")
+            self._stats_df = pd.read_csv(
+                self.ensemble_stats_csv,
+                encoding="windows-1252",
+                keep_default_na=False,
+                dtype="str",
+            )
+        return self._stats_df
+
+    def _load_members(self):
+        if self.member_stats_csv is None:
+            return None
+        if self._members_df is None:
+            print("Loading members CSV...")
+            self._members_df = pd.read_csv(
+                self.member_stats_csv,
+                encoding="windows-1252",
+                keep_default_na=False,
+                dtype="str",
+            )
+        return self._members_df
+
+    # --------------------------------------------------
     # LOOKUP TABLES (UNION OF BOTH CSVs)
     # --------------------------------------------------
 
     def build_lookup_tables(self):
+        if self.ensemble_stats_csv is None:
+            return
         dfs = [self._load_stats()]
         mem = self._load_members()
         if mem is not None:
@@ -358,39 +405,6 @@ class database:
             )
 
         conn.commit()
-
-    # --------------------------------------------------
-    # AREAS
-    # --------------------------------------------------
-
-    def import_geometries(self):
-        # Close any existing connection so we can safely overwrite the DB
-        if self.conn:
-            self.conn.close()
-            self.conn = None
-
-        gdf = gpd.read_file(self.geometry)
-        gdf = gdf.reset_index(drop=True)
-        gdf.index.name = "AreaKey"
-
-        # Convert geometry to WKT strings
-        gdf["geom_wkt"] = gdf.geometry.apply(
-            lambda geom: geom.wkt if geom is not None else None
-        )
-
-        # Store the CRS as a column; same value for all rows
-        gdf["geom_crs"] = gdf.crs.to_wkt() if gdf.crs is not None else None
-
-        # Create / connect DB
-        self.conn = sqlite3.connect(self.db_path)
-        self.conn.execute("PRAGMA foreign_keys=ON;")
-
-        # Write the entire GeoDataFrame (minus geometry) to a normal table
-        # This creates (or replaces) the Areas table with all columns from df.
-        df = gdf.drop(columns="geometry")
-        df.to_sql("Areas", self.conn, if_exists="replace", index=True)
-
-        self.conn.commit()
 
     # --------------------------------------------------
     # MAPPINGS
@@ -477,6 +491,9 @@ class database:
     # --------------------------------------------------
 
     def import_stats(self):
+        if self.ensemble_stats_csv is None:
+            return
+
         rows = self.process_stats(self.build_mappings())
         conn = self.connect()
         conn.execute("PRAGMA foreign_keys=OFF;")
@@ -496,7 +513,7 @@ class database:
         print("Inserted stats:", len(rows))
 
     def import_members(self):
-        if not self.members_csv:
+        if self.member_stats_csv is None:
             return
 
         rows = self.process_members(self.build_mappings())
@@ -658,140 +675,144 @@ class database:
         cur = conn.cursor()
 
         # -- Indexes on Ensemble_stats --
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_area        ON ArealEnsembleStatistics(AreaKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_indicator   ON ArealEnsembleStatistics(IndicatorKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_scenario    ON ArealEnsembleStatistics(ScenarioKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_TimeBin      ON ArealEnsembleStatistics(TimeBinKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_season      ON ArealEnsembleStatistics(SeasonKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_grid        ON ArealEnsembleStatistics(GridKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_dataset      ON ArealEnsembleStatistics(DatasetKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_arealstat   ON ArealEnsembleStatistics(StatisticTypeKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_stats_delta       ON ArealEnsembleStatistics(Delta);"
-        )
-        cur.execute(
+        if self.ensemble_stats_csv is not None:
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_area        ON ArealEnsembleStatistics(AreaKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_indicator   ON ArealEnsembleStatistics(IndicatorKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_scenario    ON ArealEnsembleStatistics(ScenarioKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_TimeBin      ON ArealEnsembleStatistics(TimeBinKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_season      ON ArealEnsembleStatistics(SeasonKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_grid        ON ArealEnsembleStatistics(GridKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_dataset      ON ArealEnsembleStatistics(DatasetKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_arealstat   ON ArealEnsembleStatistics(StatisticTypeKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_stats_delta       ON ArealEnsembleStatistics(Delta);"
+            )
+            cur.execute(
+                """
+            CREATE INDEX IF NOT EXISTS idx_stats_composite
+                ON ArealEnsembleStatistics(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
             """
-        CREATE INDEX IF NOT EXISTS idx_stats_composite
-            ON ArealEnsembleStatistics(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
-        """
-        )
+            )
 
         # -- Indexes on Ensemble_members --
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_area          ON ArealMemberValues(AreaKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_indicator     ON ArealMemberValues(IndicatorKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_scenario      ON ArealMemberValues(ScenarioKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_TimeBin        ON ArealMemberValues(TimeBinKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_season        ON ArealMemberValues(SeasonKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_dataset       ON ArealMemberValues(DatasetKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_grid          ON ArealMemberValues(GridKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_member        ON ArealMemberValues(MemberKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_arealstat     ON ArealMemberValues(StatisticTypeKey);"
-        )
-        cur.execute(
-            "CREATE INDEX IF NOT EXISTS idx_mem_delta         ON ArealMemberValues(Delta);"
-        )
-        cur.execute(
+        if self.member_stats_csv is not None:
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_area          ON ArealMemberValues(AreaKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_indicator     ON ArealMemberValues(IndicatorKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_scenario      ON ArealMemberValues(ScenarioKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_TimeBin        ON ArealMemberValues(TimeBinKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_season        ON ArealMemberValues(SeasonKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_dataset       ON ArealMemberValues(DatasetKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_grid          ON ArealMemberValues(GridKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_member        ON ArealMemberValues(MemberKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_arealstat     ON ArealMemberValues(StatisticTypeKey);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mem_delta         ON ArealMemberValues(Delta);"
+            )
+            cur.execute(
+                """
+            CREATE INDEX IF NOT EXISTS idx_mem_composite
+                ON ArealMemberValues(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
             """
-        CREATE INDEX IF NOT EXISTS idx_mem_composite
-            ON ArealMemberValues(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
-        """
-        )
+            )
 
         # -- View: Ensemble_stats with all metadata decoded --
-        cur.execute(
+        if self.ensemble_stats_csv is not None:
+            cur.execute(
+                """
+            CREATE VIEW IF NOT EXISTS view_ArealEnsembleStatistics AS
+            SELECT
+                es.id                   AS id,
+                ds.DatasetCode          AS DatasetCode,
+                sc.ScenarioCode         AS ScenarioCode,
+                gr.GridCode             AS GridCode,
+                i.IndicatorCode         AS IndicatorCode,
+                i.IndicatorDescription  AS IndicatorDescription,
+                es.AreaKey              AS AreaKey,
+                p.TimeBinCode            AS TimeBinCode,
+                p.TimeBinDescription     AS TimeBinDescription,
+                se.SeasonCode           AS SeasonCode,
+                se.SeasonDescription    AS SeasonDescription,
+                ar.StatisticTypeCode   AS StatisticTypeCode,
+                es.Delta                AS Delta,
+                es.Percentile           AS Percentile,
+                es.Value                AS Value
+            FROM ArealEnsembleStatistics AS es
+            JOIN Indicators      AS i  ON es.IndicatorKey      = i.IndicatorKey
+            JOIN Scenarios       AS sc ON es.ScenarioKey       = sc.ScenarioKey
+            JOIN TimeBins        AS p  ON es.TimeBinKey         = p.TimeBinKey
+            JOIN Seasons         AS se ON es.SeasonKey         = se.SeasonKey
+            JOIN Grids           AS gr ON es.GridKey           = gr.GridKey
+            JOIN Datasets        AS ds ON es.DatasetKey        = ds.DatasetKey
+            JOIN StatisticTypes AS ar ON es.StatisticTypeKey = ar.StatisticTypeKey;
             """
-        CREATE VIEW IF NOT EXISTS view_ArealEnsembleStatistics AS
-        SELECT
-            es.id                   AS id,
-            ds.DatasetCode          AS DatasetCode,
-            sc.ScenarioCode         AS ScenarioCode,
-            gr.GridCode             AS GridCode,
-            i.IndicatorCode         AS IndicatorCode,
-            i.IndicatorDescription  AS IndicatorDescription,
-            es.AreaKey              AS AreaKey,
-            p.TimeBinCode            AS TimeBinCode,
-            p.TimeBinDescription     AS TimeBinDescription,
-            se.SeasonCode           AS SeasonCode,
-            se.SeasonDescription    AS SeasonDescription,
-            ar.StatisticTypeCode   AS StatisticTypeCode,
-            es.Delta                AS Delta,
-            es.Percentile           AS Percentile,
-            es.Value                AS Value
-        FROM ArealEnsembleStatistics AS es
-        JOIN Indicators      AS i  ON es.IndicatorKey      = i.IndicatorKey
-        JOIN Scenarios       AS sc ON es.ScenarioKey       = sc.ScenarioKey
-        JOIN TimeBins        AS p  ON es.TimeBinKey         = p.TimeBinKey
-        JOIN Seasons         AS se ON es.SeasonKey         = se.SeasonKey
-        JOIN Grids           AS gr ON es.GridKey           = gr.GridKey
-        JOIN Datasets        AS ds ON es.DatasetKey        = ds.DatasetKey
-        JOIN StatisticTypes AS ar ON es.StatisticTypeKey = ar.StatisticTypeKey;
-        """
-        )
+            )
 
         # -- View: Ensemble_members with all metadata decoded --
-        cur.execute(
+        if self.member_stats_csv is not None:
+            cur.execute(
+                """
+            CREATE VIEW IF NOT EXISTS view_ArealMemberValues AS
+            SELECT
+                em.id                   AS id,
+                ds.DatasetCode          AS DatasetCode,
+                me.MemberCode           AS MemberCode,
+                sc.ScenarioCode         AS ScenarioCode,
+                gr.GridCode             AS GridCode,
+                i.IndicatorCode         AS IndicatorCode,
+                i.IndicatorDescription  AS IndicatorDescription,
+                em.AreaKey              AS AreaKey,
+                p.TimeBinCode            AS TimeBinCode,
+                p.TimeBinDescription     AS TimeBinDescription,
+                se.SeasonCode           AS SeasonCode,
+                se.SeasonDescription    AS SeasonDescription,
+                ar.StatisticTypeCode   AS StatisticTypeCode,
+                em.Delta                AS Delta,
+                em.Value                AS Value
+            FROM ArealMemberValues AS em
+            JOIN Indicators      AS i  ON em.IndicatorKey      = i.IndicatorKey
+            JOIN Scenarios       AS sc ON em.ScenarioKey       = sc.ScenarioKey
+            JOIN TimeBins        AS p  ON em.TimeBinKey       = p.TimeBinKey
+            JOIN Seasons         AS se ON em.SeasonKey         = se.SeasonKey
+            JOIN Datasets        AS ds ON em.DatasetKey        = ds.DatasetKey
+            JOIN Grids           AS gr ON em.GridKey           = gr.GridKey
+            JOIN Members         AS me ON em.MemberKey         = me.MemberKey
+            JOIN StatisticTypes AS ar ON em.StatisticTypeKey = ar.StatisticTypeKey;
             """
-        CREATE VIEW IF NOT EXISTS view_ArealMemberValues AS
-        SELECT
-            em.id                   AS id,
-            ds.DatasetCode          AS DatasetCode,
-            me.MemberCode           AS MemberCode,
-            sc.ScenarioCode         AS ScenarioCode,
-            gr.GridCode             AS GridCode,
-            i.IndicatorCode         AS IndicatorCode,
-            i.IndicatorDescription  AS IndicatorDescription,
-            em.AreaKey              AS AreaKey,
-            p.TimeBinCode            AS TimeBinCode,
-            p.TimeBinDescription     AS TimeBinDescription,
-            se.SeasonCode           AS SeasonCode,
-            se.SeasonDescription    AS SeasonDescription,
-            ar.StatisticTypeCode   AS StatisticTypeCode,
-            em.Delta                AS Delta,
-            em.Value                AS Value
-        FROM ArealMemberValues AS em
-        JOIN Indicators      AS i  ON em.IndicatorKey      = i.IndicatorKey
-        JOIN Scenarios       AS sc ON em.ScenarioKey       = sc.ScenarioKey
-        JOIN TimeBins        AS p  ON em.TimeBinKey       = p.TimeBinKey
-        JOIN Seasons         AS se ON em.SeasonKey         = se.SeasonKey
-        JOIN Datasets        AS ds ON em.DatasetKey        = ds.DatasetKey
-        JOIN Grids           AS gr ON em.GridKey           = gr.GridKey
-        JOIN Members         AS me ON em.MemberKey         = me.MemberKey
-        JOIN StatisticTypes AS ar ON em.StatisticTypeKey = ar.StatisticTypeKey;
-        """
-        )
+            )
 
         # -- View: Gridded files with all metadata decoded --
         cur.execute(

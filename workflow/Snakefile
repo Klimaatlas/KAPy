@@ -53,7 +53,7 @@ OUTPUT_PATHS=KAPy.get_OUTPUT_PATHS(config["output_directory"])
 #relevant for that output file. 
 for thisID, thisRow in WORKFLOW['primary_variables'].items():
     rule:
-        name: f"._rule_01_primary_variable_{thisID}"
+        name: f"__rule_01_primary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow, pvID=thisID: rw["input_dict"][os.path.join(pvID,wc.file)])
         output: thisRow['output_rule']
         params: 
@@ -71,7 +71,7 @@ for thisID, thisRow in WORKFLOW['primary_variables'].items():
 # Good examples include FWI, PoteEvap and SPI. 
 for thisID, thisRow in WORKFLOW['secondary_variables'].items():
     rule:
-        name: f"._rule_02_secondary_variable_{thisID}"
+        name: f"__rule_02_secondary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: **config['secondary_variables'][thisID]
@@ -85,7 +85,7 @@ for thisID, thisRow in WORKFLOW['secondary_variables'].items():
 # Bias Adjustment 
 for thisID, thisRow in WORKFLOW['bias_adjustment'].items():
     rule:
-        name: f"._rule_03_bias_adjustment_{thisID}"
+        name: f"__rule_03_bias_adjustment_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw['input_dict'][wc.leaf])
         output: **thisRow['output_rule']
         params: 
@@ -103,7 +103,7 @@ for thisID, thisRow in WORKFLOW['bias_adjustment'].items():
 # variables, rather than raw input variables.
 for thisID, thisRow in WORKFLOW['tertiary_variables'].items():
     rule:
-        name: f"._rule_04_tertiary_variable_{thisID}"
+        name: f"__rule_04_tertiary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: **config['tertiary_variables'][thisID]
@@ -119,7 +119,7 @@ for thisID, thisRow in WORKFLOW['tertiary_variables'].items():
 # as well as the combined run
 for thisID, thisRow in WORKFLOW['indicators'].items():
     rule:
-        name: f"._rule_05_indicator_{thisID}"
+        name: f"__rule_05_indicator_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: 
@@ -137,27 +137,29 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
 # Combining everything into an ensemble requires that they are all on a common grid
 # This step is optional but if the models are not on a common grid, this will cause failure 
 # when we come to the ensstats generation
-rule:
-    name: "._rule_06_regrid"
-    input:
-        unpack(lambda wc: WORKFLOW['regrid']["input_dict"][str(OUTPUT_PATHS['regrid'] / wc.outfile)])
-    output:
-        output=OUTPUT_PATHS['regrid'] /"{outfile}"
-    params:
-        templateType=config["output_grid"]["template_type"],
-        path=config["output_grid"].get("path",""),
-        method=config['output_grid'].get('method',"")
-    threads:
-        KAPy.get_dask_threads(config['dask_resources'],"REGRIDDING",thisID)
-    resources:
-        **KAPy.get_dask_resources(config['dask_resources'],"REGRIDDING",thisID)
-    script:
-        "scripts/_06_regrid.py"        
+do_regridding=config['output_grid']['template_type']!='none'
+if do_regridding:
+    rule:
+        name: "__rule_06_regrid"
+        input:
+            unpack(lambda wc: WORKFLOW['regrid']["input_dict"][str(OUTPUT_PATHS['regrid'] / wc.outfile)])
+        output:
+            output=OUTPUT_PATHS['regrid'] /"{outfile}"
+        params:
+            templateType=config["output_grid"]["template_type"],
+            path=config["output_grid"].get("path",""),
+            method=config['output_grid'].get('method',"")
+        threads:
+            KAPy.get_dask_threads(config['dask_resources'],"REGRIDDING",thisID)
+        resources:
+            **KAPy.get_dask_resources(config['dask_resources'],"REGRIDDING",thisID)
+        script:
+            "scripts/_06_regrid.py"        
 
 # Enssemble Statistics 
 # Now we can combine them into ensembles
 rule:
-    name: "._rule_07_ensemble_statistics"
+    name: "__rule_07_ensemble_statistics"
     input:
         unpack(lambda wc: WORKFLOW['ensemble_statistics']["input_dict"][str(OUTPUT_PATHS['ensemble_statistics'] /wc.es)])
     output:
@@ -168,24 +170,27 @@ rule:
         "scripts/_07_ensemble_statistics.py"        
 
 #Areal statistics
-#Areal statistics are calculated for both the enssemble statistics and individual members
+#Areal statistics are calculated for both the enssemble statistics and individual members individually
+#but can be turned on and off individually. However, the recipe for both types is fundamentally the
+#same, so we take it as one rather than two rules
 #Depending on whether we are using a shapefile or not, we may want to include the shapefile
 #as a dependency
-rule:
-    name: "._rule_08_areal_statistics"
-    input:
-        inputFile=lambda wildcards: WORKFLOW['areal_statistics']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] /
-                                                                                    wildcards.fname)],
-        shapefile=lambda wildcards: config['areal_statistics']['shapefile'] if config['areal_statistics']['shapefile'] is not None else []
-    output:
-        OUTPUT_PATHS['areal_statistics'] /'{fname}'
-    params:
-        shapefile=config['areal_statistics']['shapefile'],
-        useAreaWeighting=config['areal_statistics']['use_area_weighting']
-    script:
-        "scripts/_08_areal_statistics.py"
+do_areal_statistics= config["areal_statistics"]["ensemble_areal_statistics"] or config["areal_statistics"]["member_areal_statistics"]
+if do_areal_statistics:
+    rule:
+        name: "__rule_08_areal_statistics"
+        input:
+            inputFile=lambda wildcards: WORKFLOW['areal_statistics']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] /
+                                                                                        wildcards.fname)],
+            shapefile=lambda wildcards: config['areal_statistics']['shapefile'] if config['areal_statistics']['shapefile'] is not None else []
+        output:
+            OUTPUT_PATHS['areal_statistics'] /'{fname}'
+        params:
+            shapefile=config['areal_statistics']['shapefile'],
+            useAreaWeighting=config['areal_statistics']['use_area_weighting']
+        script:
+            "scripts/_08_areal_statistics.py"
  
-
 # # Individual targets -------------------------------
 # # These are individual files that are produced, rather than a collection of files
 
@@ -196,30 +201,35 @@ rule:
         KAPy.VariableOverview(config)
 
 #Merged csvs
-rule:
-    name: "._rule_09a_ensemble_statistics"
-    input:
-        WORKFLOW['merged_csvs']['ensstats']
-    output:
-        OUTPUT_PATHS["ensemble_statistics_csv"]
-    run:
-        KAPy.merge_csvs(input_files=input,output_file=output[0])
+#The merged_csvs dict is used to collate which arguments we have enabled.
+merged_csvs={}
+if config["areal_statistics"]["ensemble_areal_statistics"]:
+    merged_csvs["ensemble_stats"]=OUTPUT_PATHS["ensemble_statistics_csv"]
+    rule:
+        name: "__rule_09a_merged_ensemble_areal_statistics"
+        input:
+            WORKFLOW['merged_ensemble_areal_statistics']
+        output:
+            OUTPUT_PATHS["ensemble_statistics_csv"]
+        run:
+            KAPy.merge_csvs(input_files=input,output_file=output[0])
 
-rule:
-    name:  "._rule_09b_member_statistics"
-    input:
-        WORKFLOW['merged_csvs']['members']
-    output:
-        OUTPUT_PATHS["ensemble_members_csv"]
-    run:
-        KAPy.merge_csvs(input_files=input,output_file=output[0])
+if config["areal_statistics"]["member_areal_statistics"]:
+    merged_csvs["ensemble_members"]=OUTPUT_PATHS["ensemble_members_csv"]
+    rule:
+        name:  "__rule_09b_merged_member_areal_statistics"
+        input:
+            WORKFLOW['merged_member_areal_statistics']
+        output:
+            OUTPUT_PATHS["ensemble_members_csv"]
+        run:
+            KAPy.merge_csvs(input_files=input,output_file=output[0])
 
 # Database 
 rule:
-    name: "._rule_09c_database"
+    name: "__rule_10_database"
     input:
-        ensemble_stats=OUTPUT_PATHS["ensemble_statistics_csv"],
-        ensemble_members=OUTPUT_PATHS["ensemble_members_csv"],
+        **merged_csvs,
         indicators=config['configuration_tables']['indicators'],
         periods=config['configuration_tables']['periods'],
         seasons=config['configuration_tables']['seasons'],
@@ -245,21 +255,21 @@ rule:
         [t for v in WORKFLOW['primary_variables'].values() for t in v['outputs']]
 
 #Secondary variables  
-if "secondaryVars" in config:
+if "secondary_variables" in config:
     rule:
         name: ".SECONDARY_VARIABLES"
         input:
             [t for v in WORKFLOW['secondary_variables'].values() for t in v['outputs']]
 
 #Bias adjustment
-if "biasAdjustment" in config:
+if "bias_adjustment" in config:
     rule:
         name: ".BIAS_ADJUSTMENT"
         input:
             [v['outputs'] for v in WORKFLOW['bias_adjustment'].values() ]
 
 #Tertiary variables
-if "tertiaryVars" in config:
+if "tertiary_variables" in config:
     rule:
         name: ".TERTIARY_VARIABLES"
         input:
@@ -272,7 +282,7 @@ rule:
         [k for thisInd in WORKFLOW['indicators'].values() for k in thisInd["outputs"]]
 
 #Regridding
-if config['output_grid']['template_type']!='none':
+if do_regridding:
     rule:
         name: ".REGRID"
         input:
@@ -285,18 +295,18 @@ rule:
         WORKFLOW['ensemble_statistics']['outputs']
 
 
-#Ensemble statistics
-rule:
-    name: ".AREAL_STATISTICS"
-    input:
-        WORKFLOW['areal_statistics']['outputs']
+#Areal statistics
+# (but only if they are requested)
+if do_areal_statistics:
+    rule:
+        name: ".AREAL_STATISTICS"
+        input:
+            WORKFLOW['areal_statistics']['outputs']
 
-rule:
-    name: ".OUTPUTS"
-    input:
-        OUTPUT_PATHS["ensemble_members_csv"],
-        OUTPUT_PATHS["ensemble_statistics_csv"],
-        OUTPUT_PATHS["database"]
+    rule:
+        name: ".MERGED_AREAL_STATISTICS"
+        input:
+            **merged_csvs
 
 #All
 rule:

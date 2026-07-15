@@ -62,12 +62,22 @@
         },
         "areal_statistics": {
             "required": [
+                "ensemble_areal_statistics",
+                "member_areal_statistics",
                 "use_area_weighting",
                 "shapefile"
             ],
             "additionalProperties": false,
             "type": "object",
             "properties": {
+                "ensemble_areal_statistics": {
+                    "description": "If True, areal statistics are calculated for the ensemble as a whole.",
+                    "type": "boolean"
+                },
+                "member_areal_statistics": {
+                    "description": "If True, areal statistics are calculated for each ensemble member.",
+                    "type": "boolean"
+                },
                 "use_area_weighting": {
                     "description": "Use area-weighting when calculating averages over a polygon or area. Nearly all climate data is presented on grids where the area of the pixels is not constant, but changes in space - for example, on a regular lat-lon grid, the pixels get smaller towards the poles. When this option is configured, the CDO `gridarea` operator is used to calculate the area of each cell, and weightings applied to the calculation of area statistics accordingly. Requires that CDO can calculate the cell area - otherwise, it is recommended to disable this option manually.",
                     "type": "boolean"
