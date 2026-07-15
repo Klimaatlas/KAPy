@@ -1,0 +1,27 @@
+Inputs																
+id	enabled	dataset_code	variable_code	units	grid_code	path	internal_variable_name	custom_script	custom_function	checks	rechunking_strategy	merge_files	field_separator	experiment_field	common_experiment	member_id_fields
+CORDEX-tas-44	x	CORDEX	tas	degC	AFR-44	inputs/CORDEX/tas_Ghana-44_*	tas			all	none	true	_	4	historical	3,5,6,7,8,2
+																
+SecondaryVariables / tertiaryVariables																
+id	enabled	datasets	input_variables	output_variables	pass_xarrays	custom_script	custom_function	additional_arguments								
+tasK	x	all	tas	tasK	true	workflow/testing/temperature_conversions.py	C2K	{}								
+																
+Bias adjustment																
+id	enabled	output_dataset_code	variable_to_adjust	dataset_to_adjust	reference_dataset	output_grid	training_period_start	training_period_end	method	grouping	kind	additional_arguments				
+tas-ba	x	CORDEX-BA	tas	CORDEX	ERA5	reference	1981	2010	xsdba-scaling	month	+	{}				
+																
+Indicators																
+id	enabled	indicator_codes	description	variables	datasets	seasons	time_binning	statistic	skipna	delta_type	additional_arguments	custom_script	custom_function			
+mean-tas	x		Annual mean temperature	tas	all	all	periods	mean	false	subtract	{}					
+																
+Periods																
+id	enabled	description	start	end												
+1981-2010	x	Historical	1981	2010												
+																
+Seasons																
+id	enabled	description	months													
+ann	x	Annual	1,2,3,4,5,6,7,8,9,10,11,12													
+																
+Dask																
+id	enabled	n_workers	threads_per_worker	memory_limit												
+PRIMARY_VARIABLES																
