@@ -9,6 +9,8 @@ import os
 import pandas as pd
 import glob
 from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor
+
 
 # Use absolute imports assuming KAPy is installed
 from KAPy import helpers
@@ -79,9 +81,11 @@ def get_workflow(config):
 
         # Setup import table and check that all of the files actually exist. This is not so important for a single NetCDF
         # but essential when we are supplying the filelist
+        # However, the checking process is quite slow, so we use a thread pool to speed things up
         inpTbl = pd.DataFrame(filelist, columns=["inPath"])
         inpTbl["inFname"] = [Path(p).stem for p in inpTbl["inPath"]]
-        inpTbl["exists"] = [os.path.exists(f) for f in filelist]
+        with ThreadPoolExecutor() as ex:
+            inpTbl["exists"]=list(ex.map(os.path.exists, filelist))
         if not all(inpTbl["exists"]):
             missing = inpTbl[~inpTbl["exists"]]
             msg = f"{len(missing)} required files are missing:\n" + "\n".join(
