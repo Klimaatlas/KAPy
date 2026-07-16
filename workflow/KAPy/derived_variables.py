@@ -57,15 +57,15 @@ def build_derived_variables(
     out = thisFn(**theseArgs)
 
     # Check output
-    if pass_xarrays:  # Then load the paths into xarrays. Otherwise just pass the path.
-        if not isinstance(out, xr.DataArray):
+    if pass_xarrays:  # Expect an xarray or dict of xarrays
+        if not (isinstance(out, xr.DataArray) | isinstance(out, xr.Dataset)):
             raise TypeError(
-                f"When pass_xarrays is true, KAPy expects  {custom_script} - {custom_function} to return  an xarray dataarray but actually recieved {type(out)}"
+                f"When pass_xarrays is true, KAPy expects  {custom_script} - {custom_function} to return an Xarray DataArray or Dataset but actually recieved {type(out)}" 
             )
     else:
         if not isinstance(out, dict):
             raise TypeError(
-                f"When pass_xarrays is false, KAPy expects  {custom_script} - {custom_function} to return  a dict of paths to the output files but actually recieved {type(out)}"
+                f"When pass_xarrays is false, KAPy expects  {custom_script} - {custom_function} to return a dict of paths to the output files but actually recieved {type(out)}"
             )
 
     return out

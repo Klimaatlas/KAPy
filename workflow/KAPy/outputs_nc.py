@@ -7,42 +7,43 @@ import shutil
 # Use absolute imports assuming KAPy is installed
 from KAPy import helpers
 
+def _write_dataarray(da: xr.DataArray, var_name: str, output_path: str):
+    # Choose output format
+    format = os.path.splitext(os.path.basename(output_path))[1]
+    if format == ".nc":
+        da.name = var_name
+        chunkThisWay = helpers.align_chunking(da)
+        da.to_netcdf(
+            output_path,
+            encoding={
+                var_name: {"chunksizes": chunkThisWay, "zlib": True, "complevel": 1}
+            },
+        )
+    elif format == ".pkl":  # Write as pickle
+        with open(output_path, "wb") as f:
+            pickle.dump(da, f)
+    else:
+        raise IOError(
+            f"Unknown file format, '{format}' inferred from: '{output_path}'."
+        )
+
+
 
 def write_variables(
-    obj: xr.DataArray | xr.Dataset | dict, path: dict[str, str]
+    obj: xr.DataArray | xr.Dataset | dict[str,str], path: dict[str, str]
 ) -> None:
     """
     Write variables as xarray objects to disk as NetCDF files.
 
     Parameters
     ----------
-    obj : xr.DataArray, xr.Dataset
-        The data to write. If a Dataset multiple files are written.
+    obj : xr.DataArray, xr.Dataset, dict
+        The data to write, either as a single DataArray, a dataset or a dict of paths to files.
     path : dict
         Mapping of variable names to output file paths.
         For a single DataArray, should have one key matching the variable name.
         For a Dataset, keys should match dataset variables.
     """
-
-    def write_dataarray(da: xr.DataArray, var_name: str, output_path: str):
-        # Choose output format
-        format = os.path.splitext(os.path.basename(output_path))[1]
-        if format == ".nc":
-            da.name = var_name
-            chunkThisWay = helpers.align_chunking(da)
-            da.to_netcdf(
-                output_path,
-                encoding={
-                    var_name: {"chunksizes": chunkThisWay, "zlib": True, "complevel": 1}
-                },
-            )
-        elif format == ".pkl":  # Write as pickle
-            with open(output_path, "wb") as f:
-                pickle.dump(da, f)
-        else:
-            raise IOError(
-                f"Unknown file format, '{format}' inferred from: '{output_path}'."
-            )
 
     if isinstance(obj, xr.DataArray):
         # Expect exactly one key in path
@@ -50,9 +51,20 @@ def write_variables(
             raise ValueError(
                 f"Expected exactly one path for a single DataArray: received {path}"
             )
-        write_dataarray(
+        _write_dataarray(
             obj, var_name=next(iter(path.keys())), output_path=next(iter(path.values()))
         )
+
+    elif isinstance(obj, xr.Dataset):
+        #Check that the keys in path can be found in the xr.Dataset obj
+        for this_key in path.keys():
+            if not (this_key  in obj):  
+                raise ValueError(
+                    f"Cannot find variable {this_key} in xarray dataset."
+                )
+            _write_dataarray(
+                obj[this_key], var_name=this_key, output_path=path[this_key]
+            )
 
     elif isinstance(obj, dict):
         # Accept instances where the object is a dict of paths to a file.
@@ -64,7 +76,7 @@ def write_variables(
             )
         # Loop over the dicts. If the path contained in the object matches the desired output path,
         # then the result should already be in the right place. Else move the file in  obj to the output path
-        for this_key in obj.keys():
+        for this_key in path.keys():
             if obj[this_key] != path[this_key]:
                 shutil.move(Path(obj[this_key]), Path(path[this_key]))
 
