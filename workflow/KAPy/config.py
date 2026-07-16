@@ -245,7 +245,7 @@ def validate_config(config):
     if config["areal_statistics"]["shapefile"] is not None:
         if not os.path.exists(config["areal_statistics"]["shapefile"]):
             raise FileNotFoundError(
-                f"Cannot find shapefile declared in config/arealstats/shapefile: '{config['arealstats']['shapefile']}'."
+                f"Cannot find shapefile declared in config/areal_statistics/shapefile: '{config['areal_statistics']['shapefile']}'."
             )
 
     return config
