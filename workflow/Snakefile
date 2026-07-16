@@ -53,7 +53,7 @@ OUTPUT_PATHS=KAPy.get_OUTPUT_PATHS(config["output_directory"])
 #relevant for that output file. 
 for thisID, thisRow in WORKFLOW['primary_variables'].items():
     rule:
-        name: f"__rule_01_primary_variable_{thisID}"
+        name: f"..rule_01_primary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow, pvID=thisID: rw["input_dict"][os.path.join(pvID,wc.file)])
         output: thisRow['output_rule']
         params: 
@@ -71,7 +71,7 @@ for thisID, thisRow in WORKFLOW['primary_variables'].items():
 # Good examples include FWI, PoteEvap and SPI. 
 for thisID, thisRow in WORKFLOW['secondary_variables'].items():
     rule:
-        name: f"__rule_02_secondary_variable_{thisID}"
+        name: f"..rule_02_secondary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: **config['secondary_variables'][thisID]
@@ -85,7 +85,7 @@ for thisID, thisRow in WORKFLOW['secondary_variables'].items():
 # Bias Adjustment 
 for thisID, thisRow in WORKFLOW['bias_adjustment'].items():
     rule:
-        name: f"__rule_03_bias_adjustment_{thisID}"
+        name: f"..rule_03_bias_adjustment_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw['input_dict'][wc.leaf])
         output: **thisRow['output_rule']
         params: 
@@ -103,7 +103,7 @@ for thisID, thisRow in WORKFLOW['bias_adjustment'].items():
 # variables, rather than raw input variables.
 for thisID, thisRow in WORKFLOW['tertiary_variables'].items():
     rule:
-        name: f"__rule_04_tertiary_variable_{thisID}"
+        name: f"..rule_04_tertiary_variable_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: **config['tertiary_variables'][thisID]
@@ -119,7 +119,7 @@ for thisID, thisRow in WORKFLOW['tertiary_variables'].items():
 # as well as the combined run
 for thisID, thisRow in WORKFLOW['indicators'].items():
     rule:
-        name: f"__rule_05_indicator_{thisID}"
+        name: f"..rule_05_indicator_{thisID}"
         input: unpack(lambda wc, rw=thisRow: rw["input_dict"][wc.dataset +"_"+wc.leaf])
         output: **thisRow['output_rule']
         params: 
@@ -140,7 +140,7 @@ for thisID, thisRow in WORKFLOW['indicators'].items():
 do_regridding=config['output_grid']['template_type']!='none'
 if do_regridding:
     rule:
-        name: "__rule_06_regrid"
+        name: "..rule_06_regrid"
         input:
             unpack(lambda wc: WORKFLOW['regrid']["input_dict"][str(OUTPUT_PATHS['regrid'] / wc.outfile)])
         output:
@@ -159,7 +159,7 @@ if do_regridding:
 # Enssemble Statistics 
 # Now we can combine them into ensembles
 rule:
-    name: "__rule_07_ensemble_statistics"
+    name: "..rule_07_ensemble_statistics"
     input:
         unpack(lambda wc: WORKFLOW['ensemble_statistics']["input_dict"][str(OUTPUT_PATHS['ensemble_statistics'] /wc.es)])
     output:
@@ -178,7 +178,7 @@ rule:
 do_areal_statistics= config["areal_statistics"]["ensemble_areal_statistics"] or config["areal_statistics"]["member_areal_statistics"]
 if do_areal_statistics:
     rule:
-        name: "__rule_08_areal_statistics"
+        name: "..rule_08_areal_statistics"
         input:
             inputFile=lambda wildcards: WORKFLOW['areal_statistics']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] /
                                                                                         wildcards.fname)],
@@ -206,7 +206,7 @@ merged_csvs={}
 if config["areal_statistics"]["ensemble_areal_statistics"]:
     merged_csvs["ensemble_stats"]=OUTPUT_PATHS["ensemble_statistics_csv"]
     rule:
-        name: "__rule_09a_merged_ensemble_areal_statistics"
+        name: "..rule_09a_merged_ensemble_areal_statistics"
         input:
             WORKFLOW['merged_ensemble_areal_statistics']
         output:
@@ -217,7 +217,7 @@ if config["areal_statistics"]["ensemble_areal_statistics"]:
 if config["areal_statistics"]["member_areal_statistics"]:
     merged_csvs["ensemble_members"]=OUTPUT_PATHS["ensemble_members_csv"]
     rule:
-        name:  "__rule_09b_merged_member_areal_statistics"
+        name:  "..rule_09b_merged_member_areal_statistics"
         input:
             WORKFLOW['merged_member_areal_statistics']
         output:
@@ -227,7 +227,7 @@ if config["areal_statistics"]["member_areal_statistics"]:
 
 # Database 
 rule:
-    name: "__rule_10_database"
+    name: "..rule_10_database"
     input:
         **merged_csvs,
         indicators=config['configuration_tables']['indicators'],
@@ -266,20 +266,20 @@ if "bias_adjustment" in config:
     rule:
         name: ".BIAS_ADJUSTMENT"
         input:
-            [v['outputs'] for v in WORKFLOW['bias_adjustment'].values() ]
+            [f for v in WORKFLOW['bias_adjustment'].values() for f in v['outputs'] ]
 
 #Tertiary variables
 if "tertiary_variables" in config:
     rule:
         name: ".TERTIARY_VARIABLES"
         input:
-            [t for v in WORKFLOW['tertiary_variables'].values() for t in v['outputs']]
+            [f for v in WORKFLOW['tertiary_variables'].values() for f in v['outputs']]
 
 #Indicator variables
 rule:
     name: ".INDICATORS"
     input:
-        [k for thisInd in WORKFLOW['indicators'].values() for k in thisInd["outputs"]]
+        [f for v in WORKFLOW['indicators'].values() for f in v["outputs"]]
 
 #Regridding
 if do_regridding:
