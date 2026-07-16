@@ -22,14 +22,14 @@ PATHS = {
     "primary_variables": "01.primary_variables",
     "secondary_variables": "02.secondary_variables",
     "bias_adjustment": "03.bias_adjustment",
-    "tertiary_variables": "04.tertiaryVars",
+    "tertiary_variables": "04.tertiary_variables",
     "indicators": "05.indicators",
     "regrid": "06.regrid",
     "ensemble_statistics": "07.ensemble_statistics",
     "areal_statistics": "08.areal_statistics",
-    "ensemble_statistics_csv": "Ensemble_statistics.csv",
-    "ensemble_members_csv": "Ensemble_members.csv",
-    "database": "KAPy_outputs.sqlite",
+    "ensemble_areal_statistics_csv": "Ensemble_areal_statistics.csv",
+    "member_areal_statistics_csv": "Member_areal_statistics.csv",
+    "database": "KAPy_database.sqlite",
 }
 
 

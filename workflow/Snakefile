@@ -204,24 +204,24 @@ rule:
 #The merged_csvs dict is used to collate which arguments we have enabled.
 merged_csvs={}
 if config["areal_statistics"]["ensemble_areal_statistics"]:
-    merged_csvs["ensemble_stats"]=OUTPUT_PATHS["ensemble_statistics_csv"]
+    merged_csvs["ensemble_stats"]=OUTPUT_PATHS["ensemble_areal_statistics_csv"]
     rule:
         name: "..rule_09a_merged_ensemble_areal_statistics"
         input:
             WORKFLOW['merged_ensemble_areal_statistics']
         output:
-            OUTPUT_PATHS["ensemble_statistics_csv"]
+            OUTPUT_PATHS["ensemble_areal_statistics_csv"]
         run:
             KAPy.merge_csvs(input_files=input,output_file=output[0])
 
 if config["areal_statistics"]["member_areal_statistics"]:
-    merged_csvs["ensemble_members"]=OUTPUT_PATHS["ensemble_members_csv"]
+    merged_csvs["ensemble_members"]=OUTPUT_PATHS["member_areal_statistics_csv"]
     rule:
         name:  "..rule_09b_merged_member_areal_statistics"
         input:
             WORKFLOW['merged_member_areal_statistics']
         output:
-            OUTPUT_PATHS["ensemble_members_csv"]
+            OUTPUT_PATHS["member_areal_statistics_csv"]
         run:
             KAPy.merge_csvs(input_files=input,output_file=output[0])
 

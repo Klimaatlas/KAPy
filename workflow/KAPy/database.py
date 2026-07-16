@@ -86,11 +86,11 @@ class database:
 
         # Handle situations where the areal statistics are not requested
         if self.config["areal_statistics"]["ensemble_areal_statistics"]:
-            self.ensemble_stats_csv = OUTPUT_PATHS["ensemble_statistics_csv"]
+            self.ensemble_stats_csv = OUTPUT_PATHS["ensemble_areal_statistics_csv"]
         else:
             self.ensemble_stats_csv = None
         if self.config["areal_statistics"]["member_areal_statistics"]:
-            self.member_stats_csv = OUTPUT_PATHS["ensemble_members_csv"]
+            self.member_stats_csv = OUTPUT_PATHS["member_areal_statistics_csv"]
         else:
             self.member_stats_csv = None
 

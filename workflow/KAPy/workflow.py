@@ -821,9 +821,9 @@ def get_workflow(config):
         else:
             allList += v["outputs"]
     if config["areal_statistics"]["ensemble_areal_statistics"]:
-        allList += [str(OUTPUT_PATHS["ensemble_statistics_csv"])]
+        allList += [str(OUTPUT_PATHS["ensemble_areal_statistics_csv"])]
     if config["areal_statistics"]["member_areal_statistics"]:
-        allList += [str(OUTPUT_PATHS["ensemble_members_csv"])]
+        allList += [str(OUTPUT_PATHS["member_areal_statistics_csv"])]
     allList += [str(OUTPUT_PATHS["database"])]
     rtn["all"] = allList
 
