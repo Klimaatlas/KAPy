@@ -184,7 +184,7 @@ class database:
         if self.ensemble_stats_csv is not None:
             cur.execute(
                 """
-            CREATE TABLE IF NOT EXISTS ArealEnsembleStatistics (
+            CREATE TABLE IF NOT EXISTS EnsembleArealStatistics (
                 id               INTEGER PRIMARY KEY,
                 DatasetKey        INTEGER  REFERENCES Datasets(DatasetKey),
                 ScenarioKey       INTEGER  REFERENCES Scenarios(ScenarioKey),
@@ -204,7 +204,7 @@ class database:
         if self.member_stats_csv is not None:
             cur.execute(
                 """
-            CREATE TABLE IF NOT EXISTS ArealMemberValues(
+            CREATE TABLE IF NOT EXISTS MemberArealStatistics(
                 id               INTEGER PRIMARY KEY,
                 DatasetKey        INTEGER  REFERENCES Datasets(DatasetKey),
                 MemberKey         INTEGER  REFERENCES Members(MemberKey),
@@ -450,7 +450,7 @@ class database:
 
         # Output
         # Get list of column names and order from the existing table - use this to filter df
-        cursor = self.conn.execute("PRAGMA table_info(ArealEnsembleStatistics);")
+        cursor = self.conn.execute("PRAGMA table_info(EnsembleArealStatistics);")
         columns = cursor.fetchall()
         output_columns = [col[1] for col in columns if col[1] != "id"]
         df = df[output_columns]
@@ -479,7 +479,7 @@ class database:
 
         # Output
         # Get list of column names and order from the existing table - use this to filter df
-        cursor = self.conn.execute("PRAGMA table_info(ArealMemberValues);")
+        cursor = self.conn.execute("PRAGMA table_info(MemberArealStatistics);")
         columns = cursor.fetchall()
         output_columns = [col[1] for col in columns if col[1] != "id"]
         df = df[output_columns]
@@ -502,7 +502,7 @@ class database:
         # Data order is taken from the table, so no need to worry about specify the column names here
         cur.executemany(
             """
-        INSERT INTO ArealEnsembleStatistics
+        INSERT INTO EnsembleArealStatistics
         VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?)
         """,
             rows,
@@ -524,7 +524,7 @@ class database:
         # Data order is taken from the database table, so no need to worry about specify the column names here
         cur.executemany(
             """
-        INSERT INTO ArealMemberValues
+        INSERT INTO MemberArealStatistics
         VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?)
         """,
             rows,
@@ -677,75 +677,75 @@ class database:
         # -- Indexes on Ensemble_stats --
         if self.ensemble_stats_csv is not None:
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_area        ON ArealEnsembleStatistics(AreaKey);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_area        ON EnsembleArealStatistics(AreaKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_indicator   ON ArealEnsembleStatistics(IndicatorKey);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_indicator   ON EnsembleArealStatistics(IndicatorKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_scenario    ON ArealEnsembleStatistics(ScenarioKey);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_scenario    ON EnsembleArealStatistics(ScenarioKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_TimeBin      ON ArealEnsembleStatistics(TimeBinKey);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_TimeBin      ON EnsembleArealStatistics(TimeBinKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_season      ON ArealEnsembleStatistics(SeasonKey);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_season      ON EnsembleArealStatistics(SeasonKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_grid        ON ArealEnsembleStatistics(GridKey);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_grid        ON EnsembleArealStatistics(GridKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_dataset      ON ArealEnsembleStatistics(DatasetKey);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_dataset      ON EnsembleArealStatistics(DatasetKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_arealstat   ON ArealEnsembleStatistics(StatisticTypeKey);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_arealstat   ON EnsembleArealStatistics(StatisticTypeKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_stats_delta       ON ArealEnsembleStatistics(Delta);"
+                "CREATE INDEX IF NOT EXISTS idx_stats_delta       ON EnsembleArealStatistics(Delta);"
             )
             cur.execute(
                 """
             CREATE INDEX IF NOT EXISTS idx_stats_composite
-                ON ArealEnsembleStatistics(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
+                ON EnsembleArealStatistics(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
             """
             )
 
         # -- Indexes on Ensemble_members --
         if self.member_stats_csv is not None:
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_area          ON ArealMemberValues(AreaKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_area          ON MemberArealStatistics(AreaKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_indicator     ON ArealMemberValues(IndicatorKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_indicator     ON MemberArealStatistics(IndicatorKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_scenario      ON ArealMemberValues(ScenarioKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_scenario      ON MemberArealStatistics(ScenarioKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_TimeBin        ON ArealMemberValues(TimeBinKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_TimeBin        ON MemberArealStatistics(TimeBinKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_season        ON ArealMemberValues(SeasonKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_season        ON MemberArealStatistics(SeasonKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_dataset       ON ArealMemberValues(DatasetKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_dataset       ON MemberArealStatistics(DatasetKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_grid          ON ArealMemberValues(GridKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_grid          ON MemberArealStatistics(GridKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_member        ON ArealMemberValues(MemberKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_member        ON MemberArealStatistics(MemberKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_arealstat     ON ArealMemberValues(StatisticTypeKey);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_arealstat     ON MemberArealStatistics(StatisticTypeKey);"
             )
             cur.execute(
-                "CREATE INDEX IF NOT EXISTS idx_mem_delta         ON ArealMemberValues(Delta);"
+                "CREATE INDEX IF NOT EXISTS idx_mem_delta         ON MemberArealStatistics(Delta);"
             )
             cur.execute(
                 """
             CREATE INDEX IF NOT EXISTS idx_mem_composite
-                ON ArealMemberValues(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
+                ON MemberArealStatistics(IndicatorKey, ScenarioKey, TimeBinKey, SeasonKey, Delta);
             """
             )
 
@@ -753,7 +753,7 @@ class database:
         if self.ensemble_stats_csv is not None:
             cur.execute(
                 """
-            CREATE VIEW IF NOT EXISTS view_ArealEnsembleStatistics AS
+            CREATE VIEW IF NOT EXISTS view_EnsembleArealStatistics AS
             SELECT
                 es.id                   AS id,
                 ds.DatasetCode          AS DatasetCode,
@@ -770,7 +770,7 @@ class database:
                 es.Delta                AS Delta,
                 es.Percentile           AS Percentile,
                 es.Value                AS Value
-            FROM ArealEnsembleStatistics AS es
+            FROM EnsembleArealStatistics AS es
             JOIN Indicators      AS i  ON es.IndicatorKey      = i.IndicatorKey
             JOIN Scenarios       AS sc ON es.ScenarioKey       = sc.ScenarioKey
             JOIN TimeBins        AS p  ON es.TimeBinKey         = p.TimeBinKey
@@ -785,7 +785,7 @@ class database:
         if self.member_stats_csv is not None:
             cur.execute(
                 """
-            CREATE VIEW IF NOT EXISTS view_ArealMemberValues AS
+            CREATE VIEW IF NOT EXISTS view_MemberArealStatistics AS
             SELECT
                 em.id                   AS id,
                 ds.DatasetCode          AS DatasetCode,
@@ -802,7 +802,7 @@ class database:
                 ar.StatisticTypeCode   AS StatisticTypeCode,
                 em.Delta                AS Delta,
                 em.Value                AS Value
-            FROM ArealMemberValues AS em
+            FROM MemberArealStatistics AS em
             JOIN Indicators      AS i  ON em.IndicatorKey      = i.IndicatorKey
             JOIN Scenarios       AS sc ON em.ScenarioKey       = sc.ScenarioKey
             JOIN TimeBins        AS p  ON em.TimeBinKey       = p.TimeBinKey
