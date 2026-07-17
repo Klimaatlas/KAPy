@@ -56,16 +56,23 @@ def build_derived_variables(
     theseArgs = {**input_files, **additional_arguments}
     out = thisFn(**theseArgs)
 
-    # Check output
-    if pass_xarrays:  # Expect an xarray or dict of xarrays
-        if not (isinstance(out, xr.DataArray) | isinstance(out, xr.Dataset)):
+    # Output can be
+    # 1. An xarray dataarray or dataset
+    # 2. A dict of paths to files
+    # indepdendent of the value of pass_xarrays
+    if not (isinstance(out, xr.DataArray) | isinstance(out, xr.Dataset)| isinstance(out, dict)):
+        raise TypeError(
+            f"KAPy expects  {custom_script} - {custom_function} to return a dict of paths (strings), a dict of dataarrays, a single dataarray or a single dataset but received {type(out)}.")
+    if isinstance(out, dict):
+        #Check contents
+        all_dataarrays=all(isinstance(v, xr.DataArray) for v in out.values())
+        all_strings=all(isinstance(v, str) for v in out.values())
+        #Can be either a dict of strings or a dict of xarrays
+        if not (all_dataarrays | all_strings):
+            out_types={k:type(v) for k,v in out.items()}
             raise TypeError(
-                f"When pass_xarrays is true, KAPy expects  {custom_script} - {custom_function} to return an Xarray DataArray or Dataset but actually recieved {type(out)}" 
+                f"KAPy expects  {custom_script} - {custom_function} to return a dict of paths (strings), a dict of dataarrays, a single dataarray or a single dataset but one or more values in the dict is not satisfied: {out_types}."
             )
-    else:
-        if not isinstance(out, dict):
-            raise TypeError(
-                f"When pass_xarrays is false, KAPy expects  {custom_script} - {custom_function} to return a dict of paths to the output files but actually recieved {type(out)}"
-            )
+        
 
     return out

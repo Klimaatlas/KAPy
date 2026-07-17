@@ -67,18 +67,40 @@ def write_variables(
             )
 
     elif isinstance(obj, dict):
-        # Accept instances where the object is a dict of paths to a file.
-        # There should be agreement between the keys in the path and obj file.
+        # There should be agreement between the keys in the path and obj dict.
         # Check this first
         if not obj.keys() == path.keys():
             raise ValueError(
-                f"Mismatch between variables expected and returned by the function. Expected: {list(path.keys())}. Returned: {list(obj.keys())}"
+                f"Mismatch between variables expected and returned by the function. Expected: {list(path.keys())}. Received: {list(obj.keys())}"
             )
-        # Loop over the dicts. If the path contained in the object matches the desired output path,
-        # then the result should already be in the right place. Else move the file in  obj to the output path
-        for this_key in path.keys():
-            if obj[this_key] != path[this_key]:
-                shutil.move(Path(obj[this_key]), Path(path[this_key]))
+
+        # We accept either a dict of paths or a dict of xarrays.
+        # Now, figure out which type of object we have
+        all_dataarrays=all(isinstance(v, xr.DataArray) for v in obj.values())
+        all_strings=all(isinstance(v, str) for v in obj.values())
+
+        if all_dataarrays:
+            # Loop over the dicts and write the xarrays to disk
+            for this_key in path.keys():
+                _write_dataarray(
+                    obj[this_key], var_name=this_key, output_path=path[this_key] 
+                )
+
+        elif all_strings:
+            # Loop over the dicts. If the path contained in the object matches the desired output path,
+            # then the result should already be in the right place. Else move the file in  obj to the output path
+            for this_key in path.keys():
+                if obj[this_key] != path[this_key]:
+                    shutil.move(Path(obj[this_key]), Path(path[this_key]))
+        else:
+            # Throw an error
+            out_types={k:type(v) for k,v in out.items()}
+            raise TypeError(
+                f"Unsupported types: {out_types} received. Expected a dict of paths (strings) or a dict of xarrays."
+            )
+
+
+
 
     else:
         raise TypeError(f"Unsupported type: {type(obj)}")
