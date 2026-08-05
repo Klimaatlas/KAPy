@@ -540,6 +540,7 @@ if __name__ == "__main__":
     custom_script = "workflow/testing/hotdays.py"
     custom_function = "hotdays"
     description = "test"
+
     out = calculate_indicators(
         input_files=input_files,
         seasonsTable=seasonsTable,
