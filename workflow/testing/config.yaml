@@ -35,10 +35,7 @@ ensembles:
     percentiles: [0,50,100]  #Use full data range due to small ensemble size.
     method: "linear"
 output_grid:
-    template_type: 'cdo'
-    grid_name: 'Ghana025'
-    method: 'bilinear'
-    path: 'workflow/testing/griddes.txt'
+    template_type: 'none'
 
 # Advanced options-------------
 dask_resources:  workflow/testing/dask.tsv

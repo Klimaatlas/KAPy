@@ -115,3 +115,4 @@ if __name__ == "__main__":
     out = calculate_ensemble_statistics(
         input_files=input_files, percentiles=percentiles, method=method
     )
+    print("Success!")
