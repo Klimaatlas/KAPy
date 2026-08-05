@@ -92,9 +92,9 @@ def calculate_indicators(
 
     # Setup seasons
     if "all" in seasons:
-        indSeasons = list(seasonsTable.keys())
+        these_seasons = list(seasonsTable.keys())
     else:
-        indSeasons = seasons
+        these_seasons = seasons
 
     # Read the relevant datasets back from disk and build into a dataset
     # If there is only one input variable, keep it all as a dataarray - otherwise,
@@ -200,7 +200,7 @@ def calculate_indicators(
 
             # Loop over seasons
             season_slice_list = []
-            for thisSeason in indSeasons:
+            for thisSeason in these_seasons:
                 # Select seeason
                 theseMonths = seasonsTable[thisSeason]["months"]
                 datPeriodSeason = datPeriod.sel(
@@ -252,7 +252,7 @@ def calculate_indicators(
     elif time_binning in ["years"]:
         # Loop over seasons
         seasonTimeseries = []
-        for thisSeason in indSeasons:
+        for thisSeason in these_seasons:
             # Filter data by season
             theseMonths = seasonsTable[thisSeason]["months"]
             datSeason = thisDat.sel(time=np.isin(thisDat.time.dt.month, theseMonths))
@@ -341,10 +341,9 @@ def calculate_indicators(
     ]
 
     # Generate season mask
-    season_ids = list(seasonsTable.keys())
     months = np.arange(1, 13).astype("int32")
-    season_mask = np.zeros((len(season_ids), len(months)), dtype=np.int8)
-    for i, season_id in enumerate(season_ids):
+    season_mask = np.zeros((len(these_seasons), len(months)), dtype=np.int8)
+    for i, season_id in enumerate(these_seasons):
         for month in seasonsTable[season_id]["months"]:
             season_mask[i, month - 1] = 1
 
@@ -374,7 +373,7 @@ def calculate_indicators(
         ds["time_bnds"].encoding.pop("_FillValue", None)
 
         # Season coordinate
-        ds = ds.assign_coords({"season": ("season", np.array(season_ids, dtype=str))})
+        ds = ds.assign_coords({"season": ("season", np.array(these_seasons, dtype=str))})
         ds.season.attrs["long_name"] = (
             "identifier for the season mask used for indicator calculation"
         )
@@ -496,28 +495,32 @@ if __name__ == "__main__":
 
     plt.show()
 
-    # Test full function  ------------------------
-    tas = "outputs/01.primary_variables/CORDEX-tas-44/CORDEX_tas_AFR-44_historical+rcp85_NCC-NorESM1-M_r1i1p1_SMHI-RCA4_v1_mon_Ghana-44.pkl"
-    input_files = {"tas": tas}
-    seasonsTable = {
-        "JJA": {
-            "months": [6, 7, 8],
-            "description": "Summer (JJA)",
-        }
-    }
-    periodsTable = {
-        "2013": {"id": "2013", "start": "2013", "end": "2013"},
-        "2014": {"id": "2014", "start": "2014", "end": "2014"},
-    }
-    seasons = ["JJA"]
-    time_binning = "years"
-    statistic = "mean"
-    skipna = False
-    delta_type = "subtract"
-    additional_arguments = {}
-    custom_script = ""
-    custom_function = ""
-    description = "test"
+    # Test in context ----------------------------------
+    import KAPy
+
+    config = KAPy.get_config("./config/config.yaml")
+    wf = KAPy.get_workflow(config)
+
+    ind_id=list(wf["indicators"].keys())[0]
+
+    output_file = list(wf["indicators"][ind_id]["input_dict"].keys())[0]
+    input_files = wf["indicators"][ind_id]["input_dict"][output_file]
+
+    print(f"Using indicator: {ind_id}")
+    print(f"Using input files: {input_files}")
+    print(f"based on requirements for output file: {output_file}")
+
+    seasonsTable = config["seasons"]
+    periodsTable = config["periods"]
+    seasons = config["indicators"][ind_id]["seasons"]
+    time_binning = config["indicators"][ind_id]["time_binning"]
+    statistic = config["indicators"][ind_id]["statistic"]
+    skipna = config["indicators"][ind_id]["skipna"]
+    delta_type = config["indicators"][ind_id]["delta_type"]
+    additional_arguments = config["indicators"][ind_id]["additional_arguments"]
+    custom_script = config["indicators"][ind_id]["custom_script"]
+    custom_function = config["indicators"][ind_id]["custom_function"]
+    description = config["indicators"][ind_id]["description"]
 
     out = calculate_indicators(
         input_files=input_files,
@@ -534,24 +537,5 @@ if __name__ == "__main__":
         description=description,
     )
 
-    # Test custom function returning multiple indicators
-    statistic = "custom"
-    time_binning = "years"
-    custom_script = "workflow/testing/hotdays.py"
-    custom_function = "hotdays"
-    description = "test"
+    print("Success")
 
-    out = calculate_indicators(
-        input_files=input_files,
-        seasonsTable=seasonsTable,
-        periodsTable=periodsTable,
-        seasons=seasons,
-        time_binning=time_binning,
-        statistic=statistic,
-        skipna=skipna,
-        delta_type=delta_type,
-        additional_arguments=additional_arguments,
-        custom_script=custom_script,
-        custom_function=custom_function,
-        description=description,
-    )
