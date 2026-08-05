@@ -227,7 +227,7 @@ if config["areal_statistics"]["member_areal_statistics"]:
 
 # Database 
 rule:
-    name: "..rule_10_database"
+    name: ".DATABASE"
     input:
         **merged_csvs,
         indicators=config['configuration_tables']['indicators'],
@@ -237,6 +237,7 @@ rule:
     output:
         database=OUTPUT_PATHS["database"]
     params:
+    default_target: True
     run:
         db = KAPy.database(input.config_file,tempDir=resources.tmpdir)
         db.create_full_database()
@@ -308,12 +309,12 @@ if do_areal_statistics:
         input:
             **merged_csvs
 
+
 #All
 rule:
     name: ".ALL"
     input:
         WORKFLOW['all']
-    default_target: True
 
 #And finally, one target for each configuration group.
 for wf_key in WORKFLOW.keys():
