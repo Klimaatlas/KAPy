@@ -53,14 +53,20 @@ def _stat_meanmin(d: xr.DataArray, skipna: bool) -> xr.DataArray:
 def _stat_count(
     d: xr.DataArray, op: str, threshold: float, skipna: bool
 ) -> xr.DataArray:
-    #Check input arguments
+    # Check input arguments
     if (op is None) or (threshold is None):
-        raise ValueError(("The 'additional_arguments' field must contain both 'op' and 'threshold' "
-                          "when using the 'count' statistic. "))
+        raise ValueError(
+            (
+                "The 'additional_arguments' field must contain both 'op' and 'threshold' "
+                "when using the 'count' statistic. "
+            )
+        )
     try:
         threshold = float(threshold)
     except ValueError:
-        raise ValueError(f"Cannot convert 'threshold' value in 'additional_arguments' to a float. 'Threshold' string value: {threshold}")
+        raise ValueError(
+            f"Cannot convert 'threshold' value in 'additional_arguments' to a float. 'Threshold' string value: {threshold}"
+        )
 
     # Do count
     comp = xc.indices.generic.compare(left=d, op=op, right=threshold)
@@ -77,10 +83,13 @@ def _stat_count(
     )
     return res
 
+
 def _stat_quantile(d: xr.DataArray, qtile: float, skipna: bool) -> xr.DataArray:
     # Check input arguments
     if qtile is None:
-        raise ValueError("The 'additional_arguments' field must define the quantile via the 'q' argument e.g q:0.5 ")
+        raise ValueError(
+            "The 'additional_arguments' field must define the quantile via the 'q' argument e.g q:0.5 "
+        )
     try:
         qtile = float(qtile)
     except ValueError:
@@ -90,31 +99,32 @@ def _stat_quantile(d: xr.DataArray, qtile: float, skipna: bool) -> xr.DataArray:
 
     return d.quantile(q=qtile, dim="time", skipna=skipna).drop_vars("quantile")
 
-def _stat_custom(d: xr.DataArray | xr.Dataset, variable_list:list, _custom_function:Callable, kwargs) -> xr.DataArray:
+
+def _stat_custom(
+    d: xr.DataArray | xr.Dataset,
+    variable_list: list,
+    _custom_function: Callable,
+    **kwargs,
+) -> xr.DataArray:
     # A wrapper for the user defined custom function. Takes care of passing
     # the input data to the function, running the function, and checking the
     # return type.
 
-    # Convert the Xarray object into a dict for passing 
+    # Convert the Xarray object into a dict for passing
     if isinstance(d, xr.DataArray):
         data_dict = {variable_list[0]: d}
     elif isinstance(d, xr.Dataset):
-        data_dict = {
-            this_var: d[this_var]
-            for this_var in variable_list
-        }
+        data_dict = {this_var: d[this_var] for this_var in variable_list}
 
     # Apply the function operator
     res = _custom_function(**data_dict, **kwargs)
 
     # Check that the result is either a DataArray or a Dataset
-    if not (
-        isinstance(res, xr.DataArray) or isinstance(res, xr.Dataset)
-    ):
+    if not (isinstance(res, xr.DataArray) or isinstance(res, xr.Dataset)):
         raise TypeError(
             f"The custom function '{_custom_function}' returned an object of type {type(res)} instead of a DataArray or Dataset. Please check the custom function."
         )
-    
+
     return res
 
 
@@ -177,26 +187,26 @@ def calculate_indicators(
     elif statistic == "count":
         stat_function = _stat_count
         stat_args = {
-            "op": additional_arguments.get("op",None),
-            "threshold": additional_arguments.get("threshold",None),
-            "skipna": skipna}
+            "op": additional_arguments.get("op", None),
+            "threshold": additional_arguments.get("threshold", None),
+            "skipna": skipna,
+        }
     elif statistic == "quantile":
         stat_function = _stat_quantile
-        stat_args = {"qtile": additional_arguments.get("q",None), 
-                     "skipna": skipna}
+        stat_args = {"qtile": additional_arguments.get("q", None), "skipna": skipna}
     elif statistic == "custom":
         # Retrieve the custom function. We check that the signature of the function
         # can accept at least the variables that we want
         _custom_function = helpers.get_external_function(custom_script, custom_function)
         try:
-            helpers.check_signature(stat_function, input_files)
+            helpers.check_signature(_custom_function, input_files)
         except ValueError as e:
             raise ValueError(
                 f"Error in the signature of the external function '{custom_function}' "
                 f"in '{custom_script}': {e}"
             ) from None
 
-        # Setup calling structure. The custom and addition args are just passed 
+        # Setup calling structure. The custom and addition args are just passed
         # to the _stat_custom wrapper
         stat_function = _stat_custom
         stat_args = additional_arguments
@@ -364,7 +374,9 @@ def calculate_indicators(
         ds["time_bnds"].encoding.pop("_FillValue", None)
 
         # Season coordinate
-        ds = ds.assign_coords({"season": ("season", np.array(these_seasons, dtype=str))})
+        ds = ds.assign_coords(
+            {"season": ("season", np.array(these_seasons, dtype=str))}
+        )
         ds.season.attrs["long_name"] = (
             "identifier for the season mask used for indicator calculation"
         )
@@ -492,7 +504,7 @@ if __name__ == "__main__":
     config = KAPy.get_config("./config/config.yaml")
     wf = KAPy.get_workflow(config)
 
-    ind_id=list(wf["indicators"].keys())[0]
+    ind_id = list(wf["indicators"].keys())[0]
 
     output_file = list(wf["indicators"][ind_id]["input_dict"].keys())[0]
     input_files = wf["indicators"][ind_id]["input_dict"][output_file]
@@ -529,4 +541,3 @@ if __name__ == "__main__":
     )
 
     print("Success")
-
