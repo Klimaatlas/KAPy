@@ -10,6 +10,7 @@ import xclim as xc
 import numpy as np
 import cftime
 import datetime
+from typing import Callable
 
 # Use absolute imports assuming KAPy is installed
 from KAPy import helpers
@@ -52,8 +53,18 @@ def _stat_meanmin(d: xr.DataArray, skipna: bool) -> xr.DataArray:
 def _stat_count(
     d: xr.DataArray, op: str, threshold: float, skipna: bool
 ) -> xr.DataArray:
+    #Check input arguments
+    if (op is None) or (threshold is None):
+        raise ValueError(("The 'additional_arguments' field must contain both 'op' and 'threshold' "
+                          "when using the 'count' statistic. "))
+    try:
+        threshold = float(threshold)
+    except ValueError:
+        raise ValueError(f"Cannot convert 'threshold' value in 'additional_arguments' to a float. 'Threshold' string value: {threshold}")
+
     # Do count
     comp = xc.indices.generic.compare(left=d, op=op, right=threshold)
+
     # Python doesn't handle comparisons against NaNs very nicely: NaN > 0 returns false (rather than NaN)
     # We work around this by reinserting nans into the comparison array
     # Note that we apply a minimum count criteria in the first summation step - everything is
@@ -66,9 +77,45 @@ def _stat_count(
     )
     return res
 
-
 def _stat_quantile(d: xr.DataArray, qtile: float, skipna: bool) -> xr.DataArray:
+    # Check input arguments
+    if qtile is None:
+        raise ValueError("The 'additional_arguments' field must define the quantile via the 'q' argument e.g q:0.5 ")
+    try:
+        qtile = float(qtile)
+    except ValueError:
+        raise ValueError(
+            f"Cannot convert 'q' value in 'additional_arguments' to a float. 'q' string value: {qtile}"
+        )
+
     return d.quantile(q=qtile, dim="time", skipna=skipna).drop_vars("quantile")
+
+def _stat_custom(d: xr.DataArray | xr.Dataset, variable_list:list, _custom_function:Callable, kwargs) -> xr.DataArray:
+    # A wrapper for the user defined custom function. Takes care of passing
+    # the input data to the function, running the function, and checking the
+    # return type.
+
+    # Convert the Xarray object into a dict for passing 
+    if isinstance(d, xr.DataArray):
+        data_dict = {variable_list[0]: d}
+    elif isinstance(d, xr.Dataset):
+        data_dict = {
+            this_var: d[this_var]
+            for this_var in variable_list
+        }
+
+    # Apply the function operator
+    res = _custom_function(**data_dict, **kwargs)
+
+    # Check that the result is either a DataArray or a Dataset
+    if not (
+        isinstance(res, xr.DataArray) or isinstance(res, xr.Dataset)
+    ):
+        raise TypeError(
+            f"The custom function '{_custom_function}' returned an object of type {type(res)} instead of a DataArray or Dataset. Please check the custom function."
+        )
+    
+    return res
 
 
 # Public functions-----------------------------------------------------
@@ -111,7 +158,7 @@ def calculate_indicators(
             }
         )
 
-    # Get statistical operator
+    # Map statistical operators
     if statistic == "mean":
         stat_function = _stat_mean
         stat_args = {"skipna": skipna}
@@ -129,40 +176,18 @@ def calculate_indicators(
         stat_args = {"skipna": skipna}
     elif statistic == "count":
         stat_function = _stat_count
-        # Check input arguments
-        if not (("op" in additional_arguments) & ("threshold" in additional_arguments)):
-            raise ValueError(
-                "The 'additional_arguments' field must contain both 'op' and 'threshold' when using the 'count' statistic. "
-            )
-        try:
-            threshold = float(additional_arguments["threshold"])
-        except ValueError:
-            raise ValueError(
-                f"Cannot convert 'threshold' value in 'additional_arguments' to a float. 'Threshold' string value: {additional_arguments['threshold']}"
-            )
         stat_args = {
-            "op": additional_arguments["op"],
-            "threshold": threshold,
-            "skipna": skipna,
-        }
+            "op": additional_arguments.get("op",None),
+            "threshold": additional_arguments.get("threshold",None),
+            "skipna": skipna}
     elif statistic == "quantile":
         stat_function = _stat_quantile
-        # Check input arguments
-        if "q" not in additional_arguments:
-            raise ValueError(
-                "The 'additional_arguments' field must define the quantile via the 'q' argument e.g q:0.5 "
-            )
-        try:
-            qtile = float(additional_arguments["q"])
-        except ValueError:
-            raise ValueError(
-                f"Cannot convert 'q' value in 'additional_arguments' to a float. 'q' string value: {additional_arguments['q']}"
-            )
-        stat_args = {"qtile": qtile, "skipna": skipna}
+        stat_args = {"qtile": additional_arguments.get("q",None), 
+                     "skipna": skipna}
     elif statistic == "custom":
         # Retrieve the custom function. We check that the signature of the function
         # can accept at least the variables that we want
-        stat_function = helpers.get_external_function(custom_script, custom_function)
+        _custom_function = helpers.get_external_function(custom_script, custom_function)
         try:
             helpers.check_signature(stat_function, input_files)
         except ValueError as e:
@@ -171,9 +196,13 @@ def calculate_indicators(
                 f"in '{custom_script}': {e}"
             ) from None
 
-        # Addition args are just passed directly to the function
+        # Setup calling structure. The custom and addition args are just passed 
+        # to the _stat_custom wrapper
+        stat_function = _stat_custom
         stat_args = additional_arguments
         stat_args["skipna"] = skipna
+        stat_args["variable_list"] = list(input_files.keys())
+        stat_args["_custom_function"] = _custom_function
     else:
         raise ValueError(f"Unknown indicator statistic, '{statistic}'")
 
@@ -209,26 +238,7 @@ def calculate_indicators(
 
                 # Only attempt a calculation if there is something left
                 if datPeriodSeason.time.size != 0:
-                    if statistic == "custom":
-                        # split the Xarray dataset into a dict again for passing
-                        if isinstance(datPeriodSeason, xr.DataArray):
-                            datDict = {list(input_files.keys())[0]: datPeriodSeason}
-                        elif isinstance(datPeriodSeason, xr.Dataset):
-                            datDict = {
-                                thisKey: datPeriodSeason[thisKey]
-                                for thisKey in input_files.keys()
-                            }
-                        # Apply operator
-                        res = stat_function(**datDict, **stat_args)
-                        # Check that the result is either a DataArray or a Dataset
-                        if not (
-                            isinstance(res, xr.DataArray) or isinstance(res, xr.Dataset)
-                        ):
-                            raise TypeError(
-                                f"The custom function '{custom_function}' returned an object of type {type(res)} instead of a DataArray or Dataset. Please check the custom function."
-                            )
-                    else:
-                        res = stat_function(datPeriodSeason, **stat_args)
+                    res = stat_function(datPeriodSeason, **stat_args)
                     res["season"] = thisSeason
                     season_slice_list.append(res)
 
@@ -260,28 +270,9 @@ def calculate_indicators(
             # Then group by time.
             datGroupped = datSeason.resample(time="YS")
 
-            # Apply the operator
-            if statistic == "custom":
-                # split the Xarray dataset into a dict again for passing
-                if isinstance(thisDat, xr.DataArray):
-                    datDict = {list(input_files.keys())[0]: datGroupped}
-                elif isinstance(thisDat, xr.Dataset):
-                    datDict = {
-                        thisKey: datGroupped[thisKey] for thisKey in input_files.keys()
-                    }
-                else:
-                    raise TypeError(
-                        "Unknown data type for datGroupped. Expected DataArray or Dataset."
-                    )
-                # Apply operator
-                res = stat_function(**datDict, **stat_args)
-                # Check that the result is either a DataArray or a Dataset
-                if not (isinstance(res, xr.DataArray) or isinstance(res, xr.Dataset)):
-                    raise TypeError(
-                        f"The custom function '{custom_function}' returned an object of type {type(res)} instead of a DataArray or Dataset. Please check the custom function."
-                    )
-            else:
-                res = stat_function(datGroupped, **stat_args)
+            # Apply the operator to the groups using map.
+            res = datGroupped.map(lambda x: stat_function(x, **stat_args))
+
             # Store the results
             res["season"] = thisSeason
             seasonTimeseries.append(res)
