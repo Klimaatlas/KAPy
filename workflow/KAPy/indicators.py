@@ -2,14 +2,14 @@
 Indicators.py
 
 Given one or more climate variables, the functions here will calculate indicators, with time binning either across
-defined periods or annual time bins. 
+defined periods or annual time bins.
 """
 
 import xarray as xr
 import xclim as xc
 import numpy as np
 import cftime
-import json
+import datetime
 
 # Use absolute imports assuming KAPy is installed
 from KAPy import helpers
@@ -86,6 +86,7 @@ def calculate_indicators(
     additional_arguments,
     custom_script,
     custom_function,
+    description,
     **kwargs,
 ):
 
@@ -178,8 +179,9 @@ def calculate_indicators(
 
     # Time binning over periods
     # ----------------------------------
+    time_bounds = []
     if time_binning == "periods":
-        periodSlices = []
+        period_slice_list = []
         for thisPeriod in periodsTable.values():
             # Slice dataset by time
             # It is possible that we end with an empty slice at this stage e.g. when
@@ -197,7 +199,7 @@ def calculate_indicators(
                 continue
 
             # Loop over seasons
-            seasonSlices = []
+            season_slice_list = []
             for thisSeason in indSeasons:
                 # Select seeason
                 theseMonths = seasonsTable[thisSeason]["months"]
@@ -216,24 +218,34 @@ def calculate_indicators(
                                 thisKey: datPeriodSeason[thisKey]
                                 for thisKey in input_files.keys()
                             }
-                        # Apply operator and store
+                        # Apply operator
                         res = stat_function(**datDict, **stat_args)
+                        # Check that the result is either a DataArray or a Dataset
+                        if not (
+                            isinstance(res, xr.DataArray) or isinstance(res, xr.Dataset)
+                        ):
+                            raise TypeError(
+                                f"The custom function '{custom_function}' returned an object of type {type(res)} instead of a DataArray or Dataset. Please check the custom function."
+                            )
                     else:
                         res = stat_function(datPeriodSeason, **stat_args)
-                    res["seasonID"] = thisSeason
-                    seasonSlices.append(res)
+                    res["season"] = thisSeason
+                    season_slice_list.append(res)
 
             # Concatenate seasons into a dataarray and store
-            outSeason = xr.concat(seasonSlices, dim="seasonID")
-            outSeason["periodID"] = thisPeriod["id"]
-            periodSlices.append(outSeason)
+            outSeason = xr.concat(season_slice_list, dim="season")
+            period_slice_list.append(outSeason)
+
+            # Store metadata
+            time_bounds.append(
+                [
+                    cftime.DatetimeGregorian(int(thisPeriod["start"]), 1, 1),
+                    cftime.DatetimeGregorian(int(thisPeriod["end"]) + 1, 1, 1),
+                ]
+            )
 
         # Concatenate across periods now
-        dout = xr.concat(periodSlices, dim="periodID")
-
-        # Tidy metadata
-        dout.periodID.attrs["name"] = "periodID"
-        dout.seasonID.attrs["name"] = "seasonID"
+        indicators = xr.concat(period_slice_list, dim="time")
 
     # Time binning by years
     # ----------------------------
@@ -245,44 +257,58 @@ def calculate_indicators(
             theseMonths = seasonsTable[thisSeason]["months"]
             datSeason = thisDat.sel(time=np.isin(thisDat.time.dt.month, theseMonths))
 
-            # Then group by time. Could consider using groupby as an alternative
+            # Then group by time.
             datGroupped = datSeason.resample(time="YS")
 
             # Apply the operator
             if statistic == "custom":
                 # split the Xarray dataset into a dict again for passing
-                if isinstance(datGroupped, xr.DataArray):
+                if isinstance(thisDat, xr.DataArray):
                     datDict = {list(input_files.keys())[0]: datGroupped}
-                elif isinstance(datGroupped, xr.Dataset):
+                elif isinstance(thisDat, xr.Dataset):
                     datDict = {
                         thisKey: datGroupped[thisKey] for thisKey in input_files.keys()
                     }
-                # Apply operator and store
+                else:
+                    raise TypeError(
+                        "Unknown data type for datGroupped. Expected DataArray or Dataset."
+                    )
+                # Apply operator
                 res = stat_function(**datDict, **stat_args)
+                # Check that the result is either a DataArray or a Dataset
+                if not (isinstance(res, xr.DataArray) or isinstance(res, xr.Dataset)):
+                    raise TypeError(
+                        f"The custom function '{custom_function}' returned an object of type {type(res)} instead of a DataArray or Dataset. Please check the custom function."
+                    )
             else:
                 res = stat_function(datGroupped, **stat_args)
             # Store the results
-            res["seasonID"] = thisSeason
+            res["season"] = thisSeason
             seasonTimeseries.append(res)
 
-        # Concatenate across periods now
-        dout = xr.concat(seasonTimeseries, dim="seasonID")
-        dout = dout.transpose("time", "seasonID", ...)
+        # Concatenate across seasons
+        indicators = xr.concat(seasonTimeseries, dim="season")
 
         # Tidy metadata
-        dout.seasonID.attrs["name"] = "seasonID"
+        indicators.season.attrs["name"] = "season"
 
-        # Round time to the first day of the year. This ensures that everything
-        # has an identical datetime, regardless of the calendar being used.
-        # Kudpos to ChatGPT for this little work around
+        # Handle time binds. We set time as midpoint of year, using the gregorian calendar
+        # and the bounds to reflect the CF time bounds convention [start,end).
         # Note that we need to ensure cftime representation, for runs that
         # go out paste 2262
-        dout["time"] = [
-            cftime.DatetimeGregorian(x.dt.strftime("%Y"), x.dt.strftime("%m"), 1)
-            for x in dout.time
+        time_bounds = [
+            [
+                cftime.DatetimeGregorian(x.dt.strftime("%Y"), 1, 1),
+                cftime.DatetimeGregorian(int(x.dt.strftime("%Y")) + 1, 1, 1),
+            ]
+            for x in indicators.time
         ]
+
     else:
         raise ValueError(f"Unknown time binning method, '{time_binning}'.")
+
+    # Establish variable ordering to be CF compliant: U-T-Z-Y-X
+    indicators = indicators.transpose("season", "time", ...)
 
     # Calculation of changes
     # ------------------------
@@ -290,64 +316,139 @@ def calculate_indicators(
     # period binning, but we need to calculate it for annual binning
     if time_binning == "periods":
         # We use the first periodID as the reference here
-        ref = dout.isel(periodID=0)
+        ref = indicators.isel(time=0)
     elif time_binning in ["years"]:
         # Again use the first time period, but average
         refPeriod = list(periodsTable.values())[0]
-        refDat = helpers.timeslice(dout, refPeriod["start"], refPeriod["end"])
+        refDat = helpers.timeslice(indicators, refPeriod["start"], refPeriod["end"])
         ref = refDat.mean(dim="time")
     else:
         raise ValueError(f"Unknown time binning method, '{time_binning}'.")
 
     # Calculate change
     if delta_type == "subtract":
-        deltaOut = dout - ref
+        deltas = indicators - ref
     elif delta_type == "divide":
-        deltaOut = dout / ref
+        deltas = indicators / ref
     else:
         raise ValueError(f"Unknown delta_type method, '{delta_type}'.")
-    deltaOut.attrs["delta_type"] = delta_type
 
     # Polish final product
     # ----------------------
-    # Firstly, we need a reshuffle. We currently have one object with the absolute values for each
+    # Generate time mid points and time bounds auxiliary coordinate
+    mid_times = [
+        start_time + (end_time - start_time) / 2 for start_time, end_time in time_bounds
+    ]
+
+    # Generate season mask
+    season_ids = list(seasonsTable.keys())
+    months = np.arange(1, 13).astype("int32")
+    season_mask = np.zeros((len(season_ids), len(months)), dtype=np.int8)
+    for i, season_id in enumerate(season_ids):
+        for month in seasonsTable[season_id]["months"]:
+            season_mask[i, month - 1] = 1
+
+    # The final product requires a reshuffle. We currently have one object with the absolute values for each
     # indicator, and one with the delta change, for each indicator. We want to rejig this so that
-    # we have object for each indcator, containing both the absolute and delta change variables.
+    # we have a dataset for each indcator, containing both the absolute and delta change variables.
     # For easy handling, we store this in a dict, which is the ultimate output of the function
     # We also need to be careful about the difference between datasets and dataarrays, which
     # both are legal at this point
-    def decorate_dataset(ds):
-        ds.attrs = {}
-        ds.attrs["time_binning"] = time_binning
-        ds.attrs["statistic"] = statistic
-        ds.attrs["delta_type"] = delta_type
-        ds.attrs["additional_arguments"] = str(additional_arguments)
-        ds.attrs["custom_script"] = custom_script
-        ds.attrs["custom_function"] = custom_function
-        ds.attrs["seasonID_dict"] = json.dumps(seasonsTable)
-        if time_binning == "periods":
-            ds.attrs["periodID_dict"] = json.dumps(periodsTable)
+    def _decorate_dataset(ds):
+
+        # Time coordinate
+        ds = ds.assign_coords({"time": ("time", mid_times)})
+        ds.time.attrs["bounds"] = "time_bnds"
+        ds.time.encoding["units"] = "days since 1970-01-01"
+        ds.time.attrs.update(
+            {
+                "standard_name": "time",
+                "long_name": "mid-point of time-bin used for indicator calculation",
+                "axis": "T",
+            }
+        )
+        ds.time.encoding["_FillValue"] = None
+
+        # Time bounds
+        ds["time_bnds"] = xr.DataArray(time_bounds, dims=("time", "nv"))
+        ds["time_bnds"].encoding.pop("_FillValue", None)
+
+        # Season coordinate
+        ds = ds.assign_coords({"season": ("season", np.array(season_ids, dtype=str))})
+        ds.season.attrs["long_name"] = (
+            "identifier for the season mask used for indicator calculation"
+        )
+
+        # Month coordinate
+        ds = ds.assign_coords({"month": ("month", months)})
+        ds["month"].attrs.update(
+            {
+                "long_name": "calendar month",
+                "valid_min": np.int32(1),
+                "valid_max": np.int32(12),
+            }
+        )
+        # Season mask
+        ds["season_mask"] = xr.DataArray(season_mask, dims=("season", "month"))
+        ds["season_mask"].attrs.update(
+            {
+                "long_name": "season definition mask",
+                "description": "Boolean mask indicating whether a calendar month is included in the season",
+                "flag_values": np.array([0, 1], dtype=np.int8),
+                "flag_meanings": "not_included included",
+            }
+        )
+
+        # Delta attributes
+        ds.delta.attrs = {
+            "long_name": "change in indicator value relative to first time-bin",
+            "delta_type": delta_type,
+        }
+
+        # Indicator attributes
+        ds.indicator.attrs = {
+            "long_name": "indicator value calculated over time-bin",
+            "description": description,
+        }
+
+        # Global attributes
+        ds.attrs = {
+            "title": "KAPy indicator dataset",
+            "Conventions": "CF-1.9",
+            "history": (
+                f"{datetime.datetime.now(datetime.timezone.utc).isoformat()} "
+                "Indicator calculation performed using KAPy."
+            ),
+            "time_binning": time_binning,
+            "statistic": statistic,
+            "additional_arguments": str(additional_arguments),
+            "custom_script": custom_script,
+            "custom_function": custom_function,
+        }
+
+        # Sort
+        ds = ds[sorted(ds.data_vars)]
+
         return ds
 
-    if isinstance(dout, xr.Dataset):
+    # Apply the decoration function
+    if isinstance(indicators, xr.Dataset):
         rtn = {}
-        for v in list(dout.data_vars):
+        for v in list(indicators.data_vars):
             # Extract indicators and merge into a dataset
-            absolute_ind = dout[v]
-            delta_ind = deltaOut[v]
-            out = xr.Dataset({"indicator": absolute_ind, "delta": delta_ind})
+            out = xr.Dataset({"indicator": indicators[v], "delta": deltas[v]})
             # Add attributes and store
-            out = decorate_dataset(out)
+            out = _decorate_dataset(out)
             rtn[v] = out
 
-    elif isinstance(dout, xr.DataArray):
-        out = xr.Dataset({"indicator": dout, "delta": deltaOut})
-        rtn = decorate_dataset(out)
+    elif isinstance(indicators, xr.DataArray):
+        out = xr.Dataset({"indicator": indicators, "delta": deltas})
+        rtn = _decorate_dataset(out)
 
     return rtn
 
 
-# Validation ----------------------------
+# Development configuration----------------------------
 if __name__ == "__main__":
     # Setup for debugging
     import matplotlib.pyplot as plt
@@ -394,3 +495,62 @@ if __name__ == "__main__":
         axes[row, 1].set_title(f"{name} - skipna={False}")
 
     plt.show()
+
+    # Test full function  ------------------------
+    tas = "outputs/01.primary_variables/CORDEX-tas-44/CORDEX_tas_AFR-44_historical+rcp85_NCC-NorESM1-M_r1i1p1_SMHI-RCA4_v1_mon_Ghana-44.pkl"
+    input_files = {"tas": tas}
+    seasonsTable = {
+        "JJA": {
+            "months": [6, 7, 8],
+            "description": "Summer (JJA)",
+        }
+    }
+    periodsTable = {
+        "2013": {"id": "2013", "start": "2013", "end": "2013"},
+        "2014": {"id": "2014", "start": "2014", "end": "2014"},
+    }
+    seasons = ["JJA"]
+    time_binning = "years"
+    statistic = "mean"
+    skipna = False
+    delta_type = "subtract"
+    additional_arguments = {}
+    custom_script = ""
+    custom_function = ""
+    description = "test"
+
+    out = calculate_indicators(
+        input_files=input_files,
+        seasonsTable=seasonsTable,
+        periodsTable=periodsTable,
+        seasons=seasons,
+        time_binning=time_binning,
+        statistic=statistic,
+        skipna=skipna,
+        delta_type=delta_type,
+        additional_arguments=additional_arguments,
+        custom_script=custom_script,
+        custom_function=custom_function,
+        description=description,
+    )
+
+    # Test custom function returning multiple indicators
+    statistic = "custom"
+    time_binning = "years"
+    custom_script = "workflow/testing/hotdays.py"
+    custom_function = "hotdays"
+    description = "test"
+    out = calculate_indicators(
+        input_files=input_files,
+        seasonsTable=seasonsTable,
+        periodsTable=periodsTable,
+        seasons=seasons,
+        time_binning=time_binning,
+        statistic=statistic,
+        skipna=skipna,
+        delta_type=delta_type,
+        additional_arguments=additional_arguments,
+        custom_script=custom_script,
+        custom_function=custom_function,
+        description=description,
+    )

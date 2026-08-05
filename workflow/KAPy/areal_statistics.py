@@ -39,14 +39,19 @@ def generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile):
     time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
     thisDat = xr.open_dataset(inFile, decode_times=time_coder, decode_timedelta=False)
 
-    # Check for the presence  the time / period coordinate first
-    if not any(coord in thisDat.dims for coord in ["time", "periodID"]):
-        raise ValueError(f'Cannot find time or periodID coordinate in "{inFile}".')
+    # Replace time with a period code generated from time_bnds following ISO8601
+    time_period_codes = [
+        f"{x[0]:%Y-%m-%d}/{x[1]:%Y-%m-%d}" for x in thisDat["time_bnds"].values
+    ]
+    thisDat = thisDat.assign_coords(time=("time", time_period_codes))
+
+    # Then drop time_bnds and season_mask
+    thisDat = thisDat.drop_vars(["time_bnds", "season_mask"])
 
     # Identify coordinate types. Some logic is required here, as the coordinates
-    # presented can vary based on time_binning and whether it is an ensemble stat or member
+    # presented can vary based whether it is an ensemble stat or member
     spDims = list(
-        set(thisDat.dims) - set(["time", "periodID", "seasonID", "percentiles"])
+        set(thisDat.dims) - set(["time", "season", "percentiles", "nv", "month"])
     )
     nonspDims = list(set(thisDat.dims) - set(spDims))
     spGrid = thisDat.isel({k: 0 for k in nonspDims}, drop=True)[
@@ -133,53 +138,38 @@ def generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile):
         dfOut.insert(0, "areaID", "NA")
         dfOut = dfOut.reset_index()
 
-    # Align different time axes into a "timebin" axis.
-    if "time" in dfOut.columns:
-        dfOut["time"] = [d.strftime("%Y-%m-%d") for d in dfOut["time"]]
-        dfOut = dfOut.rename(columns={"time": "timeBinID"})
-    if "periodID" in dfOut.columns:
-        dfOut = dfOut.rename(columns={"periodID": "timeBinID"})
-
     # Return dfOut. Writing is handled by the calling function
     return dfOut
 
 
-# Development setup -----------------------------------------------------
-# Uses the testing dataset
+# Development configuration----------------------------
 if __name__ == "__main__":
-    # Set the working directory
-    from pathlib import Path
-    import os
+    # Setup for debugging
+    # ASSERT: working directory is the root of the project
+    import KAPy
 
-    ROOT = Path(__file__).resolve().parent.parent.parent
+    config = KAPy.get_config("./config/config.yaml")
+    wf = KAPy.get_workflow(config)
+    output_file = list(wf["areal_statistics"]["input_dict"].keys())[0]
+    inFile = wf["areal_statistics"]["input_dict"][output_file][0]
+    print(f"Using input file: {inFile}")
+    print(f"based on requirements for output file: {output_file}")
 
-    # Import KAPy
-    os.chdir(ROOT / "workflow")
-
-    # Setup configuration parameters
+    # Set options
     import tempfile
 
-    inFile = (
-        ROOT
-        / "testing"
-        / "07.ensstats"
-        / "CORDEX-BA_i101_Ghana025_historical+rcp85_ensstats.nc"
-    )
-    inFile = (
-        ROOT
-        / "testing"
-        / "07.ensstats"
-        / "CORDEX-BA_T25_Ghana025_historical+rcp85_ensstats.nc"
-    )
-    inFile = (
-        ROOT
-        / "testing"
-        / "07.ensstats"
-        / "CORDEX-BA_mean-tas_Ghana025_historical+rcp85_ensstats.nc"
-    )
     tempDir = tempfile.gettempdir()
-    useAreaWeighting = True
-    shapefile = ROOT / "docs/tutorials/Tutorial05_files/Ghana_regions.shp"
 
-    # Run the function
-    dfOut = generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile)
+    # Run without a shapefile
+    print("Running without a shapefile------------------")
+    useAreaWeighting = True
+    shapefile = None
+    without_shp = generate_areal_statistics(
+        inFile, tempDir, useAreaWeighting, shapefile
+    )
+
+    # Run with a shapefile
+    print("Running with a shapefile------------------")
+    shapefile = "docs/tutorials/Tutorial05_files/Ghana_regions.shp"
+    useAreaWeighting = True
+    with_shp = generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile)

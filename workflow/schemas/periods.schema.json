@@ -1,18 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "KAPy periods configuration",
-  "description": "Calculation periods in KAPy are configured through a tab-separated table, with one row per period. At least one period must be defined, even in configurations where there is no `period` time-binning used, as the first period is used as the reference period against which changes in indicators are calculated. The available options are described here. All options are required.",
-  "required": ["id", "enabled","description", "start", "end"],
+  "description": "Calculation periods in KAPy are configured through a tab-separated table, with one row per period. At least one period must be defined, even in configurations where there is no `period` time-binning used, as the first period is used as the reference period against which changes in indicators are calculated. Note also that period configuration does not require an 'id' column, unlike all other configuration tables - IDs are generated from the period configuration using the ISO-8061 standard. The available options are described here - all options are required.",
+  "required": ["enabled","description", "start", "end"],
   "additionalProperties": false,
   "type": "object",
   "properties": {
-    "id": {
-      "description": "Unique identifier for the period. This can be numeric, but will be treated as a string. Cannont contain space or comma.",
-      "type": "string",
-      "pattern": "^[^ ,]+$",            
-      "uniqueItems": true
-    },
-    "enabled": {
+   "enabled": {
       "description": "Determines whether the row be used in the workflow. A non-empty value indicates not to use that row.",
       "type": ["string","null"]
     },

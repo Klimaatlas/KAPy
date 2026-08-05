@@ -3,26 +3,7 @@ from cdo import Cdo
 import numpy as np
 import scipy as sp
 import xesmf as xe
-
-
-"""
-#Setup for debugging with a Jupyterlab console
-import os
-print(os.getcwd())
-import helpers
-os.chdir("..")
-import KAPy
-os.chdir("../..")
-config=KAPy.get_config("./config/config.yaml")  
-wf=KAPy.get_workflow(config)
-output_file=[list(wf['regrid']['input_dict'].keys())[0]]
-input_path=[wf['regrid']['input_dict'][output_file[0]]['input_path']]
-templateType=config['output_grid']['templateType']
-path=config['output_grid']['path']
-method=config['output_grid']['method']
-tempDir=config['dirs']['tempDir']
-%matplotlib inline
-"""
+import datetime
 
 
 def regrid(input_path, templateType, path, method, tempDir):
@@ -42,15 +23,14 @@ def regrid(input_path, templateType, path, method, tempDir):
     thisDat = xr.open_dataset(
         input_path[0], decode_times=time_coder, decode_timedelta=False
     )
-    # Identify time coordinate
-    if "time" in thisDat.dims:
-        tCoord = "time"
-    elif "periodID" in thisDat.dims:
-        tCoord = "periodID"
-    else:
-        raise ValueError(
-            f'Cannot find time or periodID coordinate in "{input_path[0]}".'
-        )
+
+    # Identify coordinate types. Some logic is required here, as the coordinates
+    # presented can vary based whether it is an ensemble stat or member
+    spDims = list(set(thisDat.dims) - set(["time", "season", "percentiles"]))
+    nonspDims = list(set(thisDat.dims) - set(spDims))
+    spGrid = thisDat.isel({k: 0 for k in nonspDims}, drop=True)[
+        list(thisDat.data_vars)[0]
+    ]
 
     # Fill in the NaNs before regridding, to avoid bleeding from the surroundings
     # This is a bit work - we use scipy's griddata routine for regridding
@@ -58,10 +38,10 @@ def regrid(input_path, templateType, path, method, tempDir):
     # This is only necessary though if there are NaNs in the file in the first place
     if np.isnan(thisDat.indicator).any().values | np.isnan(thisDat.delta).any().values:
         for var in ["indicator", "delta"]:
-            for tID in np.arange(thisDat[tCoord].size):
-                for sID in np.arange(thisDat.seasonID.size):
+            for tID in np.arange(thisDat.time.size):
+                for sID in np.arange(thisDat.season.size):
                     # Extract data. Skip if all NaNs
-                    d = thisDat[var].isel({tCoord: tID, "seasonID": sID})
+                    d = thisDat[var].isel(season=sID, time=tID)
                     if d.isnull().all().values:
                         continue
                     # Extract non-nan values
@@ -77,7 +57,7 @@ def regrid(input_path, templateType, path, method, tempDir):
                         (yGrd, xGrd),
                         method="nearest",
                     )
-                    thisDat[var].values[tID, sID] = grd
+                    thisDat[var].values[sID, tID] = grd
 
     # Setup the reference grid, either by importing the file, or generating it with CDO
     if templateType == "file":
@@ -100,5 +80,52 @@ def regrid(input_path, templateType, path, method, tempDir):
     # Mask output
     out = regrdded.where(~np.isnan(refGrd), np.nan)
 
+    # Tidy up output-------------------
+    # Restore auxiliary coordinates by copying them back into the original dataset
+    missing_vars = set(thisDat.variables) - set(out.variables) - set(spGrid.coords)
+    for var in missing_vars:
+        out[var] = thisDat[var]
+
+    # Add CF compliant bits here e.g history
+    old_history = out.attrs.get("history", "")
+    new_entry = (
+        f"{datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}: "
+        "regridded using xESMF interpolation"
+    )
+    out.attrs["history"] = old_history + "\n" + new_entry if old_history else new_entry
+    out.attrs["title"] = "Regridded KAPy indicator dataset"
+
     # Done
     return out
+
+
+# Development configuration----------------------------
+if __name__ == "__main__":
+    # Setup for debugging
+    # ASSERT: working directory is the root of the project
+    import KAPy
+
+    config = KAPy.get_config("./config/config.yaml")
+    config = KAPy.get_config("./workflow/testing/config.yaml")
+    wf = KAPy.get_workflow(config)
+    output_file = list(wf["regrid"]["input_dict"].keys())[0]
+    input_path = [wf["regrid"]["input_dict"][output_file]["input_path"]]
+    print(f"Using input file: {input_path}")
+    print(f"based on requirements for output file: {output_file}")
+
+    # Set options
+    import tempfile
+
+    tempDir = tempfile.gettempdir()
+    templateType = config["output_grid"]["template_type"]
+    path = config["output_grid"]["path"]
+    method = config["output_grid"]["method"]
+
+    # Apply regridding
+    out = regrid(
+        input_path=input_path,
+        templateType=templateType,
+        path=path,
+        method=method,
+        tempDir=tempDir,
+    )

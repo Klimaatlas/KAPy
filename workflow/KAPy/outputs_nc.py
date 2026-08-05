@@ -7,6 +7,7 @@ import shutil
 # Use absolute imports assuming KAPy is installed
 from KAPy import helpers
 
+
 def _write_dataarray(da: xr.DataArray, var_name: str, output_path: str):
     # Choose output format
     format = os.path.splitext(os.path.basename(output_path))[1]
@@ -28,9 +29,8 @@ def _write_dataarray(da: xr.DataArray, var_name: str, output_path: str):
         )
 
 
-
 def write_variables(
-    obj: xr.DataArray | xr.Dataset | dict[str,str], path: dict[str, str]
+    obj: xr.DataArray | xr.Dataset | dict[str, str], path: dict[str, str]
 ) -> None:
     """
     Write variables as xarray objects to disk as NetCDF files.
@@ -56,12 +56,10 @@ def write_variables(
         )
 
     elif isinstance(obj, xr.Dataset):
-        #Check that the keys in path can be found in the xr.Dataset obj
+        # Check that the keys in path can be found in the xr.Dataset obj
         for this_key in path.keys():
-            if not (this_key  in obj):  
-                raise ValueError(
-                    f"Cannot find variable {this_key} in xarray dataset."
-                )
+            if this_key not in obj:
+                raise ValueError(f"Cannot find variable {this_key} in xarray dataset.")
             _write_dataarray(
                 obj[this_key], var_name=this_key, output_path=path[this_key]
             )
@@ -76,14 +74,14 @@ def write_variables(
 
         # We accept either a dict of paths or a dict of xarrays.
         # Now, figure out which type of object we have
-        all_dataarrays=all(isinstance(v, xr.DataArray) for v in obj.values())
-        all_strings=all(isinstance(v, str) for v in obj.values())
+        all_dataarrays = all(isinstance(v, xr.DataArray) for v in obj.values())
+        all_strings = all(isinstance(v, str) for v in obj.values())
 
         if all_dataarrays:
             # Loop over the dicts and write the xarrays to disk
             for this_key in path.keys():
                 _write_dataarray(
-                    obj[this_key], var_name=this_key, output_path=path[this_key] 
+                    obj[this_key], var_name=this_key, output_path=path[this_key]
                 )
 
         elif all_strings:
@@ -94,26 +92,25 @@ def write_variables(
                     shutil.move(Path(obj[this_key]), Path(path[this_key]))
         else:
             # Throw an error
-            out_types={k:type(v) for k,v in out.items()}
+            out_types = {k: type(v) for k, v in obj.items()}
             raise TypeError(
                 f"Unsupported types: {out_types} received. Expected a dict of paths (strings) or a dict of xarrays."
             )
-
-
-
 
     else:
         raise TypeError(f"Unsupported type: {type(obj)}")
 
 
-def write_indicators(obj: xr.Dataset | dict, path: dict[str, str]) -> None:
+def write_indicators(
+    obj: xr.Dataset | dict[str, xr.Dataset], path: dict[str, str]
+) -> None:
     """
     Write indicators to disk as NetCDF files.
 
     Parameters
     ----------
     obj :  xr.Dataset | dict
-        The data to write, provided either as a dataset or a dict. If a dict multiple files are written.
+        The data to write, provided either as a dataset or a dict of datasets. If a dict multiple files are written.
     path : dict
         Mapping of indicator names to output file paths.
     """

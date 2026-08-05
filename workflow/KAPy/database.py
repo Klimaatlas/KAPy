@@ -26,18 +26,18 @@ class database:
             "configuration_table": "seasons",
             "description_column": "SeasonDescription",
         },
-        "TimeBins": {
-            "configuration_table": "periods",
-            "description_column": "TimeBinDescription",
-        },
+        # "TimeBins": {
+        #     "configuration_table": "periods",
+        #     "description_column": "TimeBinDescription",
+        # },
     }
 
     LOOKUP_TABLES = {
         "Seasons": dict(
-            table="Seasons", id="SeasonKey", code="SeasonCode", src="seasonID"
+            table="Seasons", id="SeasonKey", code="SeasonCode", src="season"
         ),
         "TimeBins": dict(
-            table="TimeBins", id="TimeBinKey", code="TimeBinCode", src="timeBinID"
+            table="TimeBins", id="TimeBinKey", code="TimeBinCode", src="time"
         ),
         "Indicators": dict(
             table="Indicators", id="IndicatorKey", code="IndicatorCode", src="indID"
@@ -763,7 +763,6 @@ class database:
                 i.IndicatorDescription  AS IndicatorDescription,
                 es.AreaKey              AS AreaKey,
                 p.TimeBinCode            AS TimeBinCode,
-                p.TimeBinDescription     AS TimeBinDescription,
                 se.SeasonCode           AS SeasonCode,
                 se.SeasonDescription    AS SeasonDescription,
                 ar.StatisticTypeCode   AS StatisticTypeCode,
@@ -796,7 +795,6 @@ class database:
                 i.IndicatorDescription  AS IndicatorDescription,
                 em.AreaKey              AS AreaKey,
                 p.TimeBinCode            AS TimeBinCode,
-                p.TimeBinDescription     AS TimeBinDescription,
                 se.SeasonCode           AS SeasonCode,
                 se.SeasonDescription    AS SeasonDescription,
                 ar.StatisticTypeCode   AS StatisticTypeCode,

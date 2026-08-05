@@ -24,17 +24,24 @@ import xarray as xr
 
 def hotdays(tas: xr.DataArray, **kwargs) -> xr.Dataset:
     # Calculate number of days above 30
-    t30 = tas > 30
+    # Note that we need to handle the case where tas is a grouped object,
+    # differently to the ungrouped case
+    if isinstance(tas, xr.core.resample.Resample):
+        t30 = tas.map(lambda x: (x > 30).sum("time"))
+    else:
+        t30 = (tas > 30).groupby("time.year").sum("time").mean("year")
     t30.attrs["long_name"] = "Days per year above 30 C"
     t30.attrs["units"] = "Days per year"
 
     # And above 25
-    t25 = tas > 25
+    if isinstance(tas, xr.core.resample.Resample):
+        t25 = tas.map(lambda x: (x > 25).sum("time"))
+    else:
+        t25 = (tas > 25).groupby("time.year").sum("time").mean("year")
     t25.attrs["long_name"] = "Days per year above 25 C"
     t25.attrs["units"] = "Days per year"
 
-    combined = xr.Dataset({"T30": t30, "T25": t25})
-    res = combined.groupby("time.year").sum().mean(dim="year")
+    res = xr.Dataset({"T30": t30, "T25": t25})
 
     return res
 
@@ -52,6 +59,10 @@ if __name__ == "__main__":
     # Make plots
     import matplotlib.pyplot as plt
 
-    ds.T20.plot()
+    ds.T30.plot()
     plt.show()
     ds.T25.plot()
+
+    # Test with grouped data
+    tas = tas.resample(time="YS")
+    ds = hotdays(tas)

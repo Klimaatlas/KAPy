@@ -184,15 +184,19 @@ def validate_config(config):
             thisTbl[col] = [str(s).strip().lower() == "true" for s in thisTbl[col]]
 
         # id Column needs to be unique
-        duplicated_ids = thisTbl.loc[thisTbl["id"].duplicated(), "id"].unique()
-        if len(duplicated_ids) > 0:
-            raise ValueError(
-                f"Duplicate ids values found in '{thisTblKey}' table: {list(duplicated_ids)}"
-            )
+        if thisTblKey != "periods":
+            duplicated_ids = thisTbl.loc[thisTbl["id"].duplicated(), "id"].unique()
+            if len(duplicated_ids) > 0:
+                raise ValueError(
+                    f"Duplicate ids values found in '{thisTblKey}' table: {list(duplicated_ids)}"
+                )
 
         # Force id column to be a string. Set to as the index so it can be used as the key
-        thisTbl["id"] = [str(x) for x in thisTbl["id"]]
-        thisTbl = thisTbl.set_index("id", drop=False)
+        # But note that there is no ID column for periods, as this is inferred from the
+        # time period itself.
+        if thisTblKey != "periods":
+            thisTbl["id"] = [str(x) for x in thisTbl["id"]]
+            thisTbl = thisTbl.set_index("id", drop=False)
 
         # Put back into the config
         config[thisTblKey] = thisTbl.to_dict(orient="index")
@@ -263,7 +267,7 @@ def get_config(configfile):
     return cfg
 
 
-# Validation ----------------------------
+# Development configuration----------------------------
 if __name__ == "__main__":
     # Setup for debugging
     from pathlib import Path

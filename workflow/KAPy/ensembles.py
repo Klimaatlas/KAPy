@@ -1,19 +1,13 @@
-"""
-#Setup for debugging with VS code 
-import os
-print(os.getcwd())
-os.chdir("KAPy/workflow")
-import KAPy
-os.chdir("../..")
-config=KAPy.get_config("./config/config.yaml")  
-wf=KAPy.get_workflow(config)
-output_file=[list(wf['ensstats'].keys())[7]]
-input_files=wf['ensstats'][output_file[0]]
-%matplotlib inline
-"""
-
 import xarray as xr
 import numpy as np
+import datetime
+
+
+# Function to rename ensemble statistics once generated
+def _renameEnsStats(d, suffix):
+    for n in ["indicator", "delta"]:
+        d = d.rename({f"{n}": f"{n}_{suffix}"})
+    return d
 
 
 def calculate_ensemble_statistics(input_files, percentiles, method):
@@ -25,67 +19,99 @@ def calculate_ensemble_statistics(input_files, percentiles, method):
     # create further problems. It also doesn't seem to handle cftime calendars at all well,
     # nor propigate attributes cleanly.
     # Instead, we do it all manually by directly opening the files with open_mfdataset, and then
-    # loading it into ram
+    # loading it into RAM
     time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
-    thisEns = xr.open_mfdataset(
+    source_ensemble = xr.open_mfdataset(
         input_files,
-        concat_dim="realization",
+        concat_dim="member",
         combine="nested",
         coords="all",
         decode_times=time_coder,
         decode_timedelta=False,
+        join="outer",
     )
-    thisEns = thisEns.compute()
+    source_ensemble = source_ensemble.compute()
 
-    # Function to rename ensemble statistics once generated
-    def renameEnsStats(d, suffix):
-        for n in ["indicator", "delta"]:
-            d = d.rename({f"{n}": f"{n}_{suffix}"})
-        return d
+    # For calculating ensemble statistics, we only need the indicator and delta variables
+    # We therefore drop the other variables and add them back later
+    ensemble_data = source_ensemble[["indicator", "delta"]]
 
     # Calculate number of ensemble members at each point
-    ensN = (~np.isnan(thisEns)).sum(dim="realization", keep_attrs=True)
-    ensN = renameEnsStats(ensN, "n")
+    ensN = (~np.isnan(ensemble_data)).sum(dim="member", keep_attrs=True)
+    ensN = _renameEnsStats(ensN, "n")
 
     # Calculate the statistics
-    ensMean = thisEns.mean(dim="realization", keep_attrs=True)
-    ensMean = renameEnsStats(ensMean, "mean")
-    ensSd = thisEns.std(dim="realization", keep_attrs=True)
-    ensSd = renameEnsStats(ensSd, "stdev")
-    ensMax = thisEns.max(dim="realization", keep_attrs=True)
-    ensMax = renameEnsStats(ensMax, "max")
-    ensMin = thisEns.min(dim="realization", keep_attrs=True)
-    ensMin = renameEnsStats(ensMin, "min")
+    ensMean = ensemble_data.mean(dim="member", keep_attrs=True)
+    ensMean = _renameEnsStats(ensMean, "mean")
+    ensSd = ensemble_data.std(dim="member", keep_attrs=True)
+    ensSd = _renameEnsStats(ensSd, "standard_deviation")
+    ensMax = ensemble_data.max(dim="member", keep_attrs=True)
+    ensMax = _renameEnsStats(ensMax, "maximum")
+    ensMin = ensemble_data.min(dim="member", keep_attrs=True)
+    ensMin = _renameEnsStats(ensMin, "minimum")
 
     # Calculate the percentiles and transpose to a more friendly order
     ptileList = sorted(percentiles)
     qtileList = [x / 100 for x in ptileList]
-    ensPercs = thisEns.quantile(
-        q=qtileList, dim="realization", method=method, keep_attrs=True, skipna=True
+    ensPercs = ensemble_data.quantile(
+        q=qtileList, dim="member", method=method, keep_attrs=True, skipna=True
     )
     ensPercs = ensPercs.rename({"quantile": "percentiles"})
     ensPercs = ensPercs.assign_coords(percentiles=ptileList)
 
-    if "periodID" in ensPercs.indicator.dims:
-        ensPercs = ensPercs.transpose("periodID", "seasonID", "percentiles", ...)
-    else:
-        ensPercs = ensPercs.transpose("time", "seasonID", "percentiles", ...)
-    ensPercs = renameEnsStats(ensPercs, "percentiles")
+    # ensPercs = ensPercs.transpose("time", "season", "percentiles", ...)
+    ensPercs = _renameEnsStats(ensPercs, "percentiles")
 
-    # Combine results and sort
-    ensOut = xr.merge([ensPercs, ensMean, ensSd, ensN, ensMax, ensMin])
-    sorted_vars = sorted(ensOut.data_vars)  # Get sorted variable names
-    ensOut = ensOut[sorted_vars]  # Reorder dataset
+    # Combine results
+    out = xr.merge([ensPercs, ensMean, ensSd, ensN, ensMax, ensMin])
 
-    # Make sure that we reapply the attributes and auxillary coordinates as well, which have a
-    # habit of getting lost along the way. Note that we also need to average
-    # over these coordinates, as there is in principle one for each realization
-    auxCoords = {
-        key: thisEns.coords[key].mean(dim="realization")
-        for key in thisEns.coords
-        if key not in ensOut.dims
-    }
-    ensOut = ensOut.assign_coords(auxCoords)
-    ensOut.attrs = thisEns.attrs
+    # Tidy up output-------------------
+    # Restore auxiliary coordinates by copying them back into the original dataset.
+    # This process is complicated a bit though by the fact that we have one version for each
+    # member.
+    # The season mask is first, and the easiest, as they are the same for all members.
+    out["season_mask"] = source_ensemble["season_mask"].isel(member=0)
+    # The time bounds are a bit more complicated, as they can differ between members
+    out["time_bnds"] = source_ensemble["time_bnds"].isel(member=0)
 
-    return ensOut
+    # Copy attributes
+    out.attrs = source_ensemble.attrs
+
+    # Add CF compliant bits here e.g history, and global attributes
+    out.attrs.update(
+        {
+            "Conventions": "CF-1.9",
+            "title": "KAPy indicator dataset",
+            "history": (
+                f"{datetime.datetime.now(datetime.timezone.utc).isoformat()} "
+                f"Ensemble statistics calculated from {len(input_files)} simulations. Input file list recorded in source attribute."
+            ),
+        }
+    )
+
+    # Sort
+    sorted_vars = sorted(out.data_vars)  # Get sorted variable names
+    out = out[sorted_vars]  # Reorder dataset
+
+    return out
+
+
+# Development configuration----------------------------
+if __name__ == "__main__":
+    # Setup for debugging
+    # ASSERT: working directory is the root of the project
+    import KAPy
+
+    config = KAPy.get_config("./config/config.yaml")
+    wf = KAPy.get_workflow(config)
+    output_file = list(wf["ensemble_statistics"]["input_dict"].keys())[0]
+    input_files = wf["ensemble_statistics"]["input_dict"][output_file]
+    print(f"Using input files: {input_files}")
+    print(f"based on requirements for output file: {output_file}")
+
+    # Run the function
+    percentiles = [5, 95]
+    method = "midpoint"
+    out = calculate_ensemble_statistics(
+        input_files=input_files, percentiles=percentiles, method=method
+    )

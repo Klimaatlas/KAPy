@@ -40,7 +40,7 @@ ensembles:
     percentiles: [0,50,100]  #Use full data range due to small ensemble size.
     method: "linear"
 output_grid:
-    template_type: 'none' #cdo'
+    template_type: 'cdo'
     grid_name: 'Ghana025'
     method: 'bilinear'
     path: 'config/griddes.txt'
