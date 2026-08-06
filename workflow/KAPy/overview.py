@@ -7,22 +7,28 @@ import time
 # Use absolute imports assuming KAPy is installed
 from KAPy import workflow
 from KAPy import helpers
-from KAPy import constants
+
 
 def make_variable_overview(config):
     # Get workflow
     wf = workflow.get_workflow(config)
 
-    # Get the list of primaryVar files from the workflow 
-    wfFiles = [g for k in wf["primary_variables"].keys() for g in wf["primary_variables"][k]["outputs"]]
-    tbl = pd.DataFrame(wfFiles, columns=["path"]) 
+    # Get the list of primaryVar files from the workflow
+    wfFiles = [
+        g
+        for k in wf["primary_variables"].keys()
+        for g in wf["primary_variables"][k]["outputs"]
+    ]
+    tbl = pd.DataFrame(wfFiles, columns=["path"])
     tbl["filename"] = [Path(f).name for f in tbl["path"]]
     tbl["dataset"] = tbl["filename"].str.split("_").str[0]
     tbl["var"] = tbl["filename"].str.split("_").str[1]
     tbl["grid"] = tbl["filename"].str.split("_").str[2]
     tbl["expt"] = tbl["filename"].str.split("_").str[3]
-    tbl["ensemble_member"] = tbl["filename"].str.split("_").str[4:].str.join("_")   
-    tbl["ensemble_member"] = tbl["ensemble_member"].str.removesuffix(".nc").str.removesuffix(".pkl")
+    tbl["ensemble_member"] = tbl["filename"].str.split("_").str[4:].str.join("_")
+    tbl["ensemble_member"] = (
+        tbl["ensemble_member"].str.removesuffix(".nc").str.removesuffix(".pkl")
+    )
 
     # ChatGPT made this nice little progress bar for us
     def snakemake_progress(i, total, start_time, prefix="", length=40):
@@ -64,12 +70,20 @@ def make_variable_overview(config):
                 thisrw["frequency"] = xr.infer_freq(dat.time)
                 thisrw["start_date"] = min(dat.time.values).strftime("%Y-%m-%d")
                 thisrw["end_date"] = max(dat.time.values).strftime("%Y-%m-%d")
-                thisrw["time_span"] = (max(dat.time.values) - min(dat.time.values)).days
-                thisrw["time_points"] = dat.time.size
-                thisrw["gaps"] = thisrw["time_points"] - thisrw["time_span"] - 1
+                thisrw["time_steps"] = dat.time.size
+                thisrw["duplicates"] = dat.time.to_series().duplicated().sum()
+                thisrw["time_span_days"] = (
+                    max(dat.time.values) - min(dat.time.values)
+                ).days
+                thisrw["largest_timestep_days"] = dat.time.to_series().diff().max().days
+                thisrw["smallest_timestep_days"] = (
+                    dat.time.to_series().diff().min().days
+                )
 
         # Store outputs
         outList += [thisrw]
+
+    snakemake_progress(tbl.shape[0], tbl.shape[0], startTime)
 
     # Output results
     out = pd.DataFrame(outList)
@@ -77,11 +91,12 @@ def make_variable_overview(config):
     reordered_cols = cols[2:] + cols[:2]
     out = out[reordered_cols]
     out = out.sort_values(by=["var", "dataset", "grid", "expt", "ensemble_member"])
-    outFname = helpers.get_OUTPUT_PATHS(config["output_directory"])["variable_overview"] 
+    outFname = helpers.get_OUTPUT_PATHS(config["output_directory"])["variable_overview"]
     print(f"\nWriting output to '{outFname}'.\n")
     out.to_csv(outFname, index=False)
 
     return out
+
 
 # Development setup----------------
 if __name__ == "__main__":
@@ -90,7 +105,5 @@ if __name__ == "__main__":
 
     # Test standard config first
     config = KAPy.get_config("./config/config.yaml")
-    out=make_variable_overview(config)
+    out = make_variable_overview(config)
     print("Success!")
-    
-
