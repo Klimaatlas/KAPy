@@ -30,6 +30,7 @@ PATHS = {
     "ensemble_areal_statistics_csv": "Ensemble_areal_statistics.csv",
     "member_areal_statistics_csv": "Member_areal_statistics.csv",
     "database": "KAPy_database.sqlite",
+    "variable_overview": "variable_overview.csv",
 }
 
 

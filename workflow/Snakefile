@@ -198,7 +198,7 @@ if do_areal_statistics:
 rule:
     name: ".OVERVIEW"
     run:
-        KAPy.VariableOverview(config)
+        KAPy.make_variable_overview(config)
 
 #Merged csvs
 #The merged_csvs dict is used to collate which arguments we have enabled.
