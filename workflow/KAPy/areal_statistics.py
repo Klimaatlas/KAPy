@@ -3,6 +3,29 @@ import pandas as pd
 import geopandas as gpd
 from cdo import Cdo
 import regionmask
+from pathlib import Path
+
+
+def _check_geojson(gdf, filename):
+    if Path(filename).suffix.lower() not in {".geojson", ".json"}:
+        return
+
+    if gdf.crs is None:
+        raise ValueError("GeoJSON requires a CRS, but the GeoDataFrame has no CRS.")
+
+    epsg = gdf.crs.to_epsg()
+    if epsg != 4326:
+        raise ValueError(
+            f"Attempting to use GeoJSON with CRS {gdf.crs!r}. "
+            "GeoJSON should be written in EPSG:4326 (lon-lat)."
+        )
+
+    minx, miny, maxx, maxy = gdf.total_bounds
+    if minx < -180 or maxx > 180 or miny < -90 or maxy > 90:
+        raise ValueError(
+            "CRS claims to be EPSG:4326, but the coordinate values do not "
+            f"look like longitude/latitude: x-range {[minx,maxx]}, y-range {[miny,maxy]}."
+        )
 
 
 def generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile):
@@ -80,6 +103,9 @@ def generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile):
                 f"Shapefile '{shapefile}' is lacking a CRS (Coordinate Reference System) "
                 + "but this is required for KAPy to work. Please add a CRS in the shapefile."
             )
+
+        # GeoJSONs are supported, but require extra checks
+        _check_geojson(shpFile, shapefile)
 
         # Handle projection issues.
         # 1. If the file has supplementary coordinates of longitude and latitude, then reproject
@@ -167,9 +193,11 @@ if __name__ == "__main__":
     without_shp = generate_areal_statistics(
         inFile, tempDir, useAreaWeighting, shapefile
     )
+    print("Success!")
 
     # Run with a shapefile
     print("Running with a shapefile------------------")
     shapefile = "docs/tutorials/Tutorial05_files/Ghana_regions.shp"
     useAreaWeighting = True
     with_shp = generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile)
+    print("Success!")
