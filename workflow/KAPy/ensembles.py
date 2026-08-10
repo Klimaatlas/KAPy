@@ -1,6 +1,7 @@
 import xarray as xr
 import numpy as np
 import datetime
+from scipy.stats import norm
 
 
 # Function to rename ensemble statistics once generated
@@ -42,24 +43,40 @@ def calculate_ensemble_statistics(input_files, percentiles, method):
 
     # Calculate the statistics
     ensMean = ensemble_data.mean(dim="member", keep_attrs=True)
-    ensMean = _renameEnsStats(ensMean, "mean")
     ensSd = ensemble_data.std(dim="member", keep_attrs=True)
-    ensSd = _renameEnsStats(ensSd, "standard_deviation")
     ensMax = ensemble_data.max(dim="member", keep_attrs=True)
-    ensMax = _renameEnsStats(ensMax, "maximum")
     ensMin = ensemble_data.min(dim="member", keep_attrs=True)
-    ensMin = _renameEnsStats(ensMin, "minimum")
 
-    # Calculate the percentiles and transpose to a more friendly order
+    # Calculate the percentiles
     ptileList = sorted(percentiles)
     qtileList = [x / 100 for x in ptileList]
-    ensPercs = ensemble_data.quantile(
-        q=qtileList, dim="member", method=method, keep_attrs=True, skipna=True
-    )
-    ensPercs = ensPercs.rename({"quantile": "percentiles"})
-    ensPercs = ensPercs.assign_coords(percentiles=ptileList)
+    if method == "parametric":  # Derive quantiles from the mean and standard deviation
+        if (0 in ptileList == 0) or (100 in ptileList):
+            raise ValueError(
+                (
+                    "Percentile list cannot contain 0 or 100 when using the"
+                    f"'parametric' method but received values {percentiles}. "
+                    "Please use another method if you are interested in"
+                    "the ensemble maximum or minimum."
+                )
+            )
+        z_scores = [norm.ppf(q) for q in qtileList]
+        percentile_list = [ensMean + z * ensSd for z in z_scores]
+        ensPercs = xr.concat(percentile_list, dim="percentiles")
+        ensPercs = ensPercs.assign_coords(percentiles=ptileList)
 
-    # ensPercs = ensPercs.transpose("time", "season", "percentiles", ...)
+    else:  # use xarray.quantile
+        ensPercs = ensemble_data.quantile(
+            q=qtileList, dim="member", method=method, keep_attrs=True, skipna=True
+        )
+        ensPercs = ensPercs.rename({"quantile": "percentiles"})
+        ensPercs = ensPercs.assign_coords(percentiles=ptileList)
+
+    # Tidy naming
+    ensMean = _renameEnsStats(ensMean, "mean")
+    ensSd = _renameEnsStats(ensSd, "standard_deviation")
+    ensMax = _renameEnsStats(ensMax, "maximum")
+    ensMin = _renameEnsStats(ensMin, "minimum")
     ensPercs = _renameEnsStats(ensPercs, "percentiles")
 
     # Combine results

@@ -37,8 +37,8 @@ cutouts:
     ymin: 4
     ymax: 12
 ensembles:
-    percentiles: [0,50,100]  #Use full data range due to small ensemble size.
-    method: "linear"
+    percentiles: [5,50,95]  #Use full data range due to small ensemble size.
+    method: "parametric"
 output_grid:
     template_type: 'cdo'
     grid_name: 'Ghana025'

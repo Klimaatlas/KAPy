@@ -155,7 +155,7 @@
             "additionalProperties": false,
             "properties": {
                 "percentiles": {
-                    "description": "Specify the percentiles [0-100] calculated from the ensemble. We allow any number of values. Values of 0 and 100 indicate the maximum / minimum values in the ensemble.",
+                    "description": "Specify the percentiles [0-100] calculated from the ensemble. We allow any number of values. Values of 0 and 100 indicate the maximum / minimum values in the ensemble but can only be used when the `method` is not set to `parametric`.",
                     "type": "array",
                     "minItems": 1,
                     "uniqueItems": true,
@@ -166,9 +166,10 @@
                     }
                 },
                 "method": {
-                    "description": "Specifies the interpolation method to use when the desired quantile lies between two data points. Default value is 'linear'. String is supplied to the `method` argument of `xarray.dataset.quantile()` - see the documentation there for details.",                    
+                    "description": "Specifies the method to use in calculating the percentiles of the distribution. The 'parametric' method calculates percentiles by assuming the values to be normally distributed and calculating the percentile from the mean and (population) standard deviation. Otherwise, the percentiles are calculated using the empirical distribution via the 'xarray.dataset.quantile()' function - the value of this argument is supplied to the `method` argument of the function. See the documentation there for details.  Default value is 'linear'.",                         
                     "type": "string",
                     "enum": [
+                        "parametric",
                         "inverted_cdf",
                         "averaged_inverted_cdf",
                         "closest_observation",
