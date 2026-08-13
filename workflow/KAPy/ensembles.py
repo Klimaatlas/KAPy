@@ -3,13 +3,11 @@ import numpy as np
 import datetime
 from scipy.stats import norm
 
-
 # Function to rename ensemble statistics once generated
 def _renameEnsStats(d, suffix):
     for n in ["indicator", "delta"]:
         d = d.rename({f"{n}": f"{n}_{suffix}"})
     return d
-
 
 def calculate_ensemble_statistics(input_files, percentiles, method):
     # Setup the ensemble
@@ -65,12 +63,39 @@ def calculate_ensemble_statistics(input_files, percentiles, method):
         ensPercs = xr.concat(percentile_list, dim="percentiles")
         ensPercs = ensPercs.assign_coords(percentiles=ptileList)
 
-    else:  # use xarray.quantile
-        ensPercs = ensemble_data.quantile(
-            q=qtileList, dim="member", method=method, keep_attrs=True, skipna=True
-        )
-        ensPercs = ensPercs.rename({"quantile": "percentiles"})
-        ensPercs = ensPercs.assign_coords(percentiles=ptileList)
+    else:  
+        # array.quantile can be painfully slow as it is not vectorized (?), so we use 
+        # the np.quantile method directly from numpy instead. 
+    
+        #Loop over variables and compute quantiles
+        percentiles_by_variable = {}
+        for name, da in ensemble_data.data_vars.items():
+            member_axis = da.get_axis_num("member")
+    
+            # result shape is (n_quantiles, *remaining_dims)
+            values = np.quantile(da.values, qtileList, axis=member_axis, method=method)
+    
+            new_dims = ("percentiles",) + tuple(d for d in da.dims if d != "member")
+    
+            # keep other coords 
+            new_coords = {
+                k: v for k, v in da.coords.items() if "member" not in v.dims
+            }
+    
+            percentiles_by_variable[name] = xr.DataArray(
+                values,
+                dims=new_dims,
+                coords=new_coords,
+                attrs=da.attrs,
+                name=name,
+            )
+    
+        # dataset-level coords that don't depend on the reduced dim
+        ds_coords = {
+            k: v for k, v in ensemble_data.coords.items() if "member" not in v.dims
+        }
+        ds_coords["percentiles"] = ptileList
+        ensPercs= xr.Dataset(percentiles_by_variable, coords=ds_coords, attrs=ensemble_data.attrs)
 
     # Tidy naming
     ensMean = _renameEnsStats(ensMean, "mean")
@@ -82,7 +107,7 @@ def calculate_ensemble_statistics(input_files, percentiles, method):
     # Combine results
     out = xr.merge([ensPercs, ensMean, ensSd, ensN, ensMax, ensMin])
 
-    # Tidy up output-------------------
+   # Tidy up output-------------------
     # Restore auxiliary coordinates by copying them back into the original dataset.
     # This process is complicated a bit though by the fact that we have one version for each
     # member.
@@ -123,6 +148,7 @@ if __name__ == "__main__":
     wf = KAPy.get_workflow(config)
     output_file = list(wf["ensemble_statistics"]["input_dict"].keys())[0]
     input_files = wf["ensemble_statistics"]["input_dict"][output_file]
+
     print(f"Using {len(input_files)} input files:")
     for i in input_files:
         print(f"\t{i}") 
