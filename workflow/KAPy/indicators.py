@@ -509,35 +509,32 @@ if __name__ == "__main__":
     output_file = list(wf["indicators"][ind_id]["input_dict"].keys())[0]
     input_files = wf["indicators"][ind_id]["input_dict"][output_file]
 
-    print(f"Using indicator: {ind_id}")
-    print(f"Using input files: {input_files}")
-    print(f"based on requirements for output file: {output_file}")
+    print(f"Using indicator:")
+    print(f"\t{ind_id}")
+    print(f"Using {len(input_files)} input files:")
+    for i, f in input_files.items():
+        print(f"\t{i} : {f}") 
+    print(f"based on requirements for output file:")
+    print(f"\t{output_file}")
 
-    seasonsTable = config["seasons"]
-    periodsTable = config["periods"]
-    seasons = config["indicators"][ind_id]["seasons"]
-    time_binning = config["indicators"][ind_id]["time_binning"]
-    statistic = config["indicators"][ind_id]["statistic"]
-    skipna = config["indicators"][ind_id]["skipna"]
-    delta_type = config["indicators"][ind_id]["delta_type"]
-    additional_arguments = config["indicators"][ind_id]["additional_arguments"]
-    custom_script = config["indicators"][ind_id]["custom_script"]
-    custom_function = config["indicators"][ind_id]["custom_function"]
-    description = config["indicators"][ind_id]["description"]
+    # Setup argument list
+    argl = {
+        "seasonsTable": config["seasons"],
+        "periodsTable": config["periods"],
+        "seasons": config["indicators"][ind_id]["seasons"],
+        "time_binning": config["indicators"][ind_id]["time_binning"],
+        "statistic": config["indicators"][ind_id]["statistic"],
+        "skipna": config["indicators"][ind_id]["skipna"],
+        "delta_type": config["indicators"][ind_id]["delta_type"],
+        "additional_arguments": config["indicators"][ind_id]["additional_arguments"],
+        "custom_script": config["indicators"][ind_id]["custom_script"],
+        "custom_function": config["indicators"][ind_id]["custom_function"],
+        "description": config["indicators"][ind_id]["description"],
+    }    
+    # Note that this can be expanded into an interactive environment using
+    # globals().update(argl)
 
     out = calculate_indicators(
-        input_files=input_files,
-        seasonsTable=seasonsTable,
-        periodsTable=periodsTable,
-        seasons=seasons,
-        time_binning=time_binning,
-        statistic=statistic,
-        skipna=skipna,
-        delta_type=delta_type,
-        additional_arguments=additional_arguments,
-        custom_script=custom_script,
-        custom_function=custom_function,
-        description=description,
-    )
+        input_files=input_files,**argl)
 
     print("Success")

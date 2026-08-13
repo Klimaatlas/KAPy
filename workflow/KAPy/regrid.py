@@ -110,22 +110,22 @@ if __name__ == "__main__":
     wf = KAPy.get_workflow(config)
     output_file = list(wf["regrid"]["input_dict"].keys())[0]
     input_path = [wf["regrid"]["input_dict"][output_file]["input_path"]]
-    print(f"Using input file: {input_path}")
-    print(f"based on requirements for output file: {output_file}")
+
+    print(f"Using input file:")
+    print(f"\t{input_path}") 
+    print(f"based on requirements for output file:")
+    print(f"\t{output_file}")
 
     # Set options
     import tempfile
-
-    tempDir = tempfile.gettempdir()
-    templateType = config["output_grid"]["template_type"]
-    path = config["output_grid"]["path"]
-    method = config["output_grid"]["method"]
+    argl={
+        "tempDir":tempfile.gettempdir(),
+        "templateType":config["output_grid"]["template_type"],
+        "path":config["output_grid"]["path"],
+        "method":config["output_grid"]["method"]
+    }
+    # Note that this can be expanded into an interactive environment using
+    # globals().update(argl)
 
     # Apply regridding
-    out = regrid(
-        input_path=input_path,
-        templateType=templateType,
-        path=path,
-        method=method,
-        tempDir=tempDir,
-    )
+    out = regrid(input_path=input_path, **argl)

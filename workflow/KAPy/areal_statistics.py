@@ -184,20 +184,21 @@ if __name__ == "__main__":
     # Set options
     import tempfile
 
-    tempDir = tempfile.gettempdir()
+    
 
     # Run without a shapefile
     print("Running without a shapefile------------------")
-    useAreaWeighting = True
-    shapefile = None
-    without_shp = generate_areal_statistics(
-        inFile, tempDir, useAreaWeighting, shapefile
-    )
+    argl={
+    "tempDir":tempfile.gettempdir(),
+    "useAreaWeighting": True,
+    "shapefile":None
+    }
+    without_shp = generate_areal_statistics(inFile, **argl)
     print("Success!")
 
     # Run with a shapefile
     print("Running with a shapefile------------------")
-    shapefile = "docs/tutorials/Tutorial05_files/Ghana_regions.shp"
-    useAreaWeighting = True
-    with_shp = generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile)
+    argl["shapefile"] = "docs/tutorials/Tutorial05_files/Ghana_regions.shp"
+
+    with_shp = generate_areal_statistics(inFile, **argl)
     print("Success!")

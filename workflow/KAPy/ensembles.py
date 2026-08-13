@@ -123,13 +123,17 @@ if __name__ == "__main__":
     wf = KAPy.get_workflow(config)
     output_file = list(wf["ensemble_statistics"]["input_dict"].keys())[0]
     input_files = wf["ensemble_statistics"]["input_dict"][output_file]
-    print(f"Using input files: {input_files}")
-    print(f"based on requirements for output file: {output_file}")
+    print(f"Using {len(input_files)} input files:")
+    for i in input_files:
+        print(f"\t{i}") 
+    print(f"based on requirements for output file:")
+    print(f"\t{output_file}")
 
-    # Run the function
-    percentiles = [5, 95]
-    method = "midpoint"
-    out = calculate_ensemble_statistics(
-        input_files=input_files, percentiles=percentiles, method=method
-    )
+    # Setup argument list
+    argl={"percentiles": [5, 95],
+          "method":"midpoint"}
+    # Note that this can be expanded into an interactive environment using
+    # globals().update(argl)
+
+    out = calculate_ensemble_statistics(input_files=input_files, **argl)
     print("Success!")
