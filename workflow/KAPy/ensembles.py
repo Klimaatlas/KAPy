@@ -18,18 +18,33 @@ def calculate_ensemble_statistics(input_files, percentiles, method):
     # create further problems. It also doesn't seem to handle cftime calendars at all well,
     # nor propigate attributes cleanly.
     # Instead, we do it all manually by directly opening the files with open_mfdataset, and then
-    # loading it into RAM
-    time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
+    # loading it into RAM.
+    # Note also that we don't decode times initially but handle this process explicitly later
     source_ensemble = xr.open_mfdataset(
         input_files,
         concat_dim="member",
         combine="nested",
         coords="all",
-        decode_times=time_coder,
+        decode_times=False,
         decode_timedelta=False,
         join="outer",
     )
     source_ensemble = source_ensemble.compute()
+
+    #Now handle the time_bounds variable - all time bounds should be the same if they
+    #are present, so we can just take the maximum. But just to be sure, we also
+    #take the minimum as well - checking that the two are the same is tells us
+    #if there is anything wierd going on
+    max_time_bounds = source_ensemble["time_bnds"].max(dim="member", skipna=True) 
+    min_time_bounds = source_ensemble["time_bnds"].min(dim="member", skipna=True)  
+    if not (max_time_bounds == min_time_bounds).all():
+        raise ValueError("time_bnds differ between ensemble members")
+    source_ensemble["time_bnds"] = max_time_bounds
+
+    #And now we can decode the times to cftime objects
+    time_coder = xr.coders.CFDatetimeCoder(use_cftime=True)
+    source_ensemble = xr.decode_cf(source_ensemble,
+                                   decode_times=time_coder)
 
     # For calculating ensemble statistics, we only need the indicator and delta variables
     # We therefore drop the other variables and add them back later
@@ -109,12 +124,10 @@ def calculate_ensemble_statistics(input_files, percentiles, method):
 
    # Tidy up output-------------------
     # Restore auxiliary coordinates by copying them back into the original dataset.
-    # This process is complicated a bit though by the fact that we have one version for each
-    # member.
-    # The season mask is first, and the easiest, as they are the same for all members.
+    # The season mask is the same for all members.
     out["season_mask"] = source_ensemble["season_mask"].isel(member=0)
-    # The time bounds are a bit more complicated, as they can differ between members
-    out["time_bnds"] = source_ensemble["time_bnds"].isel(member=0)
+    # The time bounds can differ between members but have been handled above 
+    out["time_bnds"] = source_ensemble["time_bnds"]
 
     # Copy attributes
     out.attrs = source_ensemble.attrs
