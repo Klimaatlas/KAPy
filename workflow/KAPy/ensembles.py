@@ -80,7 +80,7 @@ def calculate_ensemble_statistics(input_files, percentiles, method):
 
     else:  
         # array.quantile can be painfully slow as it is not vectorized (?), so we use 
-        # the np.quantile method directly from numpy instead. 
+        # the np.nanquantile method directly from numpy instead. 
     
         #Loop over variables and compute quantiles
         percentiles_by_variable = {}
@@ -88,7 +88,7 @@ def calculate_ensemble_statistics(input_files, percentiles, method):
             member_axis = da.get_axis_num("member")
     
             # result shape is (n_quantiles, *remaining_dims)
-            values = np.quantile(da.values, qtileList, axis=member_axis, method=method)
+            values = np.nanquantile(da.values, qtileList, axis=member_axis, method=method)
     
             new_dims = ("percentiles",) + tuple(d for d in da.dims if d != "member")
     
