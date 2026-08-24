@@ -46,7 +46,6 @@ dependencies:
   - python
   - python-cdo
   - snakemake
-  - regionmask  
   - xarray
   - xesmf
   - xclim
@@ -61,3 +60,4 @@ dependencies:
   - pip
   - pip:
     - snakemake-logger-plugin-snkmt  
+    - earthkit-transforms

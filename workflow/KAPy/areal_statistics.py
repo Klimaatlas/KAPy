@@ -2,8 +2,8 @@ import xarray as xr
 import pandas as pd
 import geopandas as gpd
 from cdo import Cdo
-import regionmask
 from pathlib import Path
+from earthkit import transforms as ekt
 
 
 def _check_geojson(gdf, filename):
@@ -107,30 +107,31 @@ def generate_areal_statistics(inFile, tempDir, useAreaWeighting, shapefile):
         # GeoJSONs are supported, but require extra checks
         _check_geojson(shpFile, shapefile)
 
-        # Handle projection issues.
-        # 1. If the file has supplementary coordinates of longitude and latitude, then reproject
-        #    the shapefile to long-lat and use together with the supplementary coordinates
-        if bool(set(["lat", "latitude"]) & set(thisDat.coords)) & bool(
-            set(["lon", "longitude"]) & set(thisDat.coords)
-        ):
-            shpFile = shpFile.to_crs("EPSG:4326")  # Lon-lat
-            xDim = spGrid["lon" if "lon" in list(spGrid.coords) else "longitude"]
-            yDim = spGrid["lat" if "lat" in list(spGrid.coords) else "latitude"]
-            useSupCoords = True
+        # # Handle projection issues.
+        # # 1. If the file has supplementary coordinates of longitude and latitude, then reproject
+        # #    the shapefile to long-lat and use together with the supplementary coordinates
+        # if bool(set(["lat", "latitude"]) & set(thisDat.coords)) & bool(
+        #     set(["lon", "longitude"]) & set(thisDat.coords)
+        # ):
+        #     shpFile = shpFile.to_crs("EPSG:4326")  # Lon-lat
+        #     xDim = spGrid["lon" if "lon" in list(spGrid.coords) else "longitude"]
+        #     yDim = spGrid["lat" if "lat" in list(spGrid.coords) else "latitude"]
+        #     useSupCoords = True
 
-        # 2. Otherwise assert that the user has checked that the two CRS match.
-        #    Ideally we should check this, but I'm not convinced that it can be done robustly.
-        else:
-            useSupCoords = False
+        # # 2. Otherwise assert that the user has checked that the two CRS match.
+        # #    Ideally we should check this, but I'm not convinced that it can be done robustly.
+        # else:
+        #     useSupCoords = False
 
         # Loop over polygons
         outList = []
         for thisIdx, thisArea in shpFile.iterrows():
             # Which points are in the polygon? Setup a mask
-            if useSupCoords:
-                pxlMask = regionmask.mask_geopandas(shpFile.iloc[[thisIdx]], xDim, yDim)
-            else:
-                pxlMask = regionmask.mask_geopandas(shpFile.iloc[[thisIdx]], spGrid)
+            # if useSupCoords:
+            #     pxlMask = regionmask.mask_geopandas(shpFile.iloc[[thisIdx]], xDim, yDim)
+            # else:
+            #     pxlMask = regionmask.mask_geopandas(shpFile.iloc[[thisIdx]], spGrid,use_cf=False) 
+            pxlMask = ekt.spatial.mask(spGrid,geodataframe=shpFile.iloc[[thisIdx]])
             pxlWts = xr.where(~pxlMask.isnull(), pxlSize, 0)
 
             # Apply masking and weighting and calculate
@@ -178,27 +179,32 @@ if __name__ == "__main__":
     wf = KAPy.get_workflow(config)
     output_file = list(wf["areal_statistics"]["input_dict"].keys())[0]
     inFile = wf["areal_statistics"]["input_dict"][output_file][0]
-    print(f"Using input file: {inFile}")
-    print(f"based on requirements for output file: {output_file}")
+    print(f"Using input file:")
+    print(f"\t{inFile}")
+    print(f"based on requirements for output file:")
+    print(f"\t{output_file}")
 
     # Set options
     import tempfile
 
-    
+    # Run with configuration
+    print("Running fron config file------------------")
+    argl={
+        "tempDir":tempfile.gettempdir(),
+        "useAreaWeighting": config["areal_statistics"]["use_area_weighting"],
+        "shapefile":config["areal_statistics"]["shapefile"]
+    }
+
+    with_config = generate_areal_statistics(inFile, **argl)
 
     # Run without a shapefile
     print("Running without a shapefile------------------")
     argl={
     "tempDir":tempfile.gettempdir(),
-    "useAreaWeighting": True,
+    "useAreaWeighting": False,
     "shapefile":None
     }
     without_shp = generate_areal_statistics(inFile, **argl)
     print("Success!")
 
-    # Run with a shapefile
-    print("Running with a shapefile------------------")
-    argl["shapefile"] = "docs/tutorials/Tutorial05_files/Ghana_regions.shp"
-
-    with_shp = generate_areal_statistics(inFile, **argl)
     print("Success!")
