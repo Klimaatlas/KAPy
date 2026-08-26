@@ -237,7 +237,6 @@ rule:
     output:
         database=OUTPUT_PATHS["database"]
     params:
-    default_target: True
     run:
         db = KAPy.database(input.config_file,tempDir=resources.tmpdir)
         db.create_full_database()
@@ -315,6 +314,7 @@ rule:
     name: ".ALL"
     input:
         WORKFLOW['all']
+    default_target: True
 
 #And finally, one target for each configuration group.
 for wf_key in WORKFLOW.keys():
