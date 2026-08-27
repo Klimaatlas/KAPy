@@ -97,12 +97,12 @@ def cutout_lonlat(thisDat, xmin, xmax, ymin, ymax, variable_code, **kwargs):
     kwargs:
             Absorb any extra arguments
     """
-    # Extract first time step. This avoids having to work
-    # with the entire dataset.
+    # Extract first time step as a sample of the metadata and structure of the dataset.
+    # We then fill all grid points with a value (i.e. replacing NaNs) 
     # ASSERT: there is a time dimension called "time"
     if "time" not in thisDat.dims:
         raise ValueError("DataArray must contain a 'time' dimension")
-    firstTS = thisDat.isel(time=0)
+    firstTS = xr.zeros_like(thisDat.isel(time=0)).compute()
 
     # Create a mask as the basis for the cutouts using cdo masklonlatbox.
     # Make sure that we return a dataarray and not a dataset by specifying the
@@ -197,38 +197,66 @@ def build_primary_variable(
     return daFloat
 
 
-# Validation----------------
+# Development setup and testing----------------
 if __name__ == "__main__":
     # Setup for debugging
-    from pathlib import Path
-
+    import os
+    from matplotlib import pyplot as plt
+    print(f"Current working directory: {os.getcwd()}")
     pd.set_option("display.max_colwidth", None)
-    from config import get_config
 
-    # Setup working directory. Its not pretty, but..
-    this_path = Path(__file__).resolve().parent.parent.parent
-    os.chdir(this_path)
+    # Import configuration file and workflow.
+    # ASSERT: that the working directory corresponds to the root of the project.
+    # If not, change the working directory using os.chdir()
+    import KAPy
+    config = KAPy.get_config("./config/config.yaml")
+    wf=KAPy.get_workflow(config)
 
-    # Test standard config first
-    config = get_config("./config/config.yaml")
+    # Import configuration for a single input file
+    inpID=list(wf['primary_variables'].keys())[0]
+    output_file=list(wf['primary_variables'][inpID]["input_dict"])[0]
+    input_files=wf['primary_variables'][inpID]["input_dict"][output_file]
 
-    # Then test the testing config
-    config = get_config("./workflow/testing/config.yaml")
+    print(f"Available primary variables:")
+    print(f"\t{list(wf['primary_variables'].keys())}")
+    print(f"Using primary variable:")
+    print(f"\t{inpID}")
+    print(f"Using {len(input_files)} input files:")
+    for f in input_files:
+        print(f"\t{f}") 
+    print(f"to give output file:")
+    print(f"\t{output_file}") 
 
-"""
-#Setup for debugging with VSCode
-import os
-print(os.getcwd())
-os.chdir("KAPy/workflow")
-import KAPy
-os.chdir("../..")
-print(os.getcwd())
-config=KAPy.get_config("./config/config.yaml")  
-wf=KAPy.get_workflow(config)
-inpID=list(wf['primVars'].keys())[0]
-output_file=list(wf['primVars'][inpID])[0]
-input_files=wf['primVars'][inpID][output_file]
-import KAPy.helpers as helpers
-import KAPy.workflow as workflow
-%matplotlib inline
-"""
+    # Setup argument list
+    argl = config["inputs"][inpID]
+    cutout_args   = config['cutouts']
+    # Note that this can be expanded into an interactive environment using
+    # globals().update(argl)
+    # globals().update(cutout_args)
+
+    #Test default import
+    out = default_import(
+        input_files=input_files,
+        variable_code=argl["variable_code"],
+        internal_variable_name=argl["internal_variable_name"],
+        checks=argl["checks"])
+    out.isel(time=0).plot()
+    plt.show()
+
+    # Cutout functionality
+    out = cutout_lonlat(
+        thisDat=out,
+        variable_code=argl["variable_code"],
+        **cutout_args)
+    out.isel(time=0).plot()
+    plt.show()
+
+    # Entire function
+    full = build_primary_variable(
+        input_files=input_files,
+        cutout_arguments=cutout_args,
+        **argl)
+    full.isel(time=0).plot()
+    plt.show()
+
+    print("Success")
