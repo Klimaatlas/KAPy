@@ -1,40 +1,27 @@
-# This YAML file defines the requirements used in KAPy.
-#
-# KAPy works with two environments - one base environment for production, and another
-# for production. The creation of these enviroment is best handled together, to ensure
-# that we don't hit problems with dependencies or differences between the two environments. 
-#
 # This YAML file defines all requirements needed by KAPy. Note that it is
 # specified without version numbers, so that the very latested versions of each
-# package can be used. It's counterpart file is env.yaml and dev.yaml, which have the exact
+# package can be used. It's counterpart file is env.yaml which has the exact
 # version numbers used in a specific installation of KAPy.
 #
-# The basic approach is to first create an environment encompassing all packages, and then
-# removed what is not needed afterwards, to create the base environment. This works as follows.
+# The basic approach is to first create an environment encompassing all packages
 #
 # conda env create -f requirements.yaml
 #
 # The resulting environment, called KAPy, with all dependencies and version numbers can then 
 # exported back to dev.yaml like so:
 #
-# conda env export > dev.yaml
-#
-# To make the KAPy production environment, we clone the KAPy environment:
-#
-# conda create --name KAPy --clone KAPy-dev
-#
-# Next, switch to the new environment, and then remove the unnecessary packages - these
-# are listed below the line in the requirements
-#
-# conda activate KAPy
-# conda remove black ipykernel jsonschema2md nc-time-axis
-#
-# The resulting environment with all dependencies and version numbers can then 
-# exported back to dev.yaml like so:
-#
 # conda env export > env.yaml
 #
-name: KAPy-dev
+# The environment given here contains packages that are used for development purposes, but
+# if you are only using KAPy for production, they are not strictly necessary and can be removed
+# as follows:
+#
+# conda remove pre-commit ipykernel jsonschema2md
+#
+# Previous versions of KAPy have distinguished between the two environments but this functionality
+# was remove for the sake of simplicity.
+#
+name: KAPy
 channels:
   - bioconda
   - conda-forge
@@ -54,9 +41,8 @@ dependencies:
   - zarr
   # ----- Dev packages below this line ----------
   - pre-commit   #Linting etc
-  - ipykernel  #Used by vscode to enable interactive debugging
+  - ipykernel  #Used by vscode to provide a REPL for interactive debugging
   - jsonschema2md #Convert jsonschema to markdown documentation
-  - nc-time-axis   #Plotting of cftime-axes in matplotlib
   - pip
   - pip:
     - snakemake-logger-plugin-snkmt  
