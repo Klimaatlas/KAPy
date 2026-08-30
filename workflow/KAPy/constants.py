@@ -2,6 +2,8 @@
 Constants for internal used by KAPy.
 """
 
+import os
+
 """
 The `PATHS` mapping defines the *relative* subdirectories and filenames
 used for KAPy outputs. These are joined with a configurable base output
@@ -18,6 +20,7 @@ relative paths (directories or filenames) and should be treated as
 internal, stable implementation details rather than user-configurable
 settings.
 """
+
 PATHS = {
     "primary_variables": "01.primary_variables",
     "secondary_variables": "02.secondary_variables",
@@ -27,12 +30,16 @@ PATHS = {
     "regrid": "06.regrid",
     "ensemble_statistics": "07.ensemble_statistics",
     "areal_statistics": "08.areal_statistics",
-    "ensemble_areal_statistics_csv": "Ensemble_areal_statistics.csv",
-    "member_areal_statistics_csv": "Member_areal_statistics.csv",
     "database": "KAPy_database.sqlite",
     "variable_overview": "variable_overview.csv",
 }
 
+PATHS["ensemble_areal_statistics_csv"] = os.path.join(
+    PATHS["areal_statistics"], "Ensemble_areal_statistics.csv"
+)
+PATHS["member_areal_statistics_csv"] = os.path.join(
+    PATHS["areal_statistics"], "Member_areal_statistics.csv"
+)
 
 """
 Chunking - an adventure in time and space
