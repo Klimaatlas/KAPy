@@ -46,3 +46,16 @@ shutil.copytree(
     project_dir / "config",
     dirs_exist_ok=True,
 )
+
+# Create initial commit
+subprocess.run(
+    ["git", "add", "."],
+    cwd=project_dir,
+    check=True,
+)
+
+subprocess.run(
+    ["git", "commit", "-m", "Initial project setup"],
+    cwd=project_dir,
+    check=True,
+)
