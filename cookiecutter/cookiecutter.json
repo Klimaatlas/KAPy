@@ -1,0 +1,7 @@
+{
+    "project_name": "My KAPy project",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "project_description": "A project using the KAPy framework",
+    "use_kapy_development_version": false,
+    "use_full_configuration": false 
+}
