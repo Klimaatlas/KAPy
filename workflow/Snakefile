@@ -180,11 +180,11 @@ if do_areal_statistics:
     rule:
         name: "..rule_08_areal_statistics"
         input:
-            inputFile=lambda wildcards: WORKFLOW['areal_statistics']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] /
+            inputFile=lambda wildcards: WORKFLOW['areal_statistics']["input_dict"][str(OUTPUT_PATHS['areal_statistics'] / wildcards.subdir /
                                                                                         wildcards.fname)],
             shapefile=lambda wildcards: config['areal_statistics']['shapefile'] if config['areal_statistics']['shapefile'] is not None else []
         output:
-            OUTPUT_PATHS['areal_statistics'] /'{fname}'
+            OUTPUT_PATHS['areal_statistics'] /'{subdir}' / '{fname}'
         params:
             shapefile=config['areal_statistics']['shapefile'],
             useAreaWeighting=config['areal_statistics']['use_area_weighting']
