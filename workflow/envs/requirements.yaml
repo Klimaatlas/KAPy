@@ -39,6 +39,7 @@ dependencies:
   - xsdba
   - yaml
   - zarr
+  - git
   # ----- Dev packages below this line ----------
   - cookiecutter
   - pre-commit   #Linting etc
