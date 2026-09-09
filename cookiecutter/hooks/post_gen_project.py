@@ -12,10 +12,7 @@ subprocess.run(
 )
 
 # Select the KAPy branch
-if {{ cookiecutter.use_kapy_development_version }}:
-    kapy_branch = "dev"
-else:
-    kapy_branch = "main"
+kapy_branch = "dev"
 
 # Add KAPy as a submodule
 subprocess.run(
@@ -36,7 +33,7 @@ shutil.copy(
 )
 
 # Copy the appropriate configuration
-if {{ cookiecutter.use_full_configuration }}:
+if "{{ cookiecutter.configuration_type }}"=="full":
     config_source = project_dir / "KAPy/workflow/testing"
 else:
     config_source = project_dir / "KAPy/config"
@@ -59,3 +56,6 @@ subprocess.run(
     cwd=project_dir,
     check=True,
 )
+
+print("\n")
+print("Setup completed succesfully. Ka pai!")
