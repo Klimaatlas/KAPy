@@ -1,0 +1,12 @@
+#Example of a profile configuration
+#rerun-incomplete: true
+#logger: snkmt
+#show-failed-logs: true
+#keep-going: true
+
+#Resources ------------------------
+#resources:
+#    mem_mb: 100000
+
+#default-resources:
+#  tmpdir: /tmp
