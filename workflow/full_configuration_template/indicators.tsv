@@ -1,0 +1,10 @@
+id	indicator_codes	enabled	description	variables	datasets	seasons	time_binning	statistic	skipna	delta_type	additional_arguments	custom_script	custom_function
+mean-tas		x	Annual mean temperature	tas	CORDEX-BA	all	periods	mean	false	subtract	{}		
+annual-mean-tas		x	Annual mean temperature (yearly binning)	tas	CORDEX-BA	ann	years	mean	false	subtract	{}		
+T27		x	Number of months above 27	tas	CORDEX-BA	ann	periods	count	false	subtract	{'op':'gt','threshold': 27}		
+meanmax		x	Average maximum monthly temperature	tas	CORDEX-BA	ann	periods	meanmax	false	subtract	{}		
+meanmin		x	Average minimum monthly temperature	tas	CORDEX-BA	ann	periods	meanmin	false	subtract	{}		
+max		x	Maximum temperature	tas	CORDEX-BA	ann	periods	max	false	subtract	{}		
+min		x	Minimum temperature	tas	CORDEX-BA	ann	periods	min	false	subtract	{}		
+q95		x	95th percentile of monthly temperature in season-period	tas	CORDEX-BA	all	periods	quantile	false	subtract	{'q':'0.95'}		
+hotmonths	T25,T30	x	Number of months above threshold	tas	CORDEX-BA	all	periods	custom	false	subtract	{}	scripts/hotdays.py	hotdays

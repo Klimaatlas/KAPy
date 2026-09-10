@@ -31,7 +31,7 @@ subprocess.run(
 
 # Copy the appropriate configuration
 if "{{ cookiecutter.configuration_type }}"=="full":
-    config_source = project_dir / "KAPy/workflow/testing"
+    config_source = project_dir / "KAPy/workflow/full_configuration_template"
 else:
     config_source = project_dir / "KAPy/config"
 
@@ -53,6 +53,15 @@ if "{{ cookiecutter.configuration_type }}"=="full":
         project_dir / "config/griddes.txt",
         project_dir / "resources/",
     )   
+
+    shutil.move(
+        project_dir / "config/temperature_conversions.py",
+        project_dir / "scripts/",
+    )
+    shutil.move(
+        project_dir / "config/hotdays.py",
+        project_dir / "scripts/",
+    )
 
 # Download sample dataset
 dataset_url = "https://download.dmi.dk/Research_Projects/KAPy/tas_example_dataset.zip"

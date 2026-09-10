@@ -1,0 +1,2 @@
+id	enabled	output_dataset_code	variable_to_adjust	dataset_to_adjust	reference_dataset	output_grid	training_period_start	training_period_end	method	grouping	kind	additional_arguments
+tasK-ba	x	CORDEX-BA	tasK	CORDEX	ERA5	target	1981	2010	xsdba-scaling	month	+	{}

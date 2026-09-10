@@ -1,0 +1,2 @@
+id	enabled	datasets	input_variables	output_variables	pass_xarrays	custom_script	custom_function	additional_arguments
+tasK	x	all	tas	tasK	true	scripts/temperature_conversions.py	C2K	{}
