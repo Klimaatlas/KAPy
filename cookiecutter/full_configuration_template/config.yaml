@@ -1,0 +1,45 @@
+# KAPy full configuration template
+#
+# This configuration provides a template with all features of KAPy turned on.
+# It is intended to be a complement to the minimum working example in ./config/
+# showing how everything in KAPy is configured, and also to be used as a test suite.
+#
+# The configuration is intended to to used with the sample dataset available from:
+# https://download.dmi.dk/Research_Projects/KAPy/tas_example_dataset.zip
+# The contents of this zip should be extracted to the inputs folder. If you have
+# setup this configuration using the cookiecutter, this should already be done.
+
+output_directory: "outputs"
+
+configuration_tables:
+    inputs:  'config/inputs.tsv'
+    indicators: 'config/indicators.tsv'
+    secondary_variables: 'config/secondaryVars.tsv'
+    bias_adjustment: 'config/biasAdjustment.tsv'
+    tertiary_variables: 'config/tertiaryVars.tsv'
+    periods:  'config/periods.tsv'
+    seasons: 'config/seasons.tsv'
+
+# Configuration options------------------------------------
+areal_statistics:
+    ensemble_areal_statistics: True
+    member_areal_statistics: False
+    use_area_weighting: True
+    shapefile: 'resources/shapefiles/Ghana_regions.shp'
+cutouts:
+    method: 'lonlatbox'  #'none'
+    xmin: -4
+    xmax: 2
+    ymin: 4
+    ymax: 12
+ensembles:
+    percentiles: [0,50,100]  #Use full data range due to small ensemble size.
+    method: "linear"
+output_grid:
+    template_type: 'cdo'
+    grid_name: 'Ghana025'
+    method: 'bilinear'
+    path: 'resources/griddes.txt'
+
+# Advanced options-------------
+dask_resources:  config/dask.tsv
