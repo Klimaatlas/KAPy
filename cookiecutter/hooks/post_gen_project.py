@@ -38,6 +38,17 @@ shutil.copytree(
     dirs_exist_ok=True,
 )
 
+# Move additional files into the correct locations for the full configuration
+if "{{ cookiecutter.configuration_type }}"=="full":
+    shutil.copy(    
+        project_dir / "KAPy/docs/tutorials/resources/shapefiles/Ghana_regions.*",
+        project_dir / "resources/shapefiles/",
+    )   
+    shutil.move(    
+        project_dir / "config/griddes.txt",
+        project_dir / "resources/",
+    )   
+
 # Create initial commit
 subprocess.run(
     ["git", "add", "."],

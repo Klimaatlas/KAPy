@@ -1,4 +1,18 @@
-#Example of a profile configuration
+# Snakemake profile template
+#
+# For details of the use of profiles, see the snakemake documentation:
+# https://snakemake.readthedocs.io/en/stable/executing/cli.html#profile-yaml-files
+#
+# A useful trick is to use a YAML anchor and aliases so that we only need to define resources and threads once,
+# and then reuse them in other rules. Note that if we want to override part of a rule, we can use a 
+# merge instead e.g.
+# _03_biasAdjustment_tas-ba:
+#   <<: *LocalCluster
+#   mem_mb: 4000          # override just this one key
+# Remember though that we need to define the rules and resources for each rule by hand. There is
+# no mechanism to do this more efficiently.
+
+# Run-time configuration -----------------------------
 #rerun-incomplete: true
 #logger: snkmt
 #show-failed-logs: true
@@ -10,3 +24,25 @@
 
 #default-resources:
 #  tmpdir: /tmp
+
+# Rule configuration -----------------------
+#set-defaults:
+  #tmpdir: /scratch/
+
+# set-threads: 
+#   #Default threads for rules using dask
+#   dask_threads: &dask_threads 2
+#   #Rules using dask.
+#   _03_biasAdjustment_tasK-ba: *dask_threads
+#   _03_biasAdjustment_tas-ba: *dask_threads
+
+# set-resources:
+#   #Default resources used by dask
+#   dask_resources: &dask_resources
+#     mem_mb: 2000
+#     threads_per_worker: 1
+#     memory_limit: 1000MB
+#   #Rules using dask
+#   _03_biasAdjustment_tasK-ba: *dask_resources
+#   _03_biasAdjustment_tas-ba: *dask_resources
+
