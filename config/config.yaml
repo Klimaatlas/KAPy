@@ -10,8 +10,8 @@
 # from https://download.dmi.dk/Research_Projects/KAPy/tas_example_dataset.zip
 # See Tutorial 01 in particular for more information
 # 
-# For a more complete configuration, taking advantage of all features, see the configuration
-# in ./workflow/testing
+# For a more complete configuration, taking advantage of all features, see the example
+# configuration in KAPy/workflow/full_configuration
 
 output_directory: "outputs"
 configuration_tables:
@@ -23,7 +23,6 @@ configuration_tables:
     bias_adjustment: '' 
     tertiary_variables: ''  
 
-
 # Configuration options------------------------------------
 areal_statistics:
     ensemble_areal_statistics: True
@@ -31,19 +30,19 @@ areal_statistics:
     use_area_weighting: False
     shapefile: # leave empty for "none" 
 cutouts:
-    method: 'lonlatbox'  #'none'
-    xmin: -4
-    xmax: 2
-    ymin: 4
-    ymax: 12
+    method: 'none' #Alternatives: 'lonlatbox' 
+    #xmin: -4
+    #xmax: 2
+    #ymin: 4
+    #ymax: 12
 ensembles:
     percentiles: [5,50,95]  #Use full data range due to small ensemble size.
     method: "parametric"
 output_grid:
-    template_type: 'cdo'
-    grid_name: 'Ghana025'
-    method: 'bilinear'
-    path: 'config/griddes.txt'
+    template_type: 'none' #'cdo'
+    #grid_name: 'Ghana025'
+    #method: 'bilinear'
+    #path: 'config/griddes.txt'
 
 # Advanced options-------------
 dask_resources:  #Blank to use default options. Generally specified at runtime via: --config dask_resources=<path/to/file.tsv>
