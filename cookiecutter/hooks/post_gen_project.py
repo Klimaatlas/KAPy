@@ -57,5 +57,8 @@ subprocess.run(
     check=True,
 )
 
-print("\n")
+print(" \n")
+print("=" * 70)
 print("Setup completed succesfully. Ka pai!")
+print("=" * 70)
+
