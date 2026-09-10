@@ -22,6 +22,7 @@ This keeps the project-specific configuration and workflow separate from the KAP
 ├── config/        # Project configuration
 ├── inputs/        # Input data
 ├── outputs/       # Generated output
+├── profiles/      # Snakemake runtime defaults
 ├── Snakefile      # Main Snakemake workflow
 └── README.md      # This file
 ```

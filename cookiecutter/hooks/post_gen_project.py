@@ -26,12 +26,6 @@ subprocess.run(
     check=True,
 )
 
-# Copy the main Snakefile from KAPy
-shutil.copy(
-    project_dir / "KAPy/workflow/modularisation/Snakefile",
-    project_dir / "Snakefile",
-)
-
 # Copy the appropriate configuration
 if "{{ cookiecutter.configuration_type }}"=="full":
     config_source = project_dir / "KAPy/workflow/testing"

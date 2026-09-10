@@ -30,3 +30,8 @@ In addition, the following tutorials provide more information, but need not be t
 * [Configuration](Configuration.md) - Details the configuration system and options available in KAPy.
 * [Workflow](Workflow.md) - Details the workflow targets available when calling Snakemake
 * [SQLlite database description](SQLlite.md) - Description of the KAPy SQLlite database structure
+* [Modularisation](Modularisation.md) - Explains how KAPy is modularised and how to extend it.
+
+## Development
+
+* [Contributing](../CONTRIBUTING.md) - Information about the development process and how to contribute to KAPy.
