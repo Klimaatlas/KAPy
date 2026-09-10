@@ -23,6 +23,7 @@ This keeps the project-specific configuration and workflow separate from the KAP
 ├── inputs/        # Input data
 ├── outputs/       # Generated output
 ├── profiles/      # Snakemake runtime defaults
+├── scripts/       # User-defined scripts
 ├── Snakefile      # Main Snakemake workflow
 └── README.md      # This file
 ```
@@ -51,26 +52,6 @@ Run the workflow using Snakemake according to the KAPy documentation and the con
 
 ```text
 snakemake --cores 1 
-```
-
-## Configuration
-
-Project-specific configuration is stored in:
-
-```text
-config/
-```
-
-Input data should be placed in:
-
-```text
-inputs/
-```
-
-and generated data and results are written to:
-
-```text
-outputs/
 ```
 
 ## KAPy
