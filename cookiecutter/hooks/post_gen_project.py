@@ -31,7 +31,7 @@ subprocess.run(
 
 # Copy the appropriate configuration
 if "{{ cookiecutter.configuration_type }}"=="full":
-    config_source = project_dir / "KAPy/workflow/full_configuration_template"
+    config_source = project_dir / "KAPy/cookiecutter/full_configuration_template"
 else:
     config_source = project_dir / "KAPy/config"
 
