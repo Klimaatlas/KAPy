@@ -15,7 +15,7 @@
 # Run-time configuration -----------------------------
 #rerun-incomplete: true
 #logger: snkmt
-#show-failed-logs: true
+show-failed-logs: true
 #keep-going: true
 
 #Resources ------------------------

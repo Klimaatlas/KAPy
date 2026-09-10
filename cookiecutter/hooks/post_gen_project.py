@@ -1,6 +1,9 @@
 import subprocess
 from pathlib import Path
 import shutil
+import tempfile
+import urllib.request
+import zipfile
 
 project_dir = Path.cwd()
 
@@ -50,6 +53,29 @@ if "{{ cookiecutter.configuration_type }}"=="full":
         project_dir / "config/griddes.txt",
         project_dir / "resources/",
     )   
+
+# Download sample dataset
+dataset_url = "https://download.dmi.dk/Research_Projects/KAPy/tas_example_dataset.zip"
+
+if {{ cookiecutter.download_sample_dataset }}:
+    inputs_dir = project_dir / "inputs"
+
+    print("Downloading sample dataset...")
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        archive = Path(tmpdir) / "sample_data.zip"
+
+        urllib.request.urlretrieve(
+            dataset_url,
+            archive,
+        )
+
+        print("Extracting sample dataset...")
+
+        with zipfile.ZipFile(archive, "r") as zip_file:
+            zip_file.extractall(inputs_dir)
+
+    print("Sample dataset installed in inputs/")
 
 # Create initial commit
 subprocess.run(
