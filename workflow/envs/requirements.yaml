@@ -42,6 +42,7 @@ dependencies:
   - git
   # ----- Dev packages below this line ----------
   - cookiecutter
+  - ncview
   - pre-commit   #Linting etc
   - ipykernel  #Used by vscode to provide a REPL for interactive debugging
   - jsonschema2md #Convert jsonschema to markdown documentation
