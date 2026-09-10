@@ -40,9 +40,11 @@ shutil.copytree(
 
 # Move additional files into the correct locations for the full configuration
 if "{{ cookiecutter.configuration_type }}"=="full":
-    shutil.copy(    
-        project_dir / "KAPy/docs/tutorials/resources/shapefiles/Ghana_regions.*",
-        project_dir / "resources/shapefiles/",
+    Path.mkdir(project_dir / "resources/shapefiles", parents=True, exist_ok=True)
+    shutil.copytree(    
+        project_dir / "KAPy/docs/tutorials/resources/shapefiles",
+        project_dir / "resources/shapefiles",
+        dirs_exist_ok=True
     )   
     shutil.move(    
         project_dir / "config/griddes.txt",
