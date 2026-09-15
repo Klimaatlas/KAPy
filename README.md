@@ -1,45 +1,35 @@
 # KAPy - *Klimaatlases* in Python
 
-KAPy is an open-source and flexible framework that can be used to generate climate indicators anywhere in the world, working from datasets such as CMIP and CORDEX together with observations. KAPy is a ground-up python-based rethink of the pipeline originally developed to power the Danish Meteorological Institute's *Klimaatlas* climate service, but is intended to be used more widely.
+KAPy (Klimaatlas in Python) is a pipeline for processing data to support climate services using reproducible, automated workflows.
+KAPy aims to be open-source, transparent, repeatible and flexible, and works from ensembles of climate models such as CMIP and CORDEX together with observations. KAPy has its roots in the pipeline originally developed to power the Danish Meteorological Institute's *Klimaatlas* climate service, but is  a ground-up python-based rethink that is intended to be used widely.     
 
 ## Getting started
 
-Here we describe the basic steps to install and configure KAPy. First, you need to get a copy of the KAPy source code onto the machine where you want to work. This is most easily done using git to clone the latest version of the code directly from the repository:
-```
-git clone git@github.com:Klimaatlas/KAPy.git
-```
-This approach also has the advantage of making it easy to get updates directly into your local folder. If you don't have git installed, you can download a zipped version of the source code directly from the website, here: https://github.com/Klimaatlas/KAPy/releases 
-
-Next, we need to setup the Python environment containing the packages used by KAPy. Add-on libraries in Python are referred to as "packages" and their installation is maintained by a package manager, of which there are many to choose from (e.g. Anaconda, Conda, Miniconda, Mamba, Micromamba etc). The example code given here is for the Conda package manager - you can download it from https://conda.io/projects/conda/en/latest/index.html if you don't have it already, but KAPy should work just as well with other package managers. The examples are also for a Linux environment - however, a similar approach will hold if you want to try and get KAPy running in Windows.
-
-A list of packages required to run KAPy can be found in the file [`./workflow/envs/env.yaml`](./workflow/envs/env.yaml). In the case of Conda, this list can be used to create an environment as follows:
+Here we describe the basic steps to install and configure KAPy. First, you need to setup the Python environment containing the packages used by KAPy: this environment also includes tools that can quickly configure KAPy. KAPy leans heavily on the Conda package manager: if you don't have it installed already, it can be downloaded from  https://conda.io/projects/conda/en/latest/index.html. Conda can work directly from the GitHub repository - on an internet connected machine, run the following command to create the 'KAPy' environment:
 
 ```
-conda env create --file ./workflow/envs/env.yaml
+conda env create -f https://raw.githubusercontent.com/Klimaatlas/KAPy/refs/heads/main/workflow/envs/env.yaml
 ```
 
-The resulting environment (called `KAPy`) is a self-contained setup that has everything necessary to run KAPy. The KAPy environment needs to be activated prior to use:
+You should now have a working conda environment called 'KAPy'. To activate the environment, run:
 
 ```
 conda activate KAPy
 ```
 
-And so you're ready to go. To get familiar with the workings of KAPy, we recommend looking at the document listed below, and particularly the [Tutorials](./docs/tutorials/README.md).
-
-In the future, you may need to update the environment to reflect changes. This can be done with:
+The KAPy environment contains a cookiecutter template, which can be used to quickly set up a new project. To use the template, run:
 
 ```
-conda env update --file ./workflow/envs/env.yaml --prune
-
+cookiecutter --directory cookiecutter gh:Klimaatlas/KAPy
 ```
 
-or by deleting the environment and installing it again from scratch:
+Follow the instructions and explanations on screen: cookiecutter  will create a new folder containing a template KAPy project in the current working directory, based on the user's configuration. The project can be run from within the new folder using the commmand:
 
 ```
-conda deactivate
-conda env remove -n KAPy
-conda env create --file ./workflow/envs/env.yaml
+snakemake --cores 1
 ```
+
+And so you're ready to go. To get familiar with the workings of KAPy, or for a more detailed description of the installation process, we recommend looking at the documentation in the `./docs` folder, and particularly the [Tutorials](./docs/tutorials/README.md).  
 
 
 ## Documentation

@@ -1,6 +1,6 @@
 print()
 print("=" * 70)
-print("                         Welcome to KAPy")
+print("                  Kia ora! Welcome to KAPy")
 print("=" * 70)
 print()
 print("KAPy (Klimaatlas in Python) is a pipeline for producing climate")
