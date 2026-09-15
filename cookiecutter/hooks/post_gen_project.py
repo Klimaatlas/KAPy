@@ -15,7 +15,7 @@ subprocess.run(
 )
 
 # Select the KAPy branch
-kapy_branch = "dev"
+kapy_branch = "main"
 
 # Add KAPy as a submodule
 subprocess.run(
