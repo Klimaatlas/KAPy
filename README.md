@@ -41,7 +41,7 @@ Documentation for KAPy is contained in the `./docs` folder. For more details, pl
 KAPy is in active development and welcomes all contributions, both large and small.  
     
 * If you have a suggestion for a new feature or want to report a bug, please file an issue via the issue tracker.
-* If you would like to contribute code or documentation, check out the [Contributing Guidelines](./CONTRIBUTING.md) before you begin!
+* If you would like to contribute code or documentation, check out the [Contributing Guidelines](./docs/CONTRIBUTING.md) before you begin!
 
 ## How to cite KAPy
 

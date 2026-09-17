@@ -34,5 +34,5 @@ In addition, the following tutorials provide more information, but need not be t
 
 ## Development
 
-* [Contributing](../CONTRIBUTING.md) - Information about the development process and how to contribute to KAPy.
+* [Contributing](CONTRIBUTING.md) - Information about the development process and how to contribute to KAPy.
 * [Code of Conduct](Code_of_conduct.md) - Information about the code of conduct used in the development of KAPy.
