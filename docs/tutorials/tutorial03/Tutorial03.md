@@ -56,11 +56,11 @@ This tutorial assumes that you have completed [Tutorial 1](../tutorial01/Tutoria
 
    The `dot` program used to create the image is part of the **Graphviz** package. If it is not already installed, you can install it using your operating system's package manager. 
 
-   Now try running the following command, and then open `dag.png` in a graphics viewer or browser:
+   Now try running the following command to create the SQLite database (the `.DATABASE` target), and then open `dag.png` in a graphics viewer or browser:
 
    ```bash
-   snakemake --dag | tail -n +2 | dot -Tpng -Grankdir=LR > dag.png
-   ```
+    snakemake .DATABASE --dag | tail -n +2 | dot -Tpng -Grankdir=LR > dag.png 
+    ```
 
    The `tail -n +2` removes the first line of Snakemake's output, leaving the Graphviz input that `dot` expects.
 
