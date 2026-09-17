@@ -252,7 +252,7 @@ The result should look something like this:
 
 The `groupby()` operation separates the data into one group for each scenario. The loop then plots each scenario separately.
 
-The complete example is available as [`Visualisation.py`](Visualisation.py).
+The complete example is available as [`Python_plot.py`](Python_plot.py).
 
 **Ka pai!** You have now extracted KAPy results from the database and plotted them in Python.
 
@@ -353,7 +353,7 @@ The result should look something like this:
 
 ![Example R plot](Rplot.png)
 
-The complete example is available as [`Visualisation.r`](Visualisation.r).
+The complete example is available as [`Rplot.r`](Rplot.r).
 
 **Ka pai!** You have now extracted and plotted KAPy results using R.
 
