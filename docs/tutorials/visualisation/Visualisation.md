@@ -10,7 +10,7 @@ In this tutorial we will import and plot results from a KAPy run using both R an
 
 ## Point of departure
 
-This tutorial uses the results of [Tutorial 01](Tutorial01.md) as the input dataset, but in principle and be adapted to work with any KAPy pipeline that has been run to completion.
+This tutorial is intended to be general and works with the results of all KAPy pipelines, but in principle and be adapted to work with any KAPy pipeline that has been run to completion.
 
 ## Background 
 
@@ -23,6 +23,20 @@ areal_statistics:
     member_areal_statistics: False
 ```
 To facilitate processing of these different types of data, KAPy collects them all together in the form of a single SQLite database. SQLite is a self-contained and lightweight database system that is well established and broadly used. It has the advantage of not requiring a dedicated server (either hardware or software), as the machinery for interacting with the database is contained in the locally installed software package. SQLite is therefore commonly used in lightware applications, such as mobile telephones, and as a general rule-of-thumb is well suited to databases less than 1TB in size. While the use of such databases is less common in climate science, it is well known in computer science. The database is accessed using the `sqlite3` package in Python, and the `RSQLite` package in R. In this tutorial we will open the database, extract the data and make a plot of the results.
+
+## Explore the gridded data
+
+The gridded indicators are stored in the output directory in following folders:
+* `05.indicators` - indicators calculated on the native grid 
+* `06.regrid` - indicators regridded to the common grid specified in the configuration file
+* `07.ensemble_statistics` - summary statisitics calculated for each indicator across the entire ensemble.
+ 
+[`ncview`](https://cirrus.ucsd.edu/ncview/) is a simple graphical viewer for NetCDF files and is included as part of the KAPy environment. Opening files in ncview is as simple as:
+```
+ncview foo.nc
+```
+where `foo.nc` is the name of the NetCDF file you want to open. The interface is intuitive and lets you browse through the different dimensions stored in the file e.g. time-bins, seasons etc
+
 
 ## Explore the database
 
@@ -38,9 +52,9 @@ Depending on your system configuration, you may need to add `sudo` to the front 
 Now lets explore a bit.
 
 1. The SQLite database can then be opened from the command line, with the path to the database as an argument:
-```
-sqlitebrowser outputs/KAPy_database.sqlite 
-```
+   ```
+   sqlitebrowser outputs/KAPy_database.sqlite 
+   ```
 
 2. This will open a GUI, with four tabs. The "Database Structure" tab gives an overview of the tables in the database, together with the indices (which speed up searches dramatically) and the Views (which are efficient combinations of various Tables). 
 
