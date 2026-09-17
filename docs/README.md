@@ -10,15 +10,13 @@ The installation process is described in the [Installation Guide](installation.m
 
 Here we have provided a set of worked examples to help you learn the basics of KAPy.
 
-* [Tutorial 1 - A basic run through](./tutorials/tutorial01/Tutorial01.md)
-* [Tutorial 2 - Workflow control](./tutorials/Tutorial02.md)
+* [Tutorial 1 - Your first KAPy workflow](./tutorials/tutorial01/Tutorial01.md)
+* [Tutorial 2 - Exploring and using KAPy outputs](./tutorials/tutorial02/Tutorial02.md)
+* [Tutorial 3 - Workflow control](./tutorials/tutorial03/Tutorial03.md)
 * [Tutorial 3 - Adding a new indicator](./tutorials/Tutorial03.md)
 * [Tutorial 4 - Adding a new data source](./tutorials/Tutorial04.md)
 * [Tutorial 5 - Using a shapefile for area averaging](./tutorials/Tutorial05.md)
 * [Tutorial 6 - Use of bias adjustment](./tutorials/Tutorial06.md)
-
-In addition, the following tutorials provide more information, but need not be taken in any particular order
-* [Visualisation and working with KAPy outputs](./tutorials/Visualisation/Visualisation.md)
 
 ## Background, definitions and conepts
 
