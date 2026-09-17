@@ -5,31 +5,37 @@ KAPy aims to be open-source, transparent, repeatible and flexible, and works fro
 
 ## Getting started
 
-Here we describe the basic steps to install and configure KAPy. First, you need to setup the Python environment containing the packages used by KAPy: this environment also includes tools that can quickly configure KAPy. KAPy leans heavily on the Conda package manager: if you don't have it installed already, it can be downloaded from  https://conda.io/projects/conda/en/latest/index.html. Conda can work directly from the GitHub repository - on an internet connected machine, run the following command to create the 'KAPy' environment:
+Here we provide a concise set of sets describe the basic steps to install and configure KAPy. For a more detailed version see the [installation guide](./docs/installation.md).
 
-```
+KAPy uses [Conda](https://conda.io/projects/conda/en/latest/index.html) to manage its software environment. If you do not already have Conda installed, please install it first.
+
+Create the KAPy environment:
+
+```bash
 conda env create -f https://raw.githubusercontent.com/Klimaatlas/KAPy/refs/heads/main/workflow/envs/env.yaml
 ```
 
-You should now have a working conda environment called 'KAPy'. To activate the environment, run:
+Activate the environment:
 
-```
+```bash
 conda activate KAPy
 ```
 
-The KAPy environment contains a cookiecutter template, which can be used to quickly set up a new project. To use the template, run:
+Create a new KAPy project using the project template:
 
-```
+```bash
 cookiecutter --directory cookiecutter gh:Klimaatlas/KAPy
 ```
 
-Follow the instructions and explanations on screen: cookiecutter  will create a new folder containing a template KAPy project in the current working directory, based on the user's configuration. The project can be run from within the new folder using the commmand:
+Follow the prompts to configure your project. Cookiecutter will create a new project directory containing the required KAPy files and configuration.
 
-```
+Move into the new project directory and run the workflow:
+
+```bash
 snakemake --cores 1
 ```
 
-And so you're ready to go. To get familiar with the workings of KAPy, or for a more detailed description of the installation process, we recommend looking at the documentation in the `./docs` folder, and particularly the [Tutorials](./docs/tutorials/README.md).  
+**Ka pai  — you are ready to use KAPy!**
 
 
 ## Documentation

@@ -2,7 +2,9 @@
 
 Documentation for KAPy is contained in the repository `./docs` folder. This README provides an overview of the available documentation.
 
-Installation of KAPy is documented in the "Getting Started" section of the [README](../README.md) in the root directory.
+## Installation
+
+The installation process is described in the [Installation Guide](./installation.md).
 
 ## Learning KAPy
 
