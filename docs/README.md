@@ -10,7 +10,7 @@ The installation process is described in the [Installation Guide](installation.m
 
 Here we have provided a set of worked examples to help you learn the basics of KAPy.
 
-* [Tutorial 1 - A basic run through](./tutorials/Tutorial01.md)
+* [Tutorial 1 - A basic run through](./tutorials/tutorial01/Tutorial01.md)
 * [Tutorial 2 - Workflow control](./tutorials/Tutorial02.md)
 * [Tutorial 3 - Adding a new indicator](./tutorials/Tutorial03.md)
 * [Tutorial 4 - Adding a new data source](./tutorials/Tutorial04.md)
