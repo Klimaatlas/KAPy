@@ -34,6 +34,23 @@ Conda will now download and install the required packages. This may take a littl
 
 When it has finished, you should see a message indicating that a new environment called **KAPy** has been created.
 
+> **Using Mamba or micromamba?**
+>
+> KAPy can also be installed using [Mamba](https://mamba.readthedocs.io/) or [micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html). Unlike Conda, micromamba expects the environment definition to be provided as a local file, so you should download the KAPy environment file first:
+>
+> ```bash
+> wget https://raw.githubusercontent.com/Klimaatlas/KAPy/refs/heads/main/workflow/envs/env.yaml
+> ```
+>
+> You can then create the environment with:
+>
+> ```bash
+> micromamba create -f env.yaml
+> ```
+>
+> The environment name is defined in the YAML file, so no additional `-n` option is required. The same approach can be used with Mamba if you prefer it to Conda.
+
+
 ### What just happened?
 
 The command above has created a Conda environment called `KAPy`. The environment contains:

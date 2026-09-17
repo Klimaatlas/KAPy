@@ -4,7 +4,7 @@ Documentation for KAPy is contained in the repository `./docs` folder. This READ
 
 ## Installation
 
-The installation process is described in the [Installation Guide](./installation.md).
+The installation process is described in the [Installation Guide](installation.md).
 
 ## Learning KAPy
 
