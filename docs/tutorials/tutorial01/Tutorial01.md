@@ -122,8 +122,8 @@ The KAPy cookiecutter template allows for both a **simple** and a **full** confi
 
 You now have a working KAPy project and have run a complete analysis. Where you go next depends on what you would like to explore:
 
-* **Explore the results:** Learn how to inspect and visualise the results in the [visualisation tutorial](../visualisation/Visualisation.md).
+* **Explore the results:** Learn how to explore and visualise the results in [Tutorial 2](../tutorial02/Tutorial02.md).
 
-* **Understand the workflow:** Move on to [Tutorial 2](../tutorial02/Tutorial02.md) to learn how KAPy controls and organises the workflow.
+* **Understand the workflow:** Move on to [Tutorial 3](../tutorial03/Tutorial03.md) to learn how KAPy controls and organises the workflow.
 
 * **Explore the documentation:** Return to the [documentation overview](../../README.md) for more information about KAPy and its configuration.

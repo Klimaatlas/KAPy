@@ -24,7 +24,10 @@ fig, ax = plt.subplots(figsize=(8, 5))
 
 markers = ["o", "s", "^", "D", "v", "P", "X"]
 
-for marker, (scenario, df) in zip(markers, temp.groupby("ScenarioCode")):
+for marker, (scenario, df) in zip(
+    markers,
+    temp.groupby("ScenarioCode"),
+):
     ax.plot(
         df["TimeBinCode"],
         df["Value"],
