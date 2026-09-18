@@ -16,7 +16,7 @@ Here we have provided a set of worked examples to help you learn the basics of K
 * [Tutorial 4 - Time-binning and seasons](./tutorials/tutorial04/Tutorial04.md)
 * [Tutorial 5 - Adding a new indicator](./tutorials/tutorial05/Tutorial05.md)
 * [Tutorial 6 - Adding a new data source](./tutorials/tutorial06/Tutorial06.md)
-* [Tutorial 7 - Using a shapefile for area averaging](./tutorials/Tutorial05.md)
+* [Tutorial 7 - Using a shapefile for area statistics](./tutorials/tutorial07/Tutorial07.md)
 * [Tutorial 8 - Use of bias adjustment](./tutorials/Tutorial06.md)
 * Custom functions
 
