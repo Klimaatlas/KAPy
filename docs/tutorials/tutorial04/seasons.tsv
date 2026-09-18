@@ -1,0 +1,7 @@
+id	enabled	description	months
+ann	x	Annual	1,2,3,4,5,6,7,8,9,10,11,12
+JJA		Boreal summer (JJA)	6,7,8
+SON		Boreal autumn (SON)	9,10,11
+DJF		Boreal winter (DJF)	12,1,2
+MAM		Boreal spring (MAM)	3,4,5
+1stHalf	x	First half of the year	1,2,3,4,5,6

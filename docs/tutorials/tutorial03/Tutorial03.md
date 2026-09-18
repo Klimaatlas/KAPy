@@ -46,7 +46,7 @@ This tutorial assumes that you have completed [Tutorial 1](../tutorial01/Tutoria
 
    * Rules starting with `..` are internal, generic rules that are used to process multiple files. They are not intended to be called directly by the user.
 
-   * Rules starting with `.` are target-like rules that represent collections of files to be created.
+   * Rules starting with `.` are target-like rules that represent collections of files to be created. Details of the steps are given in the [workflow description](../../Workflow.md).
 
    * Rules that don't start with `.` correspond to `id` values in the tabular configuration files. Calling one of these targets runs the configuration associated with that `id`.
 
@@ -54,7 +54,7 @@ This tutorial assumes that you have completed [Tutorial 1](../tutorial01/Tutoria
 
 4. Snakemake also has a handy visualisation tool that lets you examine the workflow as a DAG.
 
-   The `dot` program used to create the image is part of the **Graphviz** package. If it is not already installed, you can install it using your operating system's package manager. 
+   The `dot` program is used to create the image is part of the **Graphviz** package. If it is not already installed, you can install it using your operating system's package manager. 
 
    Now try running the following command to create the SQLite database (the `.DATABASE` target), and then open `dag.png` in a graphics viewer or browser:
 
