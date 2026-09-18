@@ -14,7 +14,7 @@ This will also introduce several of the options available in the indicator confi
 
 ## Before you start
 
-This tutorial assumes that you have completed [Tutorial 1](../tutorial01/Tutorial01.md) and have a completed KAPy analysis in your project directory. It can also build on the configuration from [Tutorial 3](../tutorial03/Tutorial03.md) if you prefer to continue from there.
+This tutorial assumes that you have completed [Tutorial 1](../tutorial01/Tutorial01.md) and have a completed KAPy analysis in your project directory. It can also build on other tutorials prior to this oneif you prefer to continue from there.
 
 A full set of configuration files for this tutorial can be found in `./docs/tutorials/tutorial05/` if you don't wish to create them yourself.
 
@@ -85,7 +85,7 @@ A full set of configuration files for this tutorial can be found in `./docs/tuto
 5. We can also review the revised DAG with indicator `102` incorporated. Create the DAG as previously:
 
    ```bash
-   snakemake .DATABASE --dag | head -n +2 | dot -Tpng -Grankdir=LR > dag_tutorial05.png
+   snakemake .DATABASE --dag | tail -n +2 | dot -Tpng -Grankdir=LR > dag_tutorial05.png
    ```
 
    You'll get a figure like this:

@@ -10,7 +10,7 @@ In this tutorial we will modify the time periods and seasons used by KAPy, rerun
 
 ## Before you start
 
-This tutorial assumes that you have completed [Tutorial 1](../tutorial01/Tutorial01.md) and have a completed KAPy analysis in your project directory.
+This tutorial assumes that you have completed [Tutorial 1](../tutorial01/Tutorial01.md) and have a completed KAPy analysis in your project directory. It can also build on other tutorials prior to this oneif you prefer to continue from there.
 
 A full set of configuration files for this tutorial can be found in `./docs/tutorials/tutorial04/` if you don't wish to create them yourself.
 
