@@ -14,7 +14,7 @@ We will then compare the original and bias-adjusted results to see how the adjus
 
 It is highly recommended that you start with a fresh installation of KAPy, configured with the cookiecutter to give a "simple" configuration, and with downloaded sample data.
 
-A full set of configuration files for this tutorial can be found in `./docs/tutorials/tutorial08/` if you don't wish to create them yourself.
+A full set of configuration files for this tutorial can be found in [./docs/tutorials/tutorial08/](.) if you don't wish to create them yourself.
 
 ## Background
 
@@ -88,7 +88,7 @@ This means that bias adjustment does not replace the original CORDEX data. Both 
 
    * The `rechunking_strategy` has been changed from `none` to `nc`. This tells KAPy to rechunk the input NetCDF data before bias adjustment. The data are reorganised into chunks that support efficient reading of time series, which is required by the bias-adjustment calculation. NetCDF chunking determines how the data are physically organised on disk, so choosing an appropriate chunking strategy can have a large effect on the performance of operations that need to read data along a particular dimension.
    
-3. The bias-adjustment methods are defined and configured via their own configuration file, `./config/biasAdjustment.tsv`. You can create this file yourself, but it's much easier to simply download it from [Tutorial08_files/biasAdjustment.tsv](Tutorial08_files/biasAdjustment.tsv) and save it as `./config/biasAdjustment.tsv`.
+3. The bias-adjustment methods are defined and configured via their own configuration file, `./config/biasAdjustment.tsv`. You can create this file yourself, but it's much easier to simply download it from [docs/tutorials/tutorial08/biasAdjustment.tsv](biasAdjustment.tsv) and save it as `./config/biasAdjustment.tsv`. 
 
    Open this file in a spreadsheet application such as LibreOffice and have a look at it.
 
